@@ -22,9 +22,15 @@ const base64ToUint8Array = (base64: string) => {
   return bytes;
 };
 
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  images?: string[];
+}
+
 export const streamGenerateContent = async (
   prompt: string,
-  history: { role: string; content: string; images?: string[] }[],
+  history: ChatMessage[],
   onToken: (token: string) => void
 ) => {
   if (!geminiApi) throw new Error('Gemini API not initialized');
@@ -41,7 +47,9 @@ export const streamGenerateContent = async (
 
   // Add images if present in the last user message
   const lastMessage = history[history.length - 1];
-  if (lastMessage?.role === 'user' && lastMessage.images?.length > 0) {
+  const hasImages = lastMessage?.role === 'user' && Array.isArray(lastMessage.images) && lastMessage.images.length > 0;
+  
+  if (hasImages && lastMessage.images) {
     for (const imageBase64 of lastMessage.images) {
       try {
         const imageData = base64ToUint8Array(imageBase64);
