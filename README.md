@@ -2,11 +2,15 @@
   <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png" width="100" height="100" alt="Paradox Logo">
 </p>
 
+<div align="center">
 
 # Paradox
 
 A modern AI chat interface that combines the power of Google's Gemini and Perplexity's Sonar APIs to provide intelligent conversations with web search and reasoning capabilities.
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamakchavan%2Fparadox)
+
+</div>
 
 ## Features
 
@@ -107,3 +111,31 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Deployment
+
+### Deploy on Vercel
+
+The easiest way to deploy Paradox is to use the Vercel Platform.
+
+1. Click the "Deploy with Vercel" button above
+2. Connect your GitHub account
+3. Set up your environment variables:
+   ```env
+   NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+   NEXT_PUBLIC_PERPLEXITY_API_KEY=your_perplexity_api_key
+   ```
+4. Deploy!
+
+Your application will be built and deployed to a `.vercel.app` domain.
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```env
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+NEXT_PUBLIC_PERPLEXITY_API_KEY=your_perplexity_api_key
+```
+
+For production deployment, add these environment variables in your Vercel project settings.
