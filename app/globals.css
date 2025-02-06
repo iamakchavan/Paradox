@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 4%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 4%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-in {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Markdown Styles */
+.prose pre {
+  @apply bg-secondary/50 border border-border rounded-lg p-4 overflow-x-auto;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.prose pre code {
+  @apply block whitespace-pre;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.prose table {
+  @apply border-collapse w-full my-6;
+}
+
+.prose th {
+  @apply bg-secondary/50 border border-border px-4 py-2 text-left;
+}
+
+.prose td {
+  @apply border border-border px-4 py-2;
+}
+
+.prose code:not(pre code) {
+  @apply bg-secondary/50 px-1.5 py-0.5 rounded text-sm;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  @apply text-foreground font-semibold mt-6 mb-4;
+}
+
+.prose h1 {
+  @apply text-2xl;
+}
+
+.prose h2 {
+  @apply text-xl;
+}
+
+.prose h3 {
+  @apply text-lg;
+}
+
+.prose p {
+  @apply mb-4 leading-relaxed;
+}
+
+.prose ul {
+  @apply list-disc mb-4 pl-6;
+}
+
+.prose ol {
+  @apply list-decimal mb-4 pl-6;
+}
+
+.prose li {
+  @apply mb-1;
+}
+
+.prose li > p {
+  @apply inline;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-border pl-4 italic my-4;
+}
+
+.prose img {
+  @apply rounded-lg my-6;
+}
+
+.prose a {
+  @apply text-blue-500 hover:text-blue-600 transition-colors;
+}
