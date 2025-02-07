@@ -355,16 +355,20 @@ export default function ChatPage() {
                   <TooltipTrigger asChild>
                     <Button
                       variant={useReasoning ? "default" : "ghost"}
-                      size="sm"
+                      size="icon"
                       disabled={!perplexityApiKey || isLoading || useWebSearch}
-                      className="gap-2"
+                      className={cn(
+                        "transition-all duration-200",
+                        useReasoning && "w-[110px]",
+                        !useReasoning && "w-10"
+                      )}
                       onClick={() => {
                         setUseReasoning(!useReasoning);
                         if (useWebSearch) setUseWebSearch(false);
                       }}
                     >
                       <Lightbulb className="w-4 h-4" />
-                      REASON
+                      {useReasoning && <span className="ml-2">REASON</span>}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -377,16 +381,20 @@ export default function ChatPage() {
                   <TooltipTrigger asChild>
                     <Button
                       variant={useWebSearch ? "default" : "ghost"}
-                      size="sm"
+                      size="icon"
                       disabled={!perplexityApiKey || isLoading || useReasoning}
-                      className="gap-2"
+                      className={cn(
+                        "transition-all duration-200",
+                        useWebSearch && "w-[90px]",
+                        !useWebSearch && "w-10"
+                      )}
                       onClick={() => {
                         setUseWebSearch(!useWebSearch);
                         if (useReasoning) setUseReasoning(false);
                       }}
                     >
                       <Globe2 className="w-4 h-4" />
-                      WEB
+                      {useWebSearch && <span className="ml-2">WEB</span>}
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
