@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2 } from 'lucide-react';
+import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, ChevronDown } from 'lucide-react';
 import { SettingsDialog } from '@/components/settings-dialog';
 import { getGeminiApi, initGemini, streamGenerateContent } from '@/lib/gemini';
 import { getPerplexityApi, initPerplexity, streamPerplexityContent } from '@/lib/perplexity';
@@ -29,6 +29,17 @@ interface Message {
   images?: string[];
 }
 
+const processThinkingContent = (content: string) => {
+  const thinkRegex = /<think>([\s\S]*?)<\/think>/;
+  const thinkMatch = content.match(thinkRegex);
+  if (!thinkMatch) return { thinking: null, mainContent: content };
+  
+  const thinking = thinkMatch[1].trim();
+  const mainContent = content.replace(thinkRegex, '').trim();
+  
+  return { thinking, mainContent };
+};
+
 export default function ChatPage() {
   const [message, setMessage] = useState('');
   const [geminiApiKey, setGeminiApiKey] = useState<string | null>(null);
@@ -47,6 +58,7 @@ export default function ChatPage() {
   const [isInitialView, setIsInitialView] = useState(true);
   const { setTheme, theme } = useTheme();
   const [previousTheme, setPreviousTheme] = useState<string>('');
+  const [expandedThinking, setExpandedThinking] = useState<number[]>([]);
 
   useEffect(() => {
     const storedGeminiKey = localStorage.getItem('gemini-api-key');
@@ -141,18 +153,38 @@ export default function ChatPage() {
       const history = conversation.slice(-6);
 
       let streamedText = '';
+      let isThinking = false;
       if (useDeveloperMode && geminiApiKey) {
         await streamDeveloperContent(
           message,
           history,
           (token) => {
+            if (token.includes('<think>')) {
+              isThinking = true;
+              streamedText = '';
+              return;
+            }
+            if (token.includes('</think>')) {
+              isThinking = false;
+              streamedText = '';
+              return;
+            }
             streamedText += token;
             setConversation(prev => {
               const newConv = [...prev];
-              newConv[newConv.length - 1] = {
-                role: 'assistant',
-                content: streamedText
-              };
+              const lastMessage = newConv[newConv.length - 1];
+              if (isThinking) {
+                newConv[newConv.length - 1] = {
+                  ...lastMessage,
+                  content: `<think>${streamedText}</think>`
+                };
+              } else {
+                const { thinking } = processThinkingContent(lastMessage.content);
+                newConv[newConv.length - 1] = {
+                  ...lastMessage,
+                  content: thinking ? `<think>${thinking}</think>${streamedText}` : streamedText
+                };
+              }
               return newConv;
             });
           }
@@ -162,13 +194,32 @@ export default function ChatPage() {
           message,
           history,
           (token) => {
+            if (token.includes('<think>')) {
+              isThinking = true;
+              streamedText = '';
+              return;
+            }
+            if (token.includes('</think>')) {
+              isThinking = false;
+              streamedText = '';
+              return;
+            }
             streamedText += token;
             setConversation(prev => {
               const newConv = [...prev];
-              newConv[newConv.length - 1] = {
-                role: 'assistant',
-                content: streamedText
-              };
+              const lastMessage = newConv[newConv.length - 1];
+              if (isThinking) {
+                newConv[newConv.length - 1] = {
+                  ...lastMessage,
+                  content: `<think>${streamedText}</think>`
+                };
+              } else {
+                const { thinking } = processThinkingContent(lastMessage.content);
+                newConv[newConv.length - 1] = {
+                  ...lastMessage,
+                  content: thinking ? `<think>${thinking}</think>${streamedText}` : streamedText
+                };
+              }
               return newConv;
             });
           },
@@ -309,6 +360,37 @@ export default function ChatPage() {
                     </div>
                   ) : (
                     <div className="pl-4 pr-12 mb-12 text-foreground">
+                      {processThinkingContent(msg.content).thinking && (
+                        <div className="mb-4">
+                          <button
+                            onClick={() => setExpandedThinking(prev => 
+                              prev.includes(index) 
+                                ? prev.filter(i => i !== index)
+                                : [...prev, index]
+                            )}
+                            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <ChevronDown className={cn(
+                              "w-4 h-4 transition-transform",
+                              expandedThinking.includes(index) ? "rotate-180" : ""
+                            )} />
+                            Show thinking
+                          </button>
+                          {expandedThinking.includes(index) && (
+                            <div className={cn(
+                              "mt-2 pl-4 border-l-2 border-muted text-muted-foreground text-sm",
+                              index === conversation.length - 1 && "animate-thinking"
+                            )}>
+                              <ReactMarkdown 
+                                remarkPlugins={[remarkGfm]}
+                                className="prose dark:prose-invert max-w-none prose-sm"
+                              >
+                                {processThinkingContent(msg.content).thinking}
+                              </ReactMarkdown>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]}
                         className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent"
@@ -353,7 +435,7 @@ export default function ChatPage() {
                           },
                         }}
                       >
-                        {msg.content}
+                        {processThinkingContent(msg.content).mainContent}
                       </ReactMarkdown>
                     </div>
                   )}

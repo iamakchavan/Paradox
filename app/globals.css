@@ -174,3 +174,19 @@
 .prose a {
   @apply text-blue-500 hover:text-blue-600 transition-colors;
 }
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.animate-thinking {
+  animation: pulse 2s ease-in-out infinite;
+}
