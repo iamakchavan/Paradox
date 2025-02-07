@@ -325,7 +325,7 @@ export default function ChatPage() {
                             
                             if (!isInline && language) {
                               return (
-                                <div className="rounded-lg overflow-hidden my-2 bg-[#282c34]">
+                                <div className="rounded-lg overflow-hidden my-4 bg-[#282c34] -mx-4 sm:mx-0">
                                   <div className="px-4 py-2 bg-[#21252b] border-b border-[#1e2227]">
                                     <span className="text-xs text-muted-foreground font-mono">{language}</span>
                                   </div>
@@ -338,6 +338,7 @@ export default function ChatPage() {
                                         margin: 0,
                                         background: 'transparent',
                                         padding: '1rem',
+                                        minWidth: '100%',
                                       }}
                                       wrapLongLines={false}
                                       showLineNumbers={true}
