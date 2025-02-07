@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb } from 'lucide-react';
+import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2 } from 'lucide-react';
 import { SettingsDialog } from '@/components/settings-dialog';
 import { getGeminiApi, initGemini, streamGenerateContent } from '@/lib/gemini';
 import { getPerplexityApi, initPerplexity, streamPerplexityContent } from '@/lib/perplexity';
@@ -17,6 +17,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Image from 'next/image';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { useTheme } from 'next-themes';
+import { Typewriter } from '@/components/typewriter';
+import { initDeveloperMode, streamDeveloperContent } from '@/lib/developer-mode';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -34,10 +39,14 @@ export default function ChatPage() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [useWebSearch, setUseWebSearch] = useState(false);
   const [useReasoning, setUseReasoning] = useState(false);
+  const [useDeveloperMode, setUseDeveloperMode] = useState(false);
+  const [showDeveloperModeMessage, setShowDeveloperModeMessage] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isInitialView, setIsInitialView] = useState(true);
+  const { setTheme, theme } = useTheme();
+  const [previousTheme, setPreviousTheme] = useState<string>('');
 
   useEffect(() => {
     const storedGeminiKey = localStorage.getItem('gemini-api-key');
@@ -45,6 +54,7 @@ export default function ChatPage() {
     
     if (storedGeminiKey) {
       initGemini(storedGeminiKey);
+      initDeveloperMode(storedGeminiKey);
       setGeminiApiKey(storedGeminiKey);
     }
     if (storedPerplexityKey) {
@@ -71,6 +81,8 @@ export default function ChatPage() {
     setSelectedImages([]);
     setUseWebSearch(false);
     setUseReasoning(false);
+    setUseDeveloperMode(false);
+    setShowDeveloperModeMessage(false);
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
@@ -129,7 +141,23 @@ export default function ChatPage() {
       const history = conversation.slice(-6);
 
       let streamedText = '';
-      if ((useWebSearch || useReasoning) && perplexityApiKey) {
+      if (useDeveloperMode && geminiApiKey) {
+        await streamDeveloperContent(
+          message,
+          history,
+          (token) => {
+            streamedText += token;
+            setConversation(prev => {
+              const newConv = [...prev];
+              newConv[newConv.length - 1] = {
+                role: 'assistant',
+                content: streamedText
+              };
+              return newConv;
+            });
+          }
+        );
+      } else if ((useWebSearch || useReasoning) && perplexityApiKey) {
         await streamPerplexityContent(
           message,
           history,
@@ -218,7 +246,24 @@ export default function ChatPage() {
         isInitialView ? "flex items-center justify-center" : "pt-20"
       )}>
         <div className="w-full max-w-4xl mx-auto px-4">
-          {isInitialView ? (
+          {showDeveloperModeMessage ? (
+            <div className="h-[calc(100vh-8rem)] flex items-center justify-center">
+              <div className="text-center space-y-6 developer-mode-transition">
+                <div className="relative w-20 h-20 mx-auto mb-8">
+                  <Code2 className="w-full h-full text-primary animate-pulse" />
+                </div>
+                <Typewriter
+                  text="Entering developer mode..."
+                  className="text-2xl font-bold text-primary"
+                  onComplete={() => {
+                    setTimeout(() => {
+                      setShowDeveloperModeMessage(false);
+                    }, 1000);
+                  }}
+                />
+              </div>
+            </div>
+          ) : isInitialView ? (
             <div className="space-y-8 p-4">
               <div className="text-center space-y-6">
                 <Image 
@@ -237,9 +282,12 @@ export default function ChatPage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-6 pb-36">
+            <div className="space-y-6 pb-36 relative">
               {conversation.map((msg, index) => (
-                <div key={index} className="group">
+                <div key={index} className={cn(
+                  "group",
+                  index === conversation.length - 1 && msg.role === 'assistant' && "animate-fade-in"
+                )}>
                   {msg.role === 'user' ? (
                     <div className="flex justify-end mb-6">
                       <div className="bg-primary/10 rounded-2xl px-4 py-2 max-w-[85%] text-sm space-y-2">
@@ -263,16 +311,45 @@ export default function ChatPage() {
                     <div className="pl-4 pr-12 mb-12 text-foreground">
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]}
-                        className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-secondary/50"
+                        className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent"
                         components={{
                           p: ({ children }) => (
-                            <p className={cn(
-                              "mb-4 last:mb-0",
-                              index === conversation.length - 1 && "animate-slide-up"
-                            )}>
+                            <p className="mb-4 last:mb-0">
                               {children}
                             </p>
                           ),
+                          code: ({ className, children, ...props }) => {
+                            const match = /language-(\w+)/.exec(className || '');
+                            const language = match ? match[1] : '';
+                            const isInline = !match;
+                            
+                            if (!isInline && language) {
+                              return (
+                                <div className="rounded-lg overflow-hidden my-2 bg-[#282c34]">
+                                  <div className="px-4 py-2 bg-[#21252b] border-b border-[#1e2227]">
+                                    <span className="text-xs text-muted-foreground font-mono">{language}</span>
+                                  </div>
+                                  <div className="overflow-x-auto">
+                                    <SyntaxHighlighter
+                                      style={oneDark}
+                                      language={language}
+                                      PreTag="div"
+                                      customStyle={{
+                                        margin: 0,
+                                        background: 'transparent',
+                                        padding: '1rem',
+                                      }}
+                                      wrapLongLines={false}
+                                      showLineNumbers={true}
+                                    >
+                                      {String(children).replace(/\n$/, '')}
+                                    </SyntaxHighlighter>
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return <code className={cn("bg-[#282c34] rounded px-1.5 py-0.5 font-mono text-sm", className)} {...props}>{children}</code>;
+                          },
                         }}
                       >
                         {msg.content}
@@ -281,7 +358,7 @@ export default function ChatPage() {
                   )}
                 </div>
               ))}
-              <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} className="h-px" />
             </div>
           )}
         </div>
@@ -344,7 +421,7 @@ export default function ChatPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || useWebSearch || useReasoning}
+                disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || useWebSearch || useReasoning || useDeveloperMode}
                 title="Attach images"
                 onClick={() => fileInputRef.current?.click()}
               >
@@ -354,9 +431,45 @@ export default function ChatPage() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
+                      variant={useDeveloperMode ? "default" : "ghost"}
+                      size="icon"
+                      disabled={!geminiApiKey || isLoading || useWebSearch || useReasoning}
+                      className={cn(
+                        "transition-all duration-200 overflow-hidden",
+                        useDeveloperMode && "w-[140px]",
+                        !useDeveloperMode && "w-10"
+                      )}
+                      onClick={() => {
+                        if (!useDeveloperMode) {
+                          setPreviousTheme(theme || 'light');
+                          setTheme('dark');
+                          setShowDeveloperModeMessage(true);
+                        } else {
+                          setTheme(previousTheme);
+                        }
+                        setUseDeveloperMode(!useDeveloperMode);
+                        if (useWebSearch) setUseWebSearch(false);
+                        if (useReasoning) setUseReasoning(false);
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <Code2 className="w-4 h-4 shrink-0" />
+                        {useDeveloperMode && <span className="ml-2 whitespace-nowrap">DEVELOPER</span>}
+                      </div>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Switch to developer mode</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
                       variant={useReasoning ? "default" : "ghost"}
                       size="icon"
-                      disabled={!perplexityApiKey || isLoading || useWebSearch}
+                      disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode}
                       className={cn(
                         "transition-all duration-200",
                         useReasoning && "w-[110px]",
@@ -382,7 +495,7 @@ export default function ChatPage() {
                     <Button
                       variant={useWebSearch ? "default" : "ghost"}
                       size="icon"
-                      disabled={!perplexityApiKey || isLoading || useReasoning}
+                      disabled={!perplexityApiKey || isLoading || useReasoning || useDeveloperMode}
                       className={cn(
                         "transition-all duration-200",
                         useWebSearch && "w-[90px]",

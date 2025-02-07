@@ -47,6 +47,18 @@
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
   }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply transition-colors duration-500;
+  }
+
+  body {
+    @apply bg-background text-foreground transition-colors duration-500;
+  }
 }
 
 @layer base {
@@ -58,23 +70,33 @@
   }
 }
 
-@keyframes slide-up {
+@keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
 }
 
-.animate-in {
-  animation: slide-up 0.3s ease-out;
+/* Remove the slide-up animation since we're using fade-in for smoother streaming */
+@keyframes scale-up {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.developer-mode-transition {
+  animation: scale-up 0.5s ease-out;
 }
 
 /* Markdown Styles */
