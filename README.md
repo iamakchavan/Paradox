@@ -17,7 +17,7 @@ A modern AI chat interface that combines the power of Google's Gemini and Perple
 - 🤖 Dual AI Model Support
   - Google Gemini API integration for advanced conversations
   - Perplexity Sonar API for real-time web search capabilities
-  - DeepSeek R1 reasoning mode for step-by-step analysis
+  - DeepSeek R1 (US Hosted) reasoning mode for step-by-step analysis
   
 - 🎨 Modern User Interface
   - Clean and intuitive chat interface
