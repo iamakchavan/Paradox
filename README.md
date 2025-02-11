@@ -24,6 +24,7 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
   - Dark/Light theme support
   - Responsive design for all devices
   - Beautiful animations and transitions
+  - Dedicated mode for Coding tasks
   
 - 📱 Advanced Chat Features
   - Image upload and processing
