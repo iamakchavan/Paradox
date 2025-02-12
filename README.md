@@ -6,7 +6,7 @@
 
 # Paradox
 
-A modern AI chat interface that combines the power of Google's Gemini and Perplexity's Sonar APIs to provide intelligent conversations with web search and reasoning capabilities.
+A minimalistic AI chat interface that combines the power of Google's Gemini and Perplexity's Sonar APIs to provide intelligent conversations with web search, coding and reasoning capabilities.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamakchavan%2Fparadox)
 
@@ -17,13 +17,14 @@ A modern AI chat interface that combines the power of Google's Gemini and Perple
 - 🤖 Dual AI Model Support
   - Google Gemini API integration for advanced conversations
   - Perplexity Sonar API for real-time web search capabilities
-  - DeepSeek R1 reasoning mode for step-by-step analysis
+  - DeepSeek R1 (US Hosted) reasoning mode for step-by-step analysis
   
 - 🎨 Modern User Interface
   - Clean and intuitive chat interface
   - Dark/Light theme support
   - Responsive design for all devices
   - Beautiful animations and transitions
+  - Dedicated mode for Coding tasks
   
 - 📱 Advanced Chat Features
   - Image upload and processing
