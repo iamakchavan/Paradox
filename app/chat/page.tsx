@@ -542,6 +542,7 @@ export default function ChatPage() {
                           {expandedThinking.includes(index) && (
                             <div className={cn(
                               "mt-2 pl-4 border-l-2 border-muted text-muted-foreground text-sm tracking-wide",
+                              index === conversation.length - 1 && isLoading && "animate-thinking"
                             )} style={{ fontFamily: 'Instrument Serif', fontStyle: 'italic', letterSpacing: '0.025em' }}>
                               <ReactMarkdown 
                                 remarkPlugins={[remarkGfm]}
