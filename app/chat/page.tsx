@@ -294,7 +294,7 @@ export default function ChatPage() {
       {/* Main Content */}
       <div className={cn(
         "flex-1 w-full transition-all duration-500 ease-in-out",
-        isInitialView ? "flex flex-col items-center justify-center -mt-8 sm:-mt-16" : "pt-16 sm:pt-20 pb-24 sm:pb-32"
+        isInitialView ? "flex flex-col items-center justify-center -mt-16 sm:-mt-24" : "pt-16 sm:pt-20 pb-24 sm:pb-32"
       )}>
         <div className="w-full max-w-4xl mx-auto px-2 sm:px-4">
           {showDeveloperModeMessage ? (
@@ -315,9 +315,9 @@ export default function ChatPage() {
               </div>
             </div>
           ) : isInitialView ? (
-            <div className="flex flex-col items-center gap-8 sm:gap-16 px-4 sm:px-0">
+            <div className="flex flex-col items-center gap-10 sm:gap-14 px-4 sm:px-0">
               <div className="text-center">
-                <p className="text-xl sm:text-2xl text-muted-foreground">
+                <p className="text-3xl sm:text-4xl text-foreground/75 font-medium tracking-wide" style={{ fontFamily: 'Instrument Serif' }}>
                   What do you want to search?
                 </p>
               </div>
@@ -361,8 +361,8 @@ export default function ChatPage() {
                           handleSubmit();
                         }
                       }}
-                      placeholder="How can I help you today?"
-                      className="w-full min-h-[50px] sm:min-h-[60px] max-h-[200px] p-3 sm:p-4 pr-24 sm:pr-32 placeholder:text-muted-foreground focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-base sm:text-lg"
+                      placeholder="Type your message..."
+                      className="w-full min-h-[100px] sm:min-h-[110px] max-h-[200px] p-6 sm:p-7 pr-24 sm:pr-32 placeholder:text-muted-foreground focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-lg sm:text-xl"
                       disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
                     />
                     <div className="absolute right-2 bottom-2 flex items-center gap-1 sm:gap-2">
@@ -541,9 +541,8 @@ export default function ChatPage() {
                           </button>
                           {expandedThinking.includes(index) && (
                             <div className={cn(
-                              "mt-2 pl-4 border-l-2 border-muted text-muted-foreground text-sm",
-                              index === conversation.length - 1 && "animate-thinking"
-                            )}>
+                              "mt-2 pl-4 border-l-2 border-muted text-muted-foreground text-sm tracking-wide",
+                            )} style={{ fontFamily: 'Instrument Serif', fontStyle: 'italic', letterSpacing: '0.025em' }}>
                               <ReactMarkdown 
                                 remarkPlugins={[remarkGfm]}
                                 className="prose dark:prose-invert max-w-none prose-sm"
