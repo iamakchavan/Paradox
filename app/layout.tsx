@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font';
 import { ThemeProvider } from '@/components/theme-provider';
+import { Analytics } from '@vercel/analytics/react';
 
 export const metadata: Metadata = {
   title: 'Paradox',
@@ -59,6 +60,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
