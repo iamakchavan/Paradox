@@ -46,6 +46,10 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Instrument+Serif:wght@400;500&display=swap"
         />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap"
+        />
       </head>
       <body className={GeistSans.className}>
         <ThemeProvider

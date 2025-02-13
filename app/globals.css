@@ -129,18 +129,23 @@
 
 .prose h1, .prose h2, .prose h3, .prose h4 {
   @apply text-foreground font-semibold mt-6 mb-4;
+  font-family: 'Playfair Display', serif;
 }
 
 .prose h1 {
-  @apply text-2xl;
+  @apply text-2xl font-bold;
 }
 
 .prose h2 {
-  @apply text-xl;
+  @apply text-xl font-bold;
 }
 
 .prose h3 {
-  @apply text-lg;
+  @apply text-lg font-semibold;
+}
+
+.prose h4 {
+  @apply font-semibold;
 }
 
 .prose p {
