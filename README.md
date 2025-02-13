@@ -106,29 +106,78 @@ npm run lint
 
 ## Deployment
 
-### Deploy on Vercel
+### Deploy on Vercel (Recommended)
 
-The easiest way to deploy Paradox is to use the Vercel Platform.
+The easiest way to deploy Paradox is to use the Vercel Platform from the creators of Next.js.
 
+#### Option 1: One-Click Deploy
 1. Click the "Deploy with Vercel" button above
 2. Connect your GitHub account
-3. Set up your environment variables:
+3. Configure your project settings:
+   - Framework Preset: Next.js
+   - Root Directory: ./
+   - Build Command: `next build`
+   - Output Directory: .next
+4. Add the following Environment Variables in the Vercel project settings:
    ```env
    NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
    NEXT_PUBLIC_PERPLEXITY_API_KEY=your_perplexity_api_key
    ```
-4. Deploy!
+5. Deploy and visit your new site!
+
+#### Option 2: Deploy with Vercel CLI
+1. Install Vercel CLI:
+   ```bash
+   npm i -g vercel
+   ```
+
+2. Login to Vercel:
+   ```bash
+   vercel login
+   ```
+
+3. Deploy the project:
+   ```bash
+   vercel
+   ```
+
+4. Add environment variables:
+   ```bash
+   vercel env add NEXT_PUBLIC_GEMINI_API_KEY
+   vercel env add NEXT_PUBLIC_PERPLEXITY_API_KEY
+   ```
 
 ### Environment Variables
 
-Create a `.env.local` file in the root directory with:
+For local development, create a `.env.local` file in the root directory:
 
 ```env
 NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
 NEXT_PUBLIC_PERPLEXITY_API_KEY=your_perplexity_api_key
 ```
 
-For production deployment, add these environment variables in your Vercel project settings.
+For production deployment:
+1. Go to your Vercel project dashboard
+2. Navigate to Settings > Environment Variables
+3. Add both required environment variables
+4. Redeploy your application for the changes to take effect
+
+### Post-Deployment Steps
+1. Visit your deployed site (yourapp.vercel.app)
+2. Open the settings panel
+3. Verify your API keys are working
+4. Test the core functionalities:
+   - Basic chat
+   - Image upload
+   - Web search
+   - Developer mode
+
+### Troubleshooting Deployment
+- If the build fails, check the build logs in Vercel dashboard
+- Ensure all environment variables are properly set
+- Verify your API keys are valid
+- Check if all dependencies are properly installed
+- Make sure you're using Node.js 18.x or later
 
 ## Contributing
 
