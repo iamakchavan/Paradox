@@ -14,30 +14,41 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
 
 ## Features
 
-- 🤖 Dual AI Model Support
-  - Google Gemini API integration for advanced conversations
-  - Perplexity Sonar API for real-time web search capabilities
-  - DeepSeek R1 (US Hosted) reasoning mode for step-by-step analysis
-  
-- 🎨 Modern User Interface
-  - Clean and intuitive chat interface
-  - Dark/Light theme support
-  - Responsive design for all devices
-  - Beautiful animations and transitions
-  - Dedicated mode for Coding tasks
-  
-- 📱 Advanced Chat Features
-  - Image upload and processing
-  - Real-time streaming responses
-  - Markdown support with code highlighting
-  - Conversation history management
-  
-- ⚡ Technical Features
-  - Built with Next.js 13.5
-  - TypeScript for type safety
-  - Tailwind CSS for styling
-  - Radix UI components for accessibility
-  - Local storage for API key management
+### Multiple AI Models
+- **Gemini Pro** - For general chat and image analysis
+- **Perplexity** - For web search and reasoning capabilities
+- **Developer Mode** - Specialized coding assistant with enhanced technical capabilities
+
+### User Interface
+- **Modern Design** - Clean, minimalist interface with dark/light theme support
+- **Responsive Layout** - Optimized for both desktop and mobile devices
+
+### Core Capabilities
+- **Image Support** 
+  - Upload and analyze multiple images
+  - Inline preview with drag-and-drop support
+  - Image analysis with Gemini Pro Vision
+- **Web Search** 
+  - Real-time internet search capabilities
+  - Clean presentation of search results
+  - Integration with Perplexity API
+- **Advanced Reasoning** 
+  - Enhanced reasoning mode using DeepSeek R1
+  - Step-by-step thinking process visualization
+  - Detailed explanation of reasoning steps
+- **Developer Mode** 
+  - Specialized mode for coding and technical tasks
+  - Syntax-highlighted code blocks
+  - Best practices and code quality focus
+  - Technical documentation integration
+- **Streaming Responses** 
+  - Real-time response streaming
+  - Visible thinking process
+  - Smooth animations and transitions
+- **Rich Text Support**
+  - Beautiful syntax highlighting for code blocks
+  - Full markdown support with remark-gfm
+  - Custom styling for different content types
 
 ## Getting Started
 
@@ -76,19 +87,7 @@ npm run dev
    - Perplexity Sonar API key
 3. Save settings to start using the chat interface
 
-## Technology Stack
 
-- **Framework**: Next.js 13.5
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: 
-  - Radix UI
-  - shadcn/ui
-- **Font**: Geist Sans
-- **APIs**:
-  - Google Generative AI (Gemini)
-  - Perplexity Sonar
-  
 ## Development
 
 ```bash
@@ -105,14 +104,6 @@ npm run start
 npm run lint
 ```
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 ## Deployment
 
 ### Deploy on Vercel
@@ -128,11 +119,9 @@ The easiest way to deploy Paradox is to use the Vercel Platform.
    ```
 4. Deploy!
 
-Your application will be built and deployed to a `.vercel.app` domain.
-
 ### Environment Variables
 
-Create a `.env.local` file in the root directory with the following variables:
+Create a `.env.local` file in the root directory with:
 
 ```env
 NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
@@ -140,3 +129,11 @@ NEXT_PUBLIC_PERPLEXITY_API_KEY=your_perplexity_api_key
 ```
 
 For production deployment, add these environment variables in your Vercel project settings.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
