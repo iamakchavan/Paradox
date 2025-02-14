@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, ChevronDown } from 'lucide-react';
+import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, ChevronDown, FileText } from 'lucide-react';
 import { SettingsDialog } from '@/components/settings-dialog';
 import { getGeminiApi, initGemini, streamGenerateContent } from '@/lib/gemini';
 import { getPerplexityApi, initPerplexity, streamPerplexityContent } from '@/lib/perplexity';
@@ -27,6 +27,7 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   images?: string[];
+  pdfs?: { name: string; data: string }[];
 }
 
 const processThinkingContent = (content: string) => {
@@ -48,6 +49,7 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [conversation, setConversation] = useState<Message[]>([]);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedPDFs, setSelectedPDFs] = useState<{ name: string; data: string }[]>([]);
   const [useWebSearch, setUseWebSearch] = useState(false);
   const [useReasoning, setUseReasoning] = useState(false);
   const [useDeveloperMode, setUseDeveloperMode] = useState(false);
@@ -59,6 +61,7 @@ export default function ChatPage() {
   const { setTheme, theme } = useTheme();
   const [previousTheme, setPreviousTheme] = useState<string>('');
   const [expandedThinking, setExpandedThinking] = useState<number[]>([]);
+  const [processingPDF, setProcessingPDF] = useState(false);
 
   useEffect(() => {
     const storedGeminiKey = localStorage.getItem('gemini-api-key');
@@ -91,6 +94,7 @@ export default function ChatPage() {
     setError(null);
     setIsInitialView(true);
     setSelectedImages([]);
+    setSelectedPDFs([]);
     setUseWebSearch(false);
     setUseReasoning(false);
     setUseDeveloperMode(false);
@@ -100,15 +104,32 @@ export default function ChatPage() {
     }
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files) {
-      Array.from(files).forEach(file => {
-        if (file.size > 20 * 1024 * 1024) { // 20MB limit
-          setError('Image size should be less than 20MB');
-          return;
+    if (!files) return;
+
+    for (const file of Array.from(files)) {
+      if (file.type === 'application/pdf') {
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit for PDFs
+          setError('PDF size should be less than 10MB');
+          continue;
         }
-        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result;
+          if (result) {
+            setSelectedPDFs(prev => [...prev, { 
+              name: file.name, 
+              data: result as string 
+            }]);
+          }
+        };
+        reader.readAsDataURL(file);
+      } else if (file.type.startsWith('image/')) {
+        if (file.size > 20 * 1024 * 1024) { // 20MB limit for images
+          setError('Image size should be less than 20MB');
+          continue;
+        }
         const reader = new FileReader();
         reader.onload = (e) => {
           if (e.target?.result) {
@@ -116,9 +137,9 @@ export default function ChatPage() {
           }
         };
         reader.readAsDataURL(file);
-      });
+      }
     }
-    // Reset the input
+    // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -128,8 +149,12 @@ export default function ChatPage() {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  const removePDF = (index: number) => {
+    setSelectedPDFs(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async () => {
-    if ((!message.trim() && selectedImages.length === 0) || (!geminiApiKey && !perplexityApiKey)) return;
+    if ((!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0) || (!geminiApiKey && !perplexityApiKey)) return;
     if ((useWebSearch || useReasoning) && !perplexityApiKey) {
       setError('Please set your Perplexity API key to use web search or reasoning');
       return;
@@ -142,13 +167,15 @@ export default function ChatPage() {
       setConversation(prev => [...prev, { 
         role: 'user', 
         content: message,
-        images: selectedImages.length > 0 ? [...selectedImages] : undefined
+        images: selectedImages.length > 0 ? [...selectedImages] : undefined,
+        pdfs: selectedPDFs.length > 0 ? [...selectedPDFs] : undefined
       }]);
       
       setConversation(prev => [...prev, { role: 'assistant', content: '' }]);
       
       setMessage('');
       setSelectedImages([]);
+      setSelectedPDFs([]);
 
       const history = conversation.slice(-6);
 
@@ -228,7 +255,7 @@ export default function ChatPage() {
       } else {
         await streamGenerateContent(
           message,
-          [...history, { role: 'user', content: message, images: selectedImages }],
+          [...history, { role: 'user', content: message, images: selectedImages, pdfs: selectedPDFs }],
           (token) => {
             streamedText += token;
             setConversation(prev => {
@@ -351,6 +378,27 @@ export default function ChatPage() {
                         ))}
                       </div>
                     )}
+                    {selectedPDFs.length > 0 && (
+                      <div className="flex gap-2 p-3 sm:p-4 pb-0 overflow-x-auto">
+                        {selectedPDFs.map((pdf, index) => (
+                          <div key={index} className="relative shrink-0 flex items-center gap-2 bg-secondary/20 rounded-lg p-3 border border-border/50">
+                            <div className="w-8 h-8 flex items-center justify-center">
+                              <FileText className="w-5 h-5 text-primary" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-sm font-medium truncate max-w-[150px]">{pdf.name}</span>
+                              <span className="text-xs text-muted-foreground">PDF Document</span>
+                            </div>
+                            <button
+                              onClick={() => removePDF(index)}
+                              className="ml-2 p-1 hover:bg-secondary/50 rounded-full transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <textarea
                       ref={textareaRef}
                       value={message}
@@ -369,8 +417,8 @@ export default function ChatPage() {
                       <input
                         type="file"
                         ref={fileInputRef}
-                        onChange={handleImageUpload}
-                        accept="image/*"
+                        onChange={handleFileUpload}
+                        accept="image/*,.pdf"
                         multiple
                         className="hidden"
                       />
@@ -379,7 +427,7 @@ export default function ChatPage() {
                         size="icon"
                         className="h-8 w-8 sm:h-9 sm:w-9"
                         disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || useWebSearch || useReasoning || useDeveloperMode}
-                        title="Attach images"
+                        title="Attach images and PDFs"
                         onClick={() => fileInputRef.current?.click()}
                       >
                         <Paperclip className="w-4 h-4" />
@@ -474,7 +522,7 @@ export default function ChatPage() {
                       </TooltipProvider>
                       <Button
                         onClick={handleSubmit}
-                        disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || (!message.trim() && selectedImages.length === 0)}
+                        disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || (!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0)}
                         size="icon"
                         className="bg-primary"
                         title="Send message"
@@ -514,6 +562,21 @@ export default function ChatPage() {
                                   alt={`Uploaded ${imgIndex + 1}`}
                                   className="w-full h-full object-cover rounded-lg"
                                 />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {msg.pdfs && msg.pdfs.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {msg.pdfs.map((pdf, pdfIndex) => (
+                              <div key={pdfIndex} className="flex items-center gap-2 bg-secondary/20 rounded-lg p-3 border border-border/50">
+                                <div className="w-8 h-8 flex items-center justify-center">
+                                  <FileText className="w-5 h-5 text-primary" />
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="text-sm font-medium truncate max-w-[150px]">{pdf.name}</span>
+                                  <span className="text-xs text-muted-foreground">PDF Document</span>
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -644,6 +707,28 @@ export default function ChatPage() {
               </div>
             )}
 
+            {selectedPDFs.length > 0 && (
+              <div className="flex gap-2 mb-2 sm:mb-4 overflow-x-auto pb-2">
+                {selectedPDFs.map((pdf, index) => (
+                  <div key={index} className="relative shrink-0 flex items-center gap-2 bg-secondary/20 rounded-lg p-3 border border-border/50">
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-medium truncate max-w-[150px]">{pdf.name}</span>
+                      <span className="text-xs text-muted-foreground">PDF Document</span>
+                    </div>
+                    <button
+                      onClick={() => removePDF(index)}
+                      className="ml-2 p-1 hover:bg-secondary/50 rounded-full transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="relative">
               <div className="w-full rounded-xl border bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden">
                 <textarea
@@ -664,8 +749,8 @@ export default function ChatPage() {
                   <input
                     type="file"
                     ref={fileInputRef}
-                    onChange={handleImageUpload}
-                    accept="image/*"
+                    onChange={handleFileUpload}
+                    accept="image/*,.pdf"
                     multiple
                     className="hidden"
                   />
@@ -674,7 +759,7 @@ export default function ChatPage() {
                     size="icon"
                     className="h-8 w-8 sm:h-9 sm:w-9"
                     disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || useWebSearch || useReasoning || useDeveloperMode}
-                    title="Attach images"
+                    title="Attach images and PDFs"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Paperclip className="w-4 h-4" />
@@ -769,7 +854,7 @@ export default function ChatPage() {
                   </TooltipProvider>
                   <Button
                     onClick={handleSubmit}
-                    disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || (!message.trim() && selectedImages.length === 0)}
+                    disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || (!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0)}
                     size="icon"
                     className="bg-primary h-8 w-8 sm:h-9 sm:w-9"
                     title="Send message"
@@ -791,6 +876,15 @@ export default function ChatPage() {
         onApiKeySet={setGeminiApiKey} 
         onPerplexityApiKeySet={setPerplexityApiKey}
       />
+
+      {processingPDF && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm">Processing PDF...</span>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

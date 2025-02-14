@@ -3,11 +3,23 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 let geminiApi: GoogleGenerativeAI | null = null;
 
 export const initGemini = (apiKey: string) => {
-  geminiApi = new GoogleGenerativeAI(apiKey);
-  return geminiApi;
+  try {
+    if (!apiKey) {
+      console.error('No API key provided to initGemini');
+      return;
+    }
+    geminiApi = new GoogleGenerativeAI(apiKey);
+    console.log('Gemini API initialized successfully');
+  } catch (error) {
+    console.error('Error initializing Gemini API:', error);
+    throw error;
+  }
 };
 
 export const getGeminiApi = () => {
+  if (!geminiApi) {
+    throw new Error('Gemini API not initialized. Please set your API key in settings.');
+  }
   return geminiApi;
 };
 
@@ -26,71 +38,67 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   images?: string[];
+  pdfs?: { name: string; data: string }[];
 }
 
 export const streamGenerateContent = async (
-  prompt: string,
+  message: string,
   history: ChatMessage[],
   onToken: (token: string) => void
 ) => {
-  if (!geminiApi) throw new Error('Gemini API not initialized');
-  
-  const model = geminiApi.getGenerativeModel({ model: "gemini-2.0-flash" });
-  
-  // Prepare the content parts
-  const parts: any[] = [];
+  const api = getGeminiApi();
+  if (!api) throw new Error('Gemini API not initialized');
 
-  // Add text prompt
-  if (prompt.trim()) {
-    parts.push({ text: prompt });
+  const model = api.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+  // Create chat history for context
+  const chat = model.startChat({
+    history: history.map(msg => ({
+      role: msg.role,
+      parts: [{ text: msg.content }]
+    })),
+    generationConfig: {
+      temperature: 0.7,
+      topK: 40,
+      topP: 0.9,
+    },
+  });
+
+  const lastMessage = history[history.length - 1];
+  const parts: any[] = [{ text: message }];
+
+  // Add images if present
+  if (lastMessage.images && lastMessage.images.length > 0) {
+    lastMessage.images.forEach(image => {
+      parts.push({
+        inlineData: {
+          mimeType: 'image/jpeg',
+          data: image.split(',')[1] // Remove the data URL prefix
+        }
+      });
+    });
   }
 
-  // Add images if present in the last user message
-  const lastMessage = history[history.length - 1];
-  const hasImages = lastMessage?.role === 'user' && Array.isArray(lastMessage.images) && lastMessage.images.length > 0;
-  
-  if (hasImages && lastMessage.images) {
-    for (const imageBase64 of lastMessage.images) {
-      try {
-        const imageData = base64ToUint8Array(imageBase64);
-        parts.push({
-          inlineData: {
-            data: Buffer.from(imageData).toString('base64'),
-            mimeType: 'image/jpeg'
-          }
-        });
-      } catch (error) {
-        console.error('Error processing image:', error);
-      }
-    }
+  // Add PDFs if present
+  if (lastMessage.pdfs && lastMessage.pdfs.length > 0) {
+    lastMessage.pdfs.forEach(pdf => {
+      parts.push({
+        inlineData: {
+          mimeType: 'application/pdf',
+          data: pdf.data.split(',')[1] // Remove the data URL prefix
+        }
+      });
+    });
   }
 
   try {
-    // For messages with images, use direct generation
-    if (parts.length > 1) {
-      const result = await model.generateContentStream(parts);
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        onToken(chunkText);
-      }
-    } else {
-      // For text-only messages, use chat history
-      const chatModel = geminiApi.getGenerativeModel({ model: "gemini-2.0-flash" });
-      const chat = chatModel.startChat({
-        history: history.slice(0, -1).map(msg => ({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: msg.content,
-        })),
-      });
-
-      const result = await chat.sendMessageStream(prompt);
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        onToken(chunkText);
-      }
+    const result = await chat.sendMessageStream(parts);
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text();
+      onToken(chunkText);
     }
   } catch (error) {
-    console.error('Error in streamGenerateContent:', error);
+    console.error('Error in Gemini stream:', error);
     throw error;
   }
 };
