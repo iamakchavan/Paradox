@@ -22,6 +22,7 @@ import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { useTheme } from 'next-themes';
 import { Typewriter } from '@/components/typewriter';
 import { initDeveloperMode, streamDeveloperContent } from '@/lib/developer-mode';
+import Link from 'next/link';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -292,7 +293,7 @@ export default function ChatPage() {
                 width={28} 
                 height={28}
               />
-              <h1 className="text-xl font-semibold">Paradox</h1>
+              <h1 className="text-xl font-semibold hidden sm:inline">Paradox</h1>
             </div>
             <Button
               onClick={handleNewChat}
@@ -301,11 +302,34 @@ export default function ChatPage() {
               className="gap-2"
             >
               <PlusCircle className="w-4 h-4" />
-              New Chat
+              <span className="hidden sm:inline">New Chat</span>
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link href="/agent">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="group relative overflow-hidden h-9"
+                    >
+                      <div className="relative z-10 flex items-center gap-2 px-2 sm:px-3 py-1">
+                        <span className="text-sm font-medium bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent whitespace-nowrap">
+                          <span className="hidden sm:inline">Paradox </span>Live
+                        </span>
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300" />
+                    </Button>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Open Voice Assistant</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Button
               variant="ghost"
               size="icon"
