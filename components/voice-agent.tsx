@@ -3,8 +3,9 @@
 import { useConversation } from '@11labs/react';
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from './ui/button';
-import { Mic, MicOff, Volume2, AlertCircle } from 'lucide-react';
+import { Mic, MicOff, Volume2, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function VoiceAgent() {
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -47,10 +48,8 @@ export function VoiceAgent() {
 
     try {
       setError(null);
-      // Request microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true });
       
-      // Start the conversation with your agent
       await conversation.startSession({
         agentId: agentId,
         enableDebugLogs: true,
@@ -82,72 +81,152 @@ export function VoiceAgent() {
 
   if (!apiKey || !agentId) {
     return (
-      <div className="flex flex-col items-center gap-4 p-8 text-center">
-        <p className="text-muted-foreground">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center gap-4 p-8 text-center"
+      >
+        <div className="w-16 h-16 rounded-full bg-primary/5 flex items-center justify-center mb-2">
+          <AlertCircle className="w-8 h-8 text-primary/50" />
+        </div>
+        <p className="text-muted-foreground max-w-[300px]">
           {!apiKey 
             ? "Please set your ElevenLabs API key in settings to use the voice agent."
             : "Please set your Voice Agent ID in settings to use the voice agent."
           }
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="flex flex-col items-center gap-4 p-8">
-        <div className={cn(
-          "w-32 h-32 rounded-full flex items-center justify-center transition-all duration-500",
-          conversation.status === 'connected' ? "bg-primary/10" : "bg-secondary",
-          error ? "bg-destructive/10" : ""
-        )}>
-          {error ? (
-            <AlertCircle className="w-12 h-12 text-destructive animate-pulse" />
-          ) : conversation.status === 'connected' ? (
-            conversation.isSpeaking ? (
-              <Volume2 className="w-12 h-12 text-primary animate-pulse" />
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4 }}
+      className="flex flex-col items-center gap-8 w-full max-w-md mx-auto"
+    >
+      <div className="flex flex-col items-center gap-6 w-full">
+        <motion.div 
+          className={cn(
+            "relative w-32 h-32 sm:w-40 sm:h-40 rounded-full flex items-center justify-center",
+            "bg-gradient-to-b from-primary/5 to-primary/10",
+            "before:absolute before:inset-0 before:rounded-full before:bg-primary/5",
+            conversation.status === 'connected' && conversation.isSpeaking ? "before:animate-wave" : "before:animate-pulse before:duration-2000"
+          )}
+        >
+          <div className={cn(
+            "absolute inset-2 rounded-full",
+            "bg-background/80 backdrop-blur-sm",
+            "flex items-center justify-center",
+            "border border-primary/10",
+            conversation.status === 'connected' && !conversation.isSpeaking && "animate-glow",
+            conversation.status === 'connected' && conversation.isSpeaking && "animate-speaking"
+          )}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={conversation.status + (error ? '-error' : '') + (conversation.isSpeaking ? '-speaking' : '')}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="relative"
+              >
+                {error ? (
+                  <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-destructive" />
+                ) : conversation.status === 'connected' ? (
+                  conversation.isSpeaking ? (
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 0.4, repeat: Infinity }}
+                    >
+                      <Volume2 className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
+                    </motion.div>
+                  ) : (
+                    <Mic className="w-10 h-10 sm:w-12 sm:h-12 text-primary animate-pulse" />
+                  )
+                ) : (
+                  <MicOff className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground" />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </motion.div>
+
+        <div className="text-center space-y-2 w-full">
+          <motion.p 
+            className="text-sm font-medium capitalize bg-primary/5 text-primary rounded-full px-4 py-1.5 inline-block"
+            animate={{
+              scale: conversation.status === 'connected' ? [1, 1.05, 1] : 1
+            }}
+            transition={{ duration: 0.3 }}
+          >
+            Status: {conversation.status}
+          </motion.p>
+          <AnimatePresence mode="wait">
+            {error ? (
+              <motion.p 
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="text-sm text-destructive max-w-[300px] mx-auto"
+              >
+                {error}
+              </motion.p>
             ) : (
-              <Mic className="w-12 h-12 text-primary animate-pulse" />
-            )
-          ) : (
-            <MicOff className="w-12 h-12 text-muted-foreground" />
-          )}
-        </div>
-        <div className="text-center space-y-2">
-          <p className="text-sm font-medium capitalize">Status: {conversation.status}</p>
-          {error ? (
-            <p className="text-sm text-destructive max-w-[300px]">{error}</p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {conversation.status === 'connected' 
-                ? `Agent is ${conversation.isSpeaking ? 'speaking' : 'listening'}`
-                : 'Click start to begin conversation'
-              }
-            </p>
-          )}
+              <motion.p 
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="text-sm text-muted-foreground"
+              >
+                {conversation.status === 'connected' 
+                  ? `Agent is ${conversation.isSpeaking ? 'speaking' : 'listening'}`
+                  : 'Click start to begin conversation'
+                }
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 w-full max-w-xs mx-auto">
         <Button
           onClick={startConversation}
           disabled={conversation.status === 'connected'}
           variant={conversation.status === 'connected' ? "secondary" : "default"}
           size="lg"
-          className="w-32"
+          className={cn(
+            "flex-1 h-12 relative overflow-hidden transition-all duration-300",
+            conversation.status === 'connected' && "opacity-50"
+          )}
         >
-          Start
+          <motion.div
+            animate={{
+              scale: conversation.status === 'connecting' ? [1, 1.05, 1] : 1
+            }}
+            transition={{ repeat: Infinity, duration: 1 }}
+          >
+            {conversation.status === 'connecting' ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              "Start"
+            )}
+          </motion.div>
         </Button>
         <Button
           onClick={stopConversation}
           disabled={conversation.status !== 'connected'}
           variant="destructive"
           size="lg"
-          className="w-32"
+          className={cn(
+            "flex-1 h-12 relative overflow-hidden transition-all duration-300",
+            conversation.status !== 'connected' && "opacity-50"
+          )}
         >
           Stop
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 } 
