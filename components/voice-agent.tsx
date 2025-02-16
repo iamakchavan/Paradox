@@ -137,10 +137,18 @@ export function VoiceAgent() {
                 ) : conversation.status === 'connected' ? (
                   conversation.isSpeaking ? (
                     <motion.div
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 0.4, repeat: Infinity }}
+                      className="relative"
+                      animate={{ opacity: [0.7, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                     >
                       <Volume2 className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
+                      <motion.div
+                        className="absolute inset-0 text-primary"
+                        animate={{ opacity: [0.3, 0.7] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                      >
+                        <Volume2 className="w-10 h-10 sm:w-12 sm:h-12" />
+                      </motion.div>
                     </motion.div>
                   ) : (
                     <Mic className="w-10 h-10 sm:w-12 sm:h-12 text-primary animate-pulse" />
