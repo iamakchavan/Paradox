@@ -231,17 +231,6 @@ For production deployment:
 - Check if all dependencies are properly installed
 - Make sure you're using Node.js 18.x or later
 
-## Performance Monitoring
-
-Paradox includes built-in performance monitoring using Vercel Speed Insights:
-
-1. Automatic performance tracking
-2. Real-time metrics collection
-3. User interaction monitoring
-4. Performance optimization suggestions
-
-Access your performance data through the Vercel dashboard under the Speed Insights tab.
-
 ## Voice Agent Setup
 
 To use the voice agent feature:
