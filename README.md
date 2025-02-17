@@ -14,41 +14,82 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
 
 ## Features
 
-### Multiple AI Models
+### Multiple AI Models & Voice Integration
 - **Gemini Pro** - For general chat and image analysis
 - **Perplexity** - For web search and reasoning capabilities
 - **Developer Mode** - Specialized coding assistant with enhanced technical capabilities
+- **ElevenLabs Voice Agent** - Interactive voice conversations with AI
+  - Real-time voice input and response
+  - Custom voice selection
+  - Smooth animations and visual feedback
 
 ### User Interface
-- **Modern Design** - Clean, minimalist interface with dark/light theme support
-- **Responsive Layout** - Optimized for both desktop and mobile devices
+- **Modern Design**
+  - Clean, minimalist interface with dark/light theme support
+  - Responsive layout optimized for desktop and mobile
+  - Smooth animations and transitions
+  - Visual feedback for AI interactions
+  - Customizable theme preferences (Light/Dark/System)
 
 ### Core Capabilities
 - **Image Support** 
   - Upload and analyze multiple images
   - Inline preview with drag-and-drop support
   - Image analysis with Gemini Pro Vision
-- **Web Search** 
+  - Support for multiple image formats
+  - Real-time image processing
+
+- **Document Analysis**
+  - PDF document support
+  - Multiple file upload capability
+  - Document preview and management
+  - Integrated file handling
+
+- **Web Search & Reasoning** 
   - Real-time internet search capabilities
   - Clean presentation of search results
   - Integration with Perplexity API
-- **Advanced Reasoning** 
-  - Enhanced reasoning mode using DeepSeek R1
+  - Advanced reasoning mode with DeepSeek R1
   - Step-by-step thinking process visualization
-  - Detailed explanation of reasoning steps
+
+- **Voice Interaction**
+  - Real-time voice conversations
+  - Custom voice agent support
+  - Visual feedback during conversations
+  - Smooth transition animations
+  - Connection status indicators
+
 - **Developer Mode** 
   - Specialized mode for coding and technical tasks
   - Syntax-highlighted code blocks
   - Best practices and code quality focus
   - Technical documentation integration
+  - Enhanced reasoning for coding tasks
+
+- **Performance Monitoring**
+  - Integrated Speed Insights
+  - Performance metrics tracking
+  - Real-time analytics
+  - User interaction monitoring
+
+### Advanced Features
 - **Streaming Responses** 
   - Real-time response streaming
   - Visible thinking process
   - Smooth animations and transitions
+  - Progressive content loading
+
 - **Rich Text Support**
   - Beautiful syntax highlighting for code blocks
   - Full markdown support with remark-gfm
   - Custom styling for different content types
+  - Responsive typography
+
+- **Accessibility**
+  - Keyboard navigation support
+  - Screen reader compatibility
+  - Responsive design
+  - High contrast modes
 
 ## Getting Started
 
@@ -58,6 +99,7 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
 - API Keys:
   - Google Gemini API key
   - Perplexity Sonar API key
+  - ElevenLabs API key (for voice features)
 
 ### Installation
 
@@ -72,21 +114,31 @@ cd paradox
 npm install
 ```
 
-3. Run the development server:
+3. Create a `.env.local` file with your API keys:
+```env
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+NEXT_PUBLIC_PERPLEXITY_API_KEY=your_perplexity_api_key
+NEXT_PUBLIC_ELEVENLABS_API_KEY=your_elevenlabs_api_key
+```
+
+4. Run the development server:
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ### Configuration
 
 1. Click the settings icon in the top right corner
-2. Enter your API keys:
+2. Configure your API keys:
    - Google Gemini API key
    - Perplexity Sonar API key
-3. Save settings to start using the chat interface
-
+   - ElevenLabs API key
+3. Optional: Set up voice agent:
+   - Create a voice on ElevenLabs Voice Lab
+   - Add your Voice Agent ID in settings
+4. Choose your preferred theme (Light/Dark/System)
 
 ## Development
 
@@ -178,6 +230,27 @@ For production deployment:
 - Verify your API keys are valid
 - Check if all dependencies are properly installed
 - Make sure you're using Node.js 18.x or later
+
+## Performance Monitoring
+
+Paradox includes built-in performance monitoring using Vercel Speed Insights:
+
+1. Automatic performance tracking
+2. Real-time metrics collection
+3. User interaction monitoring
+4. Performance optimization suggestions
+
+Access your performance data through the Vercel dashboard under the Speed Insights tab.
+
+## Voice Agent Setup
+
+To use the voice agent feature:
+
+1. Create an account on [ElevenLabs](https://elevenlabs.io)
+2. Navigate to Voice Lab and create a custom voice
+3. Copy your API key and Voice Agent ID
+4. Add them in the Paradox settings dialog
+5. Use the voice agent through the "Paradox Live" interface
 
 ## Contributing
 
