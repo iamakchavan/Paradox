@@ -368,7 +368,7 @@ export default function ChatPage() {
           ) : isInitialView ? (
             <div className="flex flex-col items-center gap-10 sm:gap-14 px-4 sm:px-0">
               <div className="text-center">
-                <p className="text-3xl sm:text-4xl font-medium tracking-wide text-shine relative" style={{ fontFamily: 'Instrument Serif' }}>
+                <p className="text-3xl sm:text-4xl font-medium tracking-wide text-foreground" style={{ fontFamily: 'Instrument Serif' }}>
                   What do you want to search?
                 </p>
               </div>
@@ -624,7 +624,11 @@ export default function ChatPage() {
                               "w-4 h-4 transition-transform",
                               expandedThinking.includes(index) ? "rotate-180" : ""
                             )} />
-                            Show thinking
+                            {index === conversation.length - 1 && isLoading && !processThinkingContent(msg.content).mainContent ? (
+                              <span className="thinking-shine">Thinking...</span>
+                            ) : (
+                              "Show thinking"
+                            )}
                           </button>
                           {expandedThinking.includes(index) && (
                             <div className={cn(
