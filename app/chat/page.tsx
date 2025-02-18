@@ -434,121 +434,123 @@ export default function ChatPage() {
                         }
                       }}
                       placeholder="Type your message..."
-                      className="w-full min-h-[100px] sm:min-h-[110px] max-h-[200px] p-6 sm:p-7 pr-24 sm:pr-32 placeholder:text-muted-foreground focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-lg sm:text-xl"
+                      className="w-full min-h-[100px] sm:min-h-[110px] max-h-[200px] p-6 sm:p-7 placeholder:text-muted-foreground focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-lg sm:text-xl"
                       disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
                     />
-                    <div className="absolute right-2 bottom-2 flex items-center gap-1 sm:gap-2">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        accept="image/*,.pdf"
-                        multiple
-                        className="hidden"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 sm:h-9 sm:w-9"
-                        disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || useWebSearch || useReasoning || useDeveloperMode}
-                        title="Attach images and PDFs"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Paperclip className="w-4 h-4" />
-                      </Button>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant={useDeveloperMode ? "default" : "ghost"}
-                              size="icon"
-                              className={cn(
-                                "transition-all duration-200 overflow-hidden h-8 w-8 sm:h-9 sm:w-9",
-                                useDeveloperMode && "w-[120px] sm:w-[140px]",
-                                !useDeveloperMode && "w-8 sm:w-9"
-                              )}
-                              disabled={!geminiApiKey || isLoading || useWebSearch || useReasoning}
-                              onClick={() => {
-                                if (!useDeveloperMode) {
-                                  setPreviousTheme(theme || 'light');
-                                  setTheme('dark');
-                                  setShowDeveloperModeMessage(true);
-                                } else {
-                                  setTheme(previousTheme);
-                                }
-                                setUseDeveloperMode(!useDeveloperMode);
-                                if (useWebSearch) setUseWebSearch(false);
-                                if (useReasoning) setUseReasoning(false);
-                              }}
-                            >
-                              <div className="flex items-center">
-                                <Code2 className="w-4 h-4 shrink-0" />
-                                {useDeveloperMode && <span className="ml-2 whitespace-nowrap">DEVELOPER</span>}
-                              </div>
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Switch to developer mode</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant={useReasoning ? "default" : "ghost"}
-                              size="icon"
-                              disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode}
-                              className={cn(
-                                "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
-                                useReasoning && "w-[90px] sm:w-[110px]",
-                                !useReasoning && "w-8 sm:w-9"
-                              )}
-                              onClick={() => {
-                                setUseReasoning(!useReasoning);
-                                if (useWebSearch) setUseWebSearch(false);
-                              }}
-                            >
-                              <Lightbulb className="w-4 h-4" />
-                              {useReasoning && <span className="ml-2 text-sm sm:text-base">REASON</span>}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Reason with DeepSeek R1 (US Hosted)</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant={useWebSearch ? "default" : "ghost"}
-                              size="icon"
-                              disabled={!perplexityApiKey || isLoading || useReasoning || useDeveloperMode}
-                              className={cn(
-                                "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
-                                useWebSearch && "w-[80px] sm:w-[90px]",
-                                !useWebSearch && "w-8 sm:w-9"
-                              )}
-                              onClick={() => {
-                                setUseWebSearch(!useWebSearch);
-                                if (useReasoning) setUseReasoning(false);
-                              }}
-                            >
-                              <Globe2 className="w-4 h-4" />
-                              {useWebSearch && <span className="ml-2 text-sm sm:text-base">WEB</span>}
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Search the web</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                    <div className="flex items-center gap-1 sm:gap-2 bg-background/80 backdrop-blur-sm px-2 py-1.5 border-t">
+                      <div className="flex-1 flex items-center gap-1 sm:gap-2">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileUpload}
+                          accept="image/*,.pdf"
+                          multiple
+                          className="hidden"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 sm:h-9 sm:w-9"
+                          disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || useWebSearch || useReasoning || useDeveloperMode}
+                          title="Attach images and PDFs"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Paperclip className="w-4 h-4" />
+                        </Button>
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant={useDeveloperMode ? "default" : "ghost"}
+                                size="icon"
+                                className={cn(
+                                  "transition-all duration-200 overflow-hidden h-8 w-8 sm:h-9 sm:w-9",
+                                  useDeveloperMode && "w-[120px] sm:w-[140px]",
+                                  !useDeveloperMode && "w-8 sm:w-9"
+                                )}
+                                disabled={!geminiApiKey || isLoading || useWebSearch || useReasoning}
+                                onClick={() => {
+                                  if (!useDeveloperMode) {
+                                    setPreviousTheme(theme || 'light');
+                                    setTheme('dark');
+                                    setShowDeveloperModeMessage(true);
+                                  } else {
+                                    setTheme(previousTheme);
+                                  }
+                                  setUseDeveloperMode(!useDeveloperMode);
+                                  if (useWebSearch) setUseWebSearch(false);
+                                  if (useReasoning) setUseReasoning(false);
+                                }}
+                              >
+                                <div className="flex items-center">
+                                  <Code2 className="w-4 h-4 shrink-0" />
+                                  {useDeveloperMode && <span className="ml-2 whitespace-nowrap">DEVELOPER</span>}
+                                </div>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
+                              <p>Switch to developer mode</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant={useReasoning ? "default" : "ghost"}
+                                size="icon"
+                                disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode}
+                                className={cn(
+                                  "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
+                                  useReasoning && "w-[90px] sm:w-[110px]",
+                                  !useReasoning && "w-8 sm:w-9"
+                                )}
+                                onClick={() => {
+                                  setUseReasoning(!useReasoning);
+                                  if (useWebSearch) setUseWebSearch(false);
+                                }}
+                              >
+                                <Lightbulb className="w-4 h-4" />
+                                {useReasoning && <span className="ml-2 text-sm sm:text-base">REASON</span>}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
+                              <p>Reason with DeepSeek R1 (US Hosted)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant={useWebSearch ? "default" : "ghost"}
+                                size="icon"
+                                disabled={!perplexityApiKey || isLoading || useReasoning || useDeveloperMode}
+                                className={cn(
+                                  "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
+                                  useWebSearch && "w-[80px] sm:w-[90px]",
+                                  !useWebSearch && "w-8 sm:w-9"
+                                )}
+                                onClick={() => {
+                                  setUseWebSearch(!useWebSearch);
+                                  if (useReasoning) setUseReasoning(false);
+                                }}
+                              >
+                                <Globe2 className="w-4 h-4" />
+                                {useWebSearch && <span className="ml-2 text-sm sm:text-base">WEB</span>}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
+                              <p>Search the web</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                       <Button
                         onClick={handleSubmit}
                         disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || (!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0)}
                         size="icon"
-                        className="bg-primary"
+                        className="bg-primary h-8 w-8 sm:h-9 sm:w-9"
                         title="Send message"
                       >
                         {isLoading ? (
@@ -645,52 +647,82 @@ export default function ChatPage() {
                           )}
                         </div>
                       )}
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkGfm]}
-                        className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent"
-                        components={{
-                          p: ({ children }) => (
-                            <p className="mb-4 last:mb-0">
-                              {children}
-                            </p>
-                          ),
-                          code: ({ className, children, ...props }) => {
-                            const match = /language-(\w+)/.exec(className || '');
-                            const language = match ? match[1] : '';
-                            const isInline = !match;
-                            
-                            if (!isInline && language) {
-                              return (
-                                <div className="rounded-lg overflow-hidden my-4 bg-[#282c34] -mx-4 sm:mx-0">
-                                  <div className="px-4 py-2 bg-[#21252b] border-b border-[#1e2227]">
-                                    <span className="text-xs text-muted-foreground font-mono">{language}</span>
+                      <div className="relative group">
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent"
+                          components={{
+                            p: ({ children }) => (
+                              <p className="mb-4 last:mb-0">
+                                {children}
+                              </p>
+                            ),
+                            code: ({ className, children, ...props }) => {
+                              const match = /language-(\w+)/.exec(className || '');
+                              const language = match ? match[1] : '';
+                              const isInline = !match;
+                              
+                              if (!isInline && language) {
+                                return (
+                                  <div className="rounded-lg overflow-hidden my-4 bg-[#282c34] -mx-4 sm:mx-0">
+                                    <div className="px-4 py-2 bg-[#21252b] border-b border-[#1e2227]">
+                                      <span className="text-xs text-muted-foreground font-mono">{language}</span>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                      <SyntaxHighlighter
+                                        style={oneDark}
+                                        language={language}
+                                        PreTag="div"
+                                        customStyle={{
+                                          margin: 0,
+                                          background: 'transparent',
+                                          padding: '1rem',
+                                          minWidth: '100%',
+                                        }}
+                                        wrapLongLines={false}
+                                        showLineNumbers={true}
+                                      >
+                                        {String(children).replace(/\n$/, '')}
+                                      </SyntaxHighlighter>
+                                    </div>
                                   </div>
-                                  <div className="overflow-x-auto">
-                                    <SyntaxHighlighter
-                                      style={oneDark}
-                                      language={language}
-                                      PreTag="div"
-                                      customStyle={{
-                                        margin: 0,
-                                        background: 'transparent',
-                                        padding: '1rem',
-                                        minWidth: '100%',
-                                      }}
-                                      wrapLongLines={false}
-                                      showLineNumbers={true}
-                                    >
-                                      {String(children).replace(/\n$/, '')}
-                                    </SyntaxHighlighter>
-                                  </div>
-                                </div>
-                              );
-                            }
-                            return <code className={cn("bg-[#282c34] rounded px-1.5 py-0.5 font-mono text-sm", className)} {...props}>{children}</code>;
-                          },
-                        }}
-                      >
-                        {processThinkingContent(msg.content).mainContent}
-                      </ReactMarkdown>
+                                );
+                              }
+                              return <code className={cn("bg-[#282c34] rounded px-1.5 py-0.5 font-mono text-sm", className)} {...props}>{children}</code>;
+                            },
+                          }}
+                        >
+                          {processThinkingContent(msg.content).mainContent}
+                        </ReactMarkdown>
+                        <button
+                          onClick={() => {
+                            const content = processThinkingContent(msg.content).mainContent;
+                            navigator.clipboard.writeText(content).then(() => {
+                              const button = document.getElementById(`copy-button-${index}`);
+                              if (button) {
+                                button.classList.add('copied');
+                                setTimeout(() => {
+                                  button.classList.remove('copied');
+                                }, 2000);
+                              }
+                            });
+                          }}
+                          id={`copy-button-${index}`}
+                          className="mt-2 flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-all copy-button"
+                          title="Copy to clipboard"
+                        >
+                          <div className="p-1.5 hover:bg-secondary rounded-md transition-colors relative">
+                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-muted-foreground copy-icon">
+                              <path d="M1 9.50006C1 10.3285 1.67157 11.0001 2.5 11.0001H4L4 10.0001H2.5C2.22386 10.0001 2 9.7762 2 9.50006L2 2.50006C2 2.22392 2.22386 2.00006 2.5 2.00006L9.5 2.00006C9.77614 2.00006 10 2.22392 10 2.50006V4.00002H5.5C4.67158 4.00002 4 4.67159 4 5.50002V12.5C4 13.3284 4.67158 14 5.5 14H12.5C13.3284 14 14 13.3284 14 12.5V5.50002C14 4.67159 13.3284 4.00002 12.5 4.00002H11V2.50006C11 1.67163 10.3284 1.00006 9.5 1.00006H2.5C1.67157 1.00006 1 1.67163 1 2.50006V9.50006ZM5 5.50002C5 5.22388 5.22386 5.00002 5.5 5.00002H12.5C12.7761 5.00002 13 5.22388 13 5.50002V12.5C13 12.7762 12.7761 13 12.5 13H5.5C5.22386 13 5 12.7762 5 12.5V5.50002Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                            </svg>
+                            <svg className="w-[15px] h-[15px] absolute inset-0 m-auto text-green-500 check-icon opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                          </div>
+                          <span className="copy-text">Copy</span>
+                          <span className="check-text opacity-0 absolute">Copied!</span>
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -770,116 +802,118 @@ export default function ChatPage() {
                     }
                   }}
                   placeholder="Type your message..."
-                  className="w-full min-h-[45px] sm:min-h-[50px] max-h-[200px] p-2 sm:p-3 pr-20 sm:pr-24 placeholder:text-muted-foreground focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-sm sm:text-base"
+                  className="w-full min-h-[45px] sm:min-h-[50px] max-h-[200px] p-2 sm:p-3 placeholder:text-muted-foreground focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-sm sm:text-base"
                   disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
                 />
-                <div className="absolute right-1 sm:right-2 bottom-1 sm:bottom-2 flex items-center gap-1 sm:gap-2">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    accept="image/*,.pdf"
-                    multiple
-                    className="hidden"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 sm:h-9 sm:w-9"
-                    disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || useWebSearch || useReasoning || useDeveloperMode}
-                    title="Attach images and PDFs"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Paperclip className="w-4 h-4" />
-                  </Button>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={useDeveloperMode ? "default" : "ghost"}
-                          size="icon"
-                          className={cn(
-                            "transition-all duration-200 overflow-hidden h-8 w-8 sm:h-9 sm:w-9",
-                            useDeveloperMode && "w-[120px] sm:w-[140px]",
-                            !useDeveloperMode && "w-8 sm:w-9"
-                          )}
-                          disabled={!geminiApiKey || isLoading || useWebSearch || useReasoning}
-                          onClick={() => {
-                            if (!useDeveloperMode) {
-                              setPreviousTheme(theme || 'light');
-                              setTheme('dark');
-                              setShowDeveloperModeMessage(true);
-                            } else {
-                              setTheme(previousTheme);
-                            }
-                            setUseDeveloperMode(!useDeveloperMode);
-                            if (useWebSearch) setUseWebSearch(false);
-                            if (useReasoning) setUseReasoning(false);
-                          }}
-                        >
-                          <div className="flex items-center">
-                            <Code2 className="w-4 h-4 shrink-0" />
-                            {useDeveloperMode && <span className="ml-2 whitespace-nowrap">DEVELOPER</span>}
-                          </div>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Switch to developer mode</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={useReasoning ? "default" : "ghost"}
-                          size="icon"
-                          disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode}
-                          className={cn(
-                            "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
-                            useReasoning && "w-[90px] sm:w-[110px]",
-                            !useReasoning && "w-8 sm:w-9"
-                          )}
-                          onClick={() => {
-                            setUseReasoning(!useReasoning);
-                            if (useWebSearch) setUseWebSearch(false);
-                          }}
-                        >
-                          <Lightbulb className="w-4 h-4" />
-                          {useReasoning && <span className="ml-2 text-sm sm:text-base">REASON</span>}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Reason with DeepSeek R1 (US Hosted)</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant={useWebSearch ? "default" : "ghost"}
-                          size="icon"
-                          disabled={!perplexityApiKey || isLoading || useReasoning || useDeveloperMode}
-                          className={cn(
-                            "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
-                            useWebSearch && "w-[80px] sm:w-[90px]",
-                            !useWebSearch && "w-8 sm:w-9"
-                          )}
-                          onClick={() => {
-                            setUseWebSearch(!useWebSearch);
-                            if (useReasoning) setUseReasoning(false);
-                          }}
-                        >
-                          <Globe2 className="w-4 h-4" />
-                          {useWebSearch && <span className="ml-2 text-sm sm:text-base">WEB</span>}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Search the web</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                <div className="flex items-center gap-1 sm:gap-2 bg-background/80 backdrop-blur-sm px-2 py-1.5 border-t">
+                  <div className="flex-1 flex items-center gap-1 sm:gap-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      accept="image/*,.pdf"
+                      multiple
+                      className="hidden"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 sm:h-9 sm:w-9"
+                      disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || useWebSearch || useReasoning || useDeveloperMode}
+                      title="Attach images and PDFs"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Paperclip className="w-4 h-4" />
+                    </Button>
+                    <TooltipProvider delayDuration={300}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={useDeveloperMode ? "default" : "ghost"}
+                            size="icon"
+                            className={cn(
+                              "transition-all duration-200 overflow-hidden h-8 w-8 sm:h-9 sm:w-9",
+                              useDeveloperMode && "w-[120px] sm:w-[140px]",
+                              !useDeveloperMode && "w-8 sm:w-9"
+                            )}
+                            disabled={!geminiApiKey || isLoading || useWebSearch || useReasoning}
+                            onClick={() => {
+                              if (!useDeveloperMode) {
+                                setPreviousTheme(theme || 'light');
+                                setTheme('dark');
+                                setShowDeveloperModeMessage(true);
+                              } else {
+                                setTheme(previousTheme);
+                              }
+                              setUseDeveloperMode(!useDeveloperMode);
+                              if (useWebSearch) setUseWebSearch(false);
+                              if (useReasoning) setUseReasoning(false);
+                            }}
+                          >
+                            <div className="flex items-center">
+                              <Code2 className="w-4 h-4 shrink-0" />
+                              {useDeveloperMode && <span className="ml-2 whitespace-nowrap">DEVELOPER</span>}
+                            </div>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
+                          <p>Switch to developer mode</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider delayDuration={300}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={useReasoning ? "default" : "ghost"}
+                            size="icon"
+                            disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode}
+                            className={cn(
+                              "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
+                              useReasoning && "w-[90px] sm:w-[110px]",
+                              !useReasoning && "w-8 sm:w-9"
+                            )}
+                            onClick={() => {
+                              setUseReasoning(!useReasoning);
+                              if (useWebSearch) setUseWebSearch(false);
+                            }}
+                          >
+                            <Lightbulb className="w-4 h-4" />
+                            {useReasoning && <span className="ml-2 text-sm sm:text-base">REASON</span>}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
+                          <p>Reason with DeepSeek R1 (US Hosted)</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider delayDuration={300}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant={useWebSearch ? "default" : "ghost"}
+                            size="icon"
+                            disabled={!perplexityApiKey || isLoading || useReasoning || useDeveloperMode}
+                            className={cn(
+                              "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
+                              useWebSearch && "w-[80px] sm:w-[90px]",
+                              !useWebSearch && "w-8 sm:w-9"
+                            )}
+                            onClick={() => {
+                              setUseWebSearch(!useWebSearch);
+                              if (useReasoning) setUseReasoning(false);
+                            }}
+                          >
+                            <Globe2 className="w-4 h-4" />
+                            {useWebSearch && <span className="ml-2 text-sm sm:text-base">WEB</span>}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
+                          <p>Search the web</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <Button
                     onClick={handleSubmit}
                     disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || (!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0)}

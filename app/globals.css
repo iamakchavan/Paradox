@@ -4,11 +4,11 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 60 30% 96%;
     --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
+    --card: 60 30% 96%;
     --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
+    --popover: 60 30% 96%;
     --popover-foreground: 240 10% 3.9%;
     --primary: 240 5.9% 10%;
     --primary-foreground: 0 0% 98%;
@@ -308,4 +308,37 @@
   animation: thinking-shimmer 4s linear infinite;
   font-style: italic;
   letter-spacing: 0.025em;
+}
+
+/* Copy button animations */
+.copy-button.copied .copy-icon {
+  opacity: 0;
+}
+
+.copy-button.copied .check-icon {
+  opacity: 1;
+}
+
+.copy-button.copied .copy-text {
+  opacity: 0;
+}
+
+.copy-button.copied .check-text {
+  opacity: 1;
+}
+
+.copy-button .check-icon,
+.copy-button .copy-icon,
+.copy-button .copy-text,
+.copy-button .check-text {
+  transition: all 0.2s ease;
+}
+
+.check-text {
+  transform: translateX(-100%);
+  margin-left: 1.5rem;
+}
+
+.copy-button.copied .check-text {
+  transform: translateX(0);
 }
