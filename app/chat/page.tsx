@@ -368,7 +368,7 @@ export default function ChatPage() {
           ) : isInitialView ? (
             <div className="flex flex-col items-center gap-10 sm:gap-14 px-4 sm:px-0">
               <div className="text-center">
-                <p className="text-3xl sm:text-4xl text-foreground/75 font-medium tracking-wide" style={{ fontFamily: 'Instrument Serif' }}>
+                <p className="text-3xl sm:text-4xl font-medium tracking-wide text-shine relative" style={{ fontFamily: 'Instrument Serif' }}>
                   What do you want to search?
                 </p>
               </div>
