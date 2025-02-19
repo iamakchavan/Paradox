@@ -368,7 +368,7 @@ export default function ChatPage() {
           ) : isInitialView ? (
             <div className="flex flex-col items-center gap-10 sm:gap-14 px-4 sm:px-0">
               <div className="text-center">
-                <p className="text-3xl sm:text-4xl font-medium tracking-wide text-foreground" style={{ fontFamily: 'Instrument Serif' }}>
+                <p className="text-3xl sm:text-4xl font-medium tracking-wide text-foreground" style={{ fontFamily: 'Kelly Slab' }}>
                   What do you want to search?
                 </p>
               </div>
@@ -578,7 +578,7 @@ export default function ChatPage() {
                 )}>
                   {msg.role === 'user' ? (
                     <div className="flex justify-end mb-6">
-                      <div className="bg-primary/10 rounded-2xl px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
+                      <div className="bg-primary/10 rounded-2xl rounded-br-none px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
                         {msg.images && msg.images.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-2">
                             {msg.images.map((img, imgIndex) => (

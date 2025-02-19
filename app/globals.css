@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 60 30% 96%;
-    --foreground: 240 10% 3.9%;
-    --card: 60 30% 96%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 60 30% 96%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --background: 45 35% 97%;
+    --foreground: 45 10% 3.9%;
+    --card: 45 35% 97%;
+    --card-foreground: 45 10% 3.9%;
+    --popover: 45 35% 97%;
+    --popover-foreground: 45 10% 3.9%;
+    --primary: 45 8% 10%;
+    --primary-foreground: 45 5% 98%;
+    --secondary: 45 6% 95.9%;
+    --secondary-foreground: 45 8% 10%;
+    --muted: 45 6% 95.9%;
+    --muted-foreground: 45 5% 46.1%;
+    --accent: 45 6% 95.9%;
+    --accent-foreground: 45 8% 10%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --destructive-foreground: 45 5% 98%;
+    --border: 45 8% 90%;
+    --input: 45 8% 90%;
+    --ring: 45 8% 10%;
     --radius: 0.5rem;
   }
  
@@ -111,15 +111,45 @@
 }
 
 .prose table {
-  @apply border-collapse w-full my-6;
+  @apply my-6 w-full;
+}
+
+/* Add a wrapper div around tables for horizontal scrolling */
+.prose table {
+  @apply min-w-full border-collapse;
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prose thead {
+  @apply bg-secondary/50;
 }
 
 .prose th {
-  @apply bg-secondary/50 border border-border px-4 py-2 text-left;
+  @apply bg-secondary/50 border border-border px-4 py-2 text-left whitespace-nowrap;
 }
 
 .prose td {
-  @apply border border-border px-4 py-2;
+  @apply border border-border px-4 py-2 min-w-[120px];
+}
+
+/* Ensure table cells don't break unnecessarily */
+.prose td, .prose th {
+  @apply whitespace-normal;
+}
+
+/* Add responsive padding for mobile */
+@media (max-width: 640px) {
+  .prose td, .prose th {
+    @apply px-2 py-1.5 text-sm;
+  }
+  
+  .prose table {
+    @apply -mx-4;  /* Negative margin to allow full-width scrolling on mobile */
+    width: calc(100% + 2rem);
+  }
 }
 
 .prose code:not(pre code) {

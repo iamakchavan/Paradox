@@ -46,6 +46,10 @@ export default function RootLayout({
         />
         <link
           rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Kelly+Slab&display=swap"
+        />
+        <link
+          rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Instrument+Serif:wght@400;500&display=swap"
         />
         <link
