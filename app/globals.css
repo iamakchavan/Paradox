@@ -110,45 +110,79 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
-.prose table {
-  @apply my-6 w-full;
+/* Table styles for Excel-like formatting */
+.table-container {
+  @apply relative my-6;
 }
 
-/* Add a wrapper div around tables for horizontal scrolling */
+.table-container .overflow-x-auto {
+  @apply border border-border rounded-lg;
+}
+
 .prose table {
-  @apply min-w-full border-collapse;
-  display: block;
-  overflow-x: auto;
-  max-width: 100%;
-  -webkit-overflow-scrolling: touch;
+  @apply m-0 border-collapse w-full;
+  border-spacing: 0;
 }
 
 .prose thead {
-  @apply bg-secondary/50;
+  @apply bg-secondary/50 sticky top-0;
+}
+
+.prose thead tr {
+  @apply border-b-2 border-border;
+}
+
+.prose tr {
+  @apply border-b border-border hover:bg-secondary/30 transition-colors;
 }
 
 .prose th {
-  @apply bg-secondary/50 border border-border px-4 py-2 text-left whitespace-nowrap;
+  @apply bg-secondary/50 px-4 py-2 text-left font-semibold border-r border-border last:border-r-0;
+  white-space: nowrap;
+  vertical-align: middle;
+  min-width: 120px;
 }
 
 .prose td {
-  @apply border border-border px-4 py-2 min-w-[120px];
+  @apply px-4 py-2 border-r border-border last:border-r-0;
+  vertical-align: middle;
+  min-width: 120px;
 }
 
-/* Ensure table cells don't break unnecessarily */
+/* Ensure proper cell content wrapping */
 .prose td, .prose th {
-  @apply whitespace-normal;
+  @apply break-words;
+  max-width: 300px; /* Prevent cells from becoming too wide */
 }
 
-/* Add responsive padding for mobile */
+/* Number cells right-aligned */
+.prose td:where([data-type="number"]) {
+  @apply text-right;
+}
+
+/* Add responsive styles */
 @media (max-width: 640px) {
-  .prose td, .prose th {
-    @apply px-2 py-1.5 text-sm;
+  .prose table {
+    @apply rounded-lg border border-border;
+    font-size: 0.875rem;
   }
   
+  .prose td, .prose th {
+    @apply px-3 py-2;
+    min-width: 100px;
+    max-width: 200px;
+  }
+
+  /* Allow horizontal scrolling on mobile */
   .prose table {
-    @apply -mx-4;  /* Negative margin to allow full-width scrolling on mobile */
+    @apply -mx-4;
     width: calc(100% + 2rem);
+  }
+  
+  /* Ensure header remains visible while scrolling */
+  .prose thead {
+    @apply sticky top-0 z-10;
+    background-color: hsl(var(--secondary));
   }
 }
 
@@ -371,4 +405,18 @@
 
 .copy-button.copied .check-text {
   transform: translateX(0);
+}
+
+.download-csv-button {
+  @apply inline-flex items-center gap-2 mt-3 px-3 py-1.5 text-xs font-medium rounded-md 
+    bg-secondary hover:bg-secondary/80 text-foreground transition-colors duration-200
+    border border-border shadow-sm;
+}
+
+.download-csv-button:hover {
+  @apply bg-secondary/80;
+}
+
+.download-csv-button svg {
+  @apply w-4 h-4 text-foreground/70;
 }

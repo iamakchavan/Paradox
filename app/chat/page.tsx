@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, ChevronDown, FileText } from 'lucide-react';
+import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, ChevronDown, FileText, Download } from 'lucide-react';
 import { SettingsDialog } from '@/components/settings-dialog';
 import { getGeminiApi, initGemini, streamGenerateContent } from '@/lib/gemini';
 import { getPerplexityApi, initPerplexity, streamPerplexityContent } from '@/lib/perplexity';
@@ -40,6 +40,78 @@ const processThinkingContent = (content: string) => {
   const mainContent = content.replace(thinkRegex, '').trim();
   
   return { thinking, mainContent };
+};
+
+const tableToCSV = (table: HTMLTableElement) => {
+  const rows = Array.from(table.querySelectorAll('tr'));
+  
+  const csv = rows.map(row => {
+    const cells = Array.from(row.querySelectorAll('th, td'));
+    return cells.map(cell => {
+      let text = cell.textContent || '';
+      // Escape quotes and wrap in quotes if contains comma
+      if (text.includes(',') || text.includes('"')) {
+        text = `"${text.replace(/"/g, '""')}"`;
+      }
+      return text;
+    }).join(',');
+  }).join('\n');
+  
+  return csv;
+};
+
+const TableWrapper = ({ children }: { children: React.ReactNode }) => {
+  const tableRef = useRef<HTMLTableElement>(null);
+  const [tableData, setTableData] = useState<string>('');
+  
+  useEffect(() => {
+    // This ensures we have access to the rendered table
+    if (tableRef.current) {
+      const table = tableRef.current;
+      // Convert table to CSV when table is mounted
+      const csv = tableToCSV(table);
+      setTableData(csv);
+      
+      // Handle number alignment
+      table.querySelectorAll('td').forEach(cell => {
+        if (/^\d+(\.\d+)?$/.test(cell.textContent || '')) {
+          cell.setAttribute('data-type', 'number');
+        }
+      });
+    }
+  }, []);
+
+  const handleDownload = () => {
+    if (tableData) {
+      const blob = new Blob([tableData], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'table_data.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  return (
+    <div className="table-container">
+      <div className="overflow-x-auto">
+        <table ref={tableRef}>{children}</table>
+      </div>
+      {tableData && (
+        <button
+          onClick={handleDownload}
+          className="download-csv-button"
+          title="Download as CSV"
+        >
+          <Download className="w-4 h-4" />
+          <span>Download CSV</span>
+        </button>
+      )}
+    </div>
+  );
 };
 
 export default function ChatPage() {
@@ -690,6 +762,7 @@ export default function ChatPage() {
                               }
                               return <code className={cn("bg-[#282c34] rounded px-1.5 py-0.5 font-mono text-sm", className)} {...props}>{children}</code>;
                             },
+                            table: ({ children }) => <TableWrapper>{children}</TableWrapper>,
                           }}
                         >
                           {processThinkingContent(msg.content).mainContent}
