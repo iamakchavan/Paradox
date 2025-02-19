@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, ChevronDown, FileText, Download } from 'lucide-react';
 import { SettingsDialog } from '@/components/settings-dialog';
 import { getGeminiApi, initGemini, streamGenerateContent } from '@/lib/gemini';
@@ -87,7 +87,7 @@ const TableWrapper = ({ children, isLoading, messageContent }: TableWrapperProps
     }
   }, []);
 
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     if (tableData) {
       const blob = new Blob([tableData], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -99,23 +99,30 @@ const TableWrapper = ({ children, isLoading, messageContent }: TableWrapperProps
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     }
-  };
+  }, [tableData]);
+
+  const DownloadButton = useMemo(() => {
+    if (!tableData || isLoading || !processThinkingContent(messageContent).mainContent) {
+      return null;
+    }
+    return (
+      <button
+        onClick={handleDownload}
+        className="download-csv-button"
+        title="Download as CSV"
+      >
+        <Download className="w-4 h-4" />
+        <span>Download CSV</span>
+      </button>
+    );
+  }, [tableData, isLoading, messageContent, handleDownload]);
 
   return (
     <div className="table-container">
       <div className="overflow-x-auto">
         <table ref={tableRef}>{children}</table>
       </div>
-      {tableData && !isLoading && processThinkingContent(messageContent).mainContent && (
-        <button
-          onClick={handleDownload}
-          className="download-csv-button"
-          title="Download as CSV"
-        >
-          <Download className="w-4 h-4" />
-          <span>Download CSV</span>
-        </button>
-      )}
+      {DownloadButton}
     </div>
   );
 };
@@ -649,18 +656,18 @@ export default function ChatPage() {
             </div>
           ) : (
             <div className="space-y-6 pb-32 sm:pb-40">
-              {conversation.map((msg, index) => {
-                const MessageTable = ({ children }: { children: React.ReactNode }) => (
+              {conversation.map((msg: Message, index: number) => {
+                const MessageTable: React.ComponentType<React.TableHTMLAttributes<HTMLTableElement>> = ({ children, ...props }) => (
                   <TableWrapper 
                     isLoading={isLoading}
                     messageContent={msg.content}
                   >
-                    {children}
+                    <table {...props}>{children}</table>
                   </TableWrapper>
                 );
 
                 return (
-                  <div key={index} className={cn(
+                  <div key={`message-${index}-${msg.role}`} className={cn(
                     "group",
                     index === conversation.length - 1 && msg.role === 'assistant' && "animate-fade-in"
                   )}>
