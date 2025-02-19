@@ -60,7 +60,13 @@ const tableToCSV = (table: HTMLTableElement) => {
   return csv;
 };
 
-const TableWrapper = ({ children }: { children: React.ReactNode }) => {
+interface TableWrapperProps {
+  children: React.ReactNode;
+  isLoading: boolean;
+  messageContent: string;
+}
+
+const TableWrapper = ({ children, isLoading, messageContent }: TableWrapperProps) => {
   const tableRef = useRef<HTMLTableElement>(null);
   const [tableData, setTableData] = useState<string>('');
   
@@ -100,7 +106,7 @@ const TableWrapper = ({ children }: { children: React.ReactNode }) => {
       <div className="overflow-x-auto">
         <table ref={tableRef}>{children}</table>
       </div>
-      {tableData && (
+      {tableData && !isLoading && processThinkingContent(messageContent).mainContent && (
         <button
           onClick={handleDownload}
           className="download-csv-button"
@@ -643,165 +649,174 @@ export default function ChatPage() {
             </div>
           ) : (
             <div className="space-y-6 pb-32 sm:pb-40">
-              {conversation.map((msg, index) => (
-                <div key={index} className={cn(
-                  "group",
-                  index === conversation.length - 1 && msg.role === 'assistant' && "animate-fade-in"
-                )}>
-                  {msg.role === 'user' ? (
-                    <div className="flex justify-end mb-6">
-                      <div className="bg-primary/10 rounded-2xl rounded-br-none px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
-                        {msg.images && msg.images.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {msg.images.map((img, imgIndex) => (
-                              <div key={imgIndex} className="relative w-20 h-20">
-                                <img
-                                  src={img}
-                                  alt={`Uploaded ${imgIndex + 1}`}
-                                  className="w-full h-full object-cover rounded-lg"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {msg.pdfs && msg.pdfs.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {msg.pdfs.map((pdf, pdfIndex) => (
-                              <div key={pdfIndex} className="flex items-center gap-2 bg-secondary/20 rounded-lg p-3 border border-border/50">
-                                <div className="w-8 h-8 flex items-center justify-center">
-                                  <FileText className="w-5 h-5 text-primary" />
+              {conversation.map((msg, index) => {
+                const MessageTable = ({ children }: { children: React.ReactNode }) => (
+                  <TableWrapper 
+                    isLoading={isLoading}
+                    messageContent={msg.content}
+                  >
+                    {children}
+                  </TableWrapper>
+                );
+
+                return (
+                  <div key={index} className={cn(
+                    "group",
+                    index === conversation.length - 1 && msg.role === 'assistant' && "animate-fade-in"
+                  )}>
+                    {msg.role === 'user' ? (
+                      <div className="flex justify-end mb-6">
+                        <div className="bg-primary/10 rounded-2xl rounded-br-none px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
+                          {msg.images && msg.images.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {msg.images.map((img, imgIndex) => (
+                                <div key={imgIndex} className="relative w-20 h-20">
+                                  <img
+                                    src={img}
+                                    alt={`Uploaded ${imgIndex + 1}`}
+                                    className="w-full h-full object-cover rounded-lg"
+                                  />
                                 </div>
-                                <div className="flex flex-col min-w-0">
-                                  <span className="text-sm font-medium truncate max-w-[150px]">{pdf.name}</span>
-                                  <span className="text-xs text-muted-foreground">PDF Document</span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {msg.content}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="pl-2 sm:pl-4 pr-8 sm:pr-12 mb-8 sm:mb-12 text-foreground">
-                      {processThinkingContent(msg.content).thinking && (
-                        <div className="mb-4">
-                          <button
-                            onClick={() => setExpandedThinking(prev => 
-                              prev.includes(index) 
-                                ? prev.filter(i => i !== index)
-                                : [...prev, index]
-                            )}
-                            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <ChevronDown className={cn(
-                              "w-4 h-4 transition-transform",
-                              expandedThinking.includes(index) ? "rotate-180" : ""
-                            )} />
-                            {index === conversation.length - 1 && isLoading && !processThinkingContent(msg.content).mainContent ? (
-                              <span className="thinking-shine">Thinking...</span>
-                            ) : (
-                              "Show thinking"
-                            )}
-                          </button>
-                          {expandedThinking.includes(index) && (
-                            <div className={cn(
-                              "mt-2 pl-4 border-l-2 border-muted text-muted-foreground text-sm tracking-wide",
-                              index === conversation.length - 1 && isLoading && "animate-thinking"
-                            )} style={{ fontFamily: 'Instrument Serif', fontStyle: 'italic', letterSpacing: '0.025em' }}>
-                              <ReactMarkdown 
-                                remarkPlugins={[remarkGfm]}
-                                className="prose dark:prose-invert max-w-none prose-sm"
-                              >
-                                {processThinkingContent(msg.content).thinking}
-                              </ReactMarkdown>
+                              ))}
                             </div>
                           )}
-                        </div>
-                      )}
-                      <div className="relative group">
-                        <ReactMarkdown 
-                          remarkPlugins={[remarkGfm]}
-                          className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent"
-                          components={{
-                            p: ({ children }) => (
-                              <p className="mb-4 last:mb-0">
-                                {children}
-                              </p>
-                            ),
-                            code: ({ className, children, ...props }) => {
-                              const match = /language-(\w+)/.exec(className || '');
-                              const language = match ? match[1] : '';
-                              const isInline = !match;
-                              
-                              if (!isInline && language) {
-                                return (
-                                  <div className="rounded-lg overflow-hidden my-4 bg-[#282c34] -mx-4 sm:mx-0">
-                                    <div className="px-4 py-2 bg-[#21252b] border-b border-[#1e2227]">
-                                      <span className="text-xs text-muted-foreground font-mono">{language}</span>
-                                    </div>
-                                    <div className="overflow-x-auto">
-                                      <SyntaxHighlighter
-                                        style={oneDark}
-                                        language={language}
-                                        PreTag="div"
-                                        customStyle={{
-                                          margin: 0,
-                                          background: 'transparent',
-                                          padding: '1rem',
-                                          minWidth: '100%',
-                                        }}
-                                        wrapLongLines={false}
-                                        showLineNumbers={true}
-                                      >
-                                        {String(children).replace(/\n$/, '')}
-                                      </SyntaxHighlighter>
-                                    </div>
+                          {msg.pdfs && msg.pdfs.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {msg.pdfs.map((pdf, pdfIndex) => (
+                                <div key={pdfIndex} className="flex items-center gap-2 bg-secondary/20 rounded-lg p-3 border border-border/50">
+                                  <div className="w-8 h-8 flex items-center justify-center">
+                                    <FileText className="w-5 h-5 text-primary" />
                                   </div>
-                                );
-                              }
-                              return <code className={cn("bg-[#282c34] rounded px-1.5 py-0.5 font-mono text-sm", className)} {...props}>{children}</code>;
-                            },
-                            table: ({ children }) => <TableWrapper>{children}</TableWrapper>,
-                          }}
-                        >
-                          {processThinkingContent(msg.content).mainContent}
-                        </ReactMarkdown>
-                        {!isLoading && processThinkingContent(msg.content).mainContent && (
-                          <button
-                            onClick={() => {
-                              const content = processThinkingContent(msg.content).mainContent;
-                              navigator.clipboard.writeText(content).then(() => {
-                                const button = document.getElementById(`copy-button-${index}`);
-                                if (button) {
-                                  button.classList.add('copied');
-                                  setTimeout(() => {
-                                    button.classList.remove('copied');
-                                  }, 2000);
-                                }
-                              });
-                            }}
-                            id={`copy-button-${index}`}
-                            className="mt-2 flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-all copy-button"
-                            title="Copy to clipboard"
-                          >
-                            <div className="p-1.5 hover:bg-secondary rounded-md transition-colors relative">
-                              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-muted-foreground copy-icon">
-                                <path d="M1 9.50006C1 10.3285 1.67157 11.0001 2.5 11.0001H4L4 10.0001H2.5C2.22386 10.0001 2 9.7762 2 9.50006L2 2.50006C2 2.22392 2.22386 2.00006 2.5 2.00006L9.5 2.00006C9.77614 2.00006 10 2.22392 10 2.50006V4.00002H5.5C4.67158 4.00002 4 4.67159 4 5.50002V12.5C4 13.3284 4.67158 14 5.5 14H12.5C13.3284 14 14 13.3284 14 12.5V5.50002C14 4.67159 13.3284 4.00002 12.5 4.00002H11V2.50006C11 1.67163 10.3284 1.00006 9.5 1.00006H2.5C1.67157 1.00006 1 1.67163 1 2.50006V9.50006ZM5 5.50002C5 5.22388 5.22386 5.00002 5.5 5.00002H12.5C12.7761 5.00002 13 5.22388 13 5.50002V12.5C13 12.7762 12.7761 13 12.5 13H5.5C5.22386 13 5 12.7762 5 12.5V5.50002Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
-                              </svg>
-                              <svg className="w-[15px] h-[15px] absolute inset-0 m-auto text-green-500 check-icon opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                              </svg>
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="text-sm font-medium truncate max-w-[150px]">{pdf.name}</span>
+                                    <span className="text-xs text-muted-foreground">PDF Document</span>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                            <span className="copy-text">Copy</span>
-                            <span className="check-text opacity-0 absolute">Copied!</span>
-                          </button>
-                        )}
+                          )}
+                          {msg.content}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    ) : (
+                      <div className="pl-2 sm:pl-4 pr-8 sm:pr-12 mb-8 sm:mb-12 text-foreground">
+                        {processThinkingContent(msg.content).thinking && (
+                          <div className="mb-4">
+                            <button
+                              onClick={() => setExpandedThinking(prev => 
+                                prev.includes(index) 
+                                  ? prev.filter(i => i !== index)
+                                  : [...prev, index]
+                              )}
+                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              <ChevronDown className={cn(
+                                "w-4 h-4 transition-transform",
+                                expandedThinking.includes(index) ? "rotate-180" : ""
+                              )} />
+                              {index === conversation.length - 1 && isLoading && !processThinkingContent(msg.content).mainContent ? (
+                                <span className="thinking-shine">Thinking...</span>
+                              ) : (
+                                "Show thinking"
+                              )}
+                            </button>
+                            {expandedThinking.includes(index) && (
+                              <div className={cn(
+                                "mt-2 pl-4 border-l-2 border-muted text-muted-foreground text-sm tracking-wide",
+                                index === conversation.length - 1 && isLoading && "animate-thinking"
+                              )} style={{ fontFamily: 'Instrument Serif', fontStyle: 'italic', letterSpacing: '0.025em' }}>
+                                <ReactMarkdown 
+                                  remarkPlugins={[remarkGfm]}
+                                  className="prose dark:prose-invert max-w-none prose-sm"
+                                >
+                                  {processThinkingContent(msg.content).thinking}
+                                </ReactMarkdown>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <div className="relative group">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent"
+                            components={{
+                              p: ({ children }) => (
+                                <p className="mb-4 last:mb-0">{children}</p>
+                              ),
+                              code: ({ className, children, ...props }) => {
+                                const match = /language-(\w+)/.exec(className || '');
+                                const language = match ? match[1] : '';
+                                const isInline = !match;
+                                
+                                if (!isInline && language) {
+                                  return (
+                                    <div className="rounded-lg overflow-hidden my-4 bg-[#282c34] -mx-4 sm:mx-0">
+                                      <div className="px-4 py-2 bg-[#21252b] border-b border-[#1e2227]">
+                                        <span className="text-xs text-muted-foreground font-mono">{language}</span>
+                                      </div>
+                                      <div className="overflow-x-auto">
+                                        <SyntaxHighlighter
+                                          style={oneDark}
+                                          language={language}
+                                          PreTag="div"
+                                          customStyle={{
+                                            margin: 0,
+                                            background: 'transparent',
+                                            padding: '1rem',
+                                            minWidth: '100%',
+                                          }}
+                                          wrapLongLines={false}
+                                          showLineNumbers={true}
+                                        >
+                                          {String(children).replace(/\n$/, '')}
+                                        </SyntaxHighlighter>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                                return <code className={cn("bg-[#282c34] rounded px-1.5 py-0.5 font-mono text-sm", className)} {...props}>{children}</code>;
+                              },
+                              table: MessageTable,
+                            }}
+                          >
+                            {processThinkingContent(msg.content).mainContent}
+                          </ReactMarkdown>
+                          {!isLoading && processThinkingContent(msg.content).mainContent && (
+                            <button
+                              onClick={() => {
+                                const content = processThinkingContent(msg.content).mainContent;
+                                navigator.clipboard.writeText(content).then(() => {
+                                  const button = document.getElementById(`copy-button-${index}`);
+                                  if (button) {
+                                    button.classList.add('copied');
+                                    setTimeout(() => {
+                                      button.classList.remove('copied');
+                                    }, 2000);
+                                  }
+                                });
+                              }}
+                              id={`copy-button-${index}`}
+                              className="mt-2 flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-all copy-button"
+                              title="Copy to clipboard"
+                            >
+                              <div className="p-1.5 hover:bg-secondary rounded-md transition-colors relative">
+                                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-muted-foreground copy-icon">
+                                  <path d="M1 9.50006C1 10.3285 1.67157 11.0001 2.5 11.0001H4L4 10.0001H2.5C2.22386 10.0001 2 9.7762 2 9.50006L2 2.50006C2 2.22392 2.22386 2.00006 2.5 2.00006L9.5 2.00006C9.77614 2.00006 10 2.22392 10 2.50006V4.00002H5.5C4.67158 4.00002 4 4.67159 4 5.50002V12.5C4 13.3284 4.67158 14 5.5 14H12.5C13.3284 14 14 13.3284 14 12.5V5.50002C14 4.67159 13.3284 4.00002 12.5 4.00002H11V2.50006C11 1.67163 10.3284 1.00006 9.5 1.00006H2.5C1.67157 1.00006 1 1.67163 1 2.50006V9.50006ZM5 5.50002C5 5.22388 5.22386 5.00002 5.5 5.00002H12.5C12.7761 5.00002 13 5.22388 13 5.50002V12.5C13 12.7762 12.7761 13 12.5 13H5.5C5.22386 13 5 12.7762 5 12.5V5.50002Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
+                                </svg>
+                                <svg className="w-[15px] h-[15px] absolute inset-0 m-auto text-green-500 check-icon opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                              </div>
+                              <span className="copy-text">Copy</span>
+                              <span className="check-text opacity-0 absolute">Copied!</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               <div ref={messagesEndRef} className="h-px" />
             </div>
           )}
