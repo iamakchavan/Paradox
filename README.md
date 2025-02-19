@@ -38,12 +38,22 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
   - Image analysis with Gemini Pro Vision
   - Support for multiple image formats
   - Real-time image processing
+  - Size limit of 20MB per image
 
 - **Document Analysis**
-  - PDF document support
+  - PDF document support with 10MB size limit
   - Multiple file upload capability
   - Document preview and management
   - Integrated file handling
+  - Inline PDF preview in conversations
+  - Seamless PDF context integration with AI models
+
+- **Data Export & Analysis**
+  - CSV export for tabular data
+  - One-click table downloads
+  - Clean data formatting
+  - Automatic number alignment
+  - Preserves data structure in exports
 
 - **Web Search & Reasoning** 
   - Real-time internet search capabilities
@@ -78,6 +88,8 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
   - Visible thinking process
   - Smooth animations and transitions
   - Progressive content loading
+  - Expandable thinking process view
+  - Step-by-step reasoning display
 
 - **Rich Text Support**
   - Beautiful syntax highlighting for code blocks
@@ -238,8 +250,18 @@ To use the voice agent feature:
 1. Create an account on [ElevenLabs](https://elevenlabs.io)
 2. Navigate to Voice Lab and create a custom voice
 3. Copy your API key and Voice Agent ID
-4. Add them in the Paradox settings dialog
-5. Use the voice agent through the "Paradox Live" interface
+4. Add them in the Paradox settings dialog under the "ElevenLabs" tab
+5. Click "Paradox Live" in the top navigation to access the voice interface
+6. Use the Start/Stop buttons to control voice conversations
+7. Monitor connection status and voice activity through the visual interface
+
+The voice agent features:
+- Real-time voice input and response
+- Visual feedback for connection status
+- Speaking/listening state indicators
+- Automatic reconnection handling
+- Custom voice settings (stability and similarity boost)
+- Error handling and status messages
 
 ## Contributing
 
