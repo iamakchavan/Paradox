@@ -64,9 +64,11 @@ interface TableWrapperProps {
   children: React.ReactNode;
   isLoading: boolean;
   messageContent: string;
+  messageIndex: number;
+  currentMessageIndex: number;
 }
 
-const TableWrapper = ({ children, isLoading, messageContent }: TableWrapperProps) => {
+const TableWrapper = ({ children, isLoading, messageContent, messageIndex, currentMessageIndex }: TableWrapperProps) => {
   const tableRef = useRef<HTMLTableElement>(null);
   const [tableData, setTableData] = useState<string>('');
   
@@ -102,7 +104,15 @@ const TableWrapper = ({ children, isLoading, messageContent }: TableWrapperProps
   }, [tableData]);
 
   const DownloadButton = useMemo(() => {
-    if (!tableData || isLoading || !processThinkingContent(messageContent).mainContent) {
+    // Only show download button if:
+    // 1. We have table data
+    // 2. The message has content
+    // 3. Either:
+    //    a. This is not the current message being generated, OR
+    //    b. This is the current message but it's finished loading
+    if (!tableData || 
+        !processThinkingContent(messageContent).mainContent || 
+        (messageIndex === currentMessageIndex && isLoading)) {
       return null;
     }
     return (
@@ -115,7 +125,7 @@ const TableWrapper = ({ children, isLoading, messageContent }: TableWrapperProps
         <span>Download CSV</span>
       </button>
     );
-  }, [tableData, isLoading, messageContent, handleDownload]);
+  }, [tableData, messageContent, messageIndex, currentMessageIndex, isLoading, handleDownload]);
 
   return (
     <div className="table-container">
@@ -165,7 +175,12 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll in two cases:
+    // 1. When a new user message is added (handled in handleSubmit)
+    // 2. When the initial view changes to chat view
+    if (conversation.length === 1) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [conversation]);
 
   useEffect(() => {
@@ -250,12 +265,18 @@ export default function ChatPage() {
       setIsLoading(true);
       setError(null);
       
+      // Add user message and immediately scroll to it
       setConversation(prev => [...prev, { 
         role: 'user', 
         content: message,
         images: selectedImages.length > 0 ? [...selectedImages] : undefined,
         pdfs: selectedPDFs.length > 0 ? [...selectedPDFs] : undefined
       }]);
+      
+      // Force scroll to the new message
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
       
       setConversation(prev => [...prev, { role: 'assistant', content: '' }]);
       
@@ -655,12 +676,14 @@ export default function ChatPage() {
               </div>
             </div>
           ) : (
-            <div className="space-y-6 pb-32 sm:pb-40">
+            <div className="space-y-6 pb-64 sm:pb-72">
               {conversation.map((msg: Message, index: number) => {
                 const MessageTable: React.ComponentType<React.TableHTMLAttributes<HTMLTableElement>> = ({ children, ...props }) => (
                   <TableWrapper 
                     isLoading={isLoading}
                     messageContent={msg.content}
+                    messageIndex={index}
+                    currentMessageIndex={conversation.length - 1}
                   >
                     <table {...props}>{children}</table>
                   </TableWrapper>
@@ -672,7 +695,7 @@ export default function ChatPage() {
                     index === conversation.length - 1 && msg.role === 'assistant' && "animate-fade-in"
                   )}>
                     {msg.role === 'user' ? (
-                      <div className="flex justify-end mb-6">
+                      <div className="flex justify-end mb-12">
                         <div className="bg-primary/10 rounded-2xl rounded-br-none px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
                           {msg.images && msg.images.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-2">
@@ -706,7 +729,7 @@ export default function ChatPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="pl-2 sm:pl-4 pr-8 sm:pr-12 mb-8 sm:mb-12 text-foreground">
+                      <div className="pl-2 sm:pl-4 pr-8 sm:pr-12 mb-12 text-foreground">
                         {processThinkingContent(msg.content).thinking && (
                           <div className="mb-4">
                             <button
@@ -835,7 +858,7 @@ export default function ChatPage() {
         <div className={cn(
           "w-full transition-all duration-500 fixed",
           "max-w-2xl left-1/2 -translate-x-1/2 z-10",
-          "bottom-2 sm:bottom-8 px-2 sm:px-4"
+          "bottom-6 sm:bottom-12 px-2 sm:px-4"
         )}>
           <div className="w-full">
             {error && (
