@@ -158,7 +158,8 @@ export default function ChatPage() {
   const [previousTheme, setPreviousTheme] = useState<string>('');
   const [expandedThinking, setExpandedThinking] = useState<number[]>([]);
   const [processingPDF, setProcessingPDF] = useState(false);
-  const [suggestedPrompts] = useState([
+
+  const promptSets = [
     [
       "Explain quantum computing in simple terms",
       "Write a Python script to analyze CSV data",
@@ -179,7 +180,14 @@ export default function ChatPage() {
       "Explain cloud computing architecture",
       "Design a scalable microservice"
     ]
-  ][Math.floor(Math.random() * 4)]);
+  ];
+
+  const [suggestedPrompts, setSuggestedPrompts] = useState(promptSets[0]);
+
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * promptSets.length);
+    setSuggestedPrompts(promptSets[randomIndex]);
+  }, []);
 
   useEffect(() => {
     const storedGeminiKey = localStorage.getItem('gemini-api-key');
