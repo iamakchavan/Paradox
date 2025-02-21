@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, ChevronDown, FileText, Download } from 'lucide-react';
+import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, ChevronDown, FileText, Download, Sparkles } from 'lucide-react';
 import { SettingsDialog } from '@/components/settings-dialog';
 import { getGeminiApi, initGemini, streamGenerateContent } from '@/lib/gemini';
 import { getPerplexityApi, initPerplexity, streamPerplexityContent } from '@/lib/perplexity';
@@ -137,6 +137,49 @@ const TableWrapper = ({ children, isLoading, messageContent, messageIndex, curre
   );
 };
 
+const SUGGESTED_PROMPTS = [
+  {
+    text: "Explain quantum computing in simple terms",
+    category: "Science"
+  },
+  {
+    text: "Write a Python script to analyze sentiment from Twitter data",
+    category: "Code"
+  },
+  {
+    text: "Create a modern landing page design using Tailwind CSS",
+    category: "Design"
+  },
+  {
+    text: "What are the latest developments in AI and machine learning?",
+    category: "Technology"
+  },
+  {
+    text: "How to implement authentication in a Next.js application?",
+    category: "Development"
+  },
+  {
+    text: "Explain the SOLID principles with real-world examples",
+    category: "Programming"
+  },
+  {
+    text: "Design a scalable microservices architecture",
+    category: "Architecture"
+  },
+  {
+    text: "Write a smart contract for NFT minting",
+    category: "Blockchain"
+  },
+  {
+    text: "Create an API using Node.js and Express",
+    category: "Backend"
+  },
+  {
+    text: "Implement a real-time chat application using WebSocket",
+    category: "Full Stack"
+  }
+];
+
 export default function ChatPage() {
   const [message, setMessage] = useState('');
   const [geminiApiKey, setGeminiApiKey] = useState<string | null>(null);
@@ -158,6 +201,7 @@ export default function ChatPage() {
   const [previousTheme, setPreviousTheme] = useState<string>('');
   const [expandedThinking, setExpandedThinking] = useState<number[]>([]);
   const [processingPDF, setProcessingPDF] = useState(false);
+  const [randomPrompts, setRandomPrompts] = useState<typeof SUGGESTED_PROMPTS>([]);
 
   useEffect(() => {
     const storedGeminiKey = localStorage.getItem('gemini-api-key');
@@ -188,6 +232,12 @@ export default function ChatPage() {
       setIsInitialView(false);
     }
   }, [conversation]);
+
+  useEffect(() => {
+    // Randomly select 4 prompts when the component mounts
+    const shuffled = [...SUGGESTED_PROMPTS].sort(() => 0.5 - Math.random());
+    setRandomPrompts(shuffled.slice(0, 4));
+  }, []);
 
   const handleNewChat = () => {
     setConversation([]);
@@ -254,23 +304,15 @@ export default function ChatPage() {
     setSelectedPDFs(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async () => {
-    if ((!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0) || (!geminiApiKey && !perplexityApiKey)) return;
-    if ((useWebSearch || useReasoning) && !perplexityApiKey) {
-      setError('Please set your Perplexity API key to use web search or reasoning');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Add user message and immediately scroll to it
+  const handlePromptClick = (promptText: string) => {
+    setIsInitialView(false);
+    // Add a small delay to ensure state updates before submitting
+    setTimeout(() => {
       setConversation(prev => [...prev, { 
         role: 'user', 
-        content: message,
-        images: selectedImages.length > 0 ? [...selectedImages] : undefined,
-        pdfs: selectedPDFs.length > 0 ? [...selectedPDFs] : undefined
+        content: promptText,
+        images: [],
+        pdfs: []
       }]);
       
       // Force scroll to the new message
@@ -279,19 +321,33 @@ export default function ChatPage() {
       }, 0);
       
       setConversation(prev => [...prev, { role: 'assistant', content: '' }]);
-      
-      setMessage('');
-      setSelectedImages([]);
-      setSelectedPDFs([]);
+      handleSubmitWithMessage(promptText);
+    }, 100);
+  };
 
-      const history = conversation.slice(-6);
+  const handleSubmit = () => {
+    if (message.trim()) {
+      handleSubmitWithMessage(message);
+    }
+  };
+
+  const handleSubmitWithMessage = async (messageText: string) => {
+    if (!messageText.trim() || (!geminiApiKey && !perplexityApiKey)) return;
+    if ((useWebSearch || useReasoning) && !perplexityApiKey) {
+      setError('Please set your Perplexity API key to use web search or reasoning');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
 
       let streamedText = '';
       let isThinking = false;
       if (useDeveloperMode && geminiApiKey) {
         await streamDeveloperContent(
-          message,
-          history,
+          messageText,
+          conversation.slice(-6),
           (token) => {
             if (token.includes('<think>')) {
               isThinking = true;
@@ -325,8 +381,8 @@ export default function ChatPage() {
         );
       } else if ((useWebSearch || useReasoning) && perplexityApiKey) {
         await streamPerplexityContent(
-          message,
-          history,
+          messageText,
+          conversation.slice(-6),
           (token) => {
             if (token.includes('<think>')) {
               isThinking = true;
@@ -361,8 +417,8 @@ export default function ChatPage() {
         );
       } else {
         await streamGenerateContent(
-          message,
-          [...history, { role: 'user', content: message, images: selectedImages, pdfs: selectedPDFs }],
+          messageText,
+          [...conversation.slice(-6), { role: 'user', content: messageText }],
           (token) => {
             streamedText += token;
             setConversation(prev => {
@@ -376,7 +432,6 @@ export default function ChatPage() {
           }
         );
       }
-
     } catch (error) {
       console.error('Error generating response:', error);
       setError(error instanceof Error ? error.message : 'Failed to generate response. Please try again.');
@@ -472,7 +527,7 @@ export default function ChatPage() {
               </div>
             </div>
           ) : isInitialView ? (
-            <div className="flex flex-col items-center gap-10 sm:gap-14 px-4 sm:px-0">
+            <div className="flex flex-col items-center gap-6 sm:gap-8 px-4 sm:px-0">
               <div className="text-center">
                 <p className="text-3xl sm:text-4xl font-medium tracking-wide text-foreground" style={{ fontFamily: 'Kelly Slab' }}>
                   What do you want to search?
@@ -673,6 +728,33 @@ export default function ChatPage() {
                     Please set your API keys in the settings to start chatting
                   </p>
                 )}
+
+                {/* Suggested Prompts - Clean design with hover effects */}
+                <div className="mt-6 grid grid-cols-2 gap-2">
+                  {randomPrompts.map((prompt, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handlePromptClick(prompt.text)}
+                      className="group relative overflow-hidden rounded-lg border bg-background/50 hover:bg-background/80 transition-all duration-300 p-3 text-left"
+                    >
+                      {/* Hover gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      
+                      {/* Content */}
+                      <div className="relative space-y-2">
+                        <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-300 line-clamp-2">
+                          {prompt.text}
+                        </p>
+                        <span className="text-[10px] text-primary/70 font-medium">
+                          {prompt.category}
+                        </span>
+                      </div>
+                      
+                      {/* Bottom highlight */}
+                      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-primary/10 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (
