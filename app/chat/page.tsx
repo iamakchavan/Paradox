@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, ChevronDown, FileText, Download, Sparkles } from 'lucide-react';
+import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, ChevronDown, FileText, Download } from 'lucide-react';
 import { SettingsDialog } from '@/components/settings-dialog';
 import { getGeminiApi, initGemini, streamGenerateContent } from '@/lib/gemini';
 import { getPerplexityApi, initPerplexity, streamPerplexityContent } from '@/lib/perplexity';
@@ -137,49 +137,6 @@ const TableWrapper = ({ children, isLoading, messageContent, messageIndex, curre
   );
 };
 
-const SUGGESTED_PROMPTS = [
-  {
-    text: "Explain quantum computing in simple terms",
-    category: "Science"
-  },
-  {
-    text: "Write a Python script to analyze sentiment from Twitter data",
-    category: "Code"
-  },
-  {
-    text: "Create a modern landing page design using Tailwind CSS",
-    category: "Design"
-  },
-  {
-    text: "What are the latest developments in AI and machine learning?",
-    category: "Technology"
-  },
-  {
-    text: "How to implement authentication in a Next.js application?",
-    category: "Development"
-  },
-  {
-    text: "Explain the SOLID principles with real-world examples",
-    category: "Programming"
-  },
-  {
-    text: "Design a scalable microservices architecture",
-    category: "Architecture"
-  },
-  {
-    text: "Write a smart contract for NFT minting",
-    category: "Blockchain"
-  },
-  {
-    text: "Create an API using Node.js and Express",
-    category: "Backend"
-  },
-  {
-    text: "Implement a real-time chat application using WebSocket",
-    category: "Full Stack"
-  }
-];
-
 export default function ChatPage() {
   const [message, setMessage] = useState('');
   const [geminiApiKey, setGeminiApiKey] = useState<string | null>(null);
@@ -201,7 +158,28 @@ export default function ChatPage() {
   const [previousTheme, setPreviousTheme] = useState<string>('');
   const [expandedThinking, setExpandedThinking] = useState<number[]>([]);
   const [processingPDF, setProcessingPDF] = useState(false);
-  const [randomPrompts, setRandomPrompts] = useState<typeof SUGGESTED_PROMPTS>([]);
+  const [suggestedPrompts] = useState([
+    [
+      "Explain quantum computing in simple terms",
+      "Write a Python script to analyze CSV data",
+      "Compare React and Vue.js frameworks"
+    ],
+    [
+      "What are the latest developments in AI?",
+      "How does blockchain technology work?",
+      "Explain machine learning algorithms"
+    ],
+    [
+      "Create a Node.js REST API structure",
+      "Debug this React useEffect code",
+      "Optimize SQL query performance"
+    ],
+    [
+      "What's new in web development?",
+      "Explain cloud computing architecture",
+      "Design a scalable microservice"
+    ]
+  ][Math.floor(Math.random() * 4)]);
 
   useEffect(() => {
     const storedGeminiKey = localStorage.getItem('gemini-api-key');
@@ -232,12 +210,6 @@ export default function ChatPage() {
       setIsInitialView(false);
     }
   }, [conversation]);
-
-  useEffect(() => {
-    // Randomly select 4 prompts when the component mounts
-    const shuffled = [...SUGGESTED_PROMPTS].sort(() => 0.5 - Math.random());
-    setRandomPrompts(shuffled.slice(0, 4));
-  }, []);
 
   const handleNewChat = () => {
     setConversation([]);
@@ -304,35 +276,8 @@ export default function ChatPage() {
     setSelectedPDFs(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handlePromptClick = (promptText: string) => {
-    setIsInitialView(false);
-    // Add a small delay to ensure state updates before submitting
-    setTimeout(() => {
-      setConversation(prev => [...prev, { 
-        role: 'user', 
-        content: promptText,
-        images: [],
-        pdfs: []
-      }]);
-      
-      // Force scroll to the new message
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 0);
-      
-      setConversation(prev => [...prev, { role: 'assistant', content: '' }]);
-      handleSubmitWithMessage(promptText);
-    }, 100);
-  };
-
-  const handleSubmit = () => {
-    if (message.trim()) {
-      handleSubmitWithMessage(message);
-    }
-  };
-
-  const handleSubmitWithMessage = async (messageText: string) => {
-    if (!messageText.trim() || (!geminiApiKey && !perplexityApiKey)) return;
+  const handleSubmit = async () => {
+    if ((!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0) || (!geminiApiKey && !perplexityApiKey)) return;
     if ((useWebSearch || useReasoning) && !perplexityApiKey) {
       setError('Please set your Perplexity API key to use web search or reasoning');
       return;
@@ -341,13 +286,34 @@ export default function ChatPage() {
     try {
       setIsLoading(true);
       setError(null);
+      
+      // Add user message and immediately scroll to it
+      setConversation(prev => [...prev, { 
+        role: 'user', 
+        content: message,
+        images: selectedImages.length > 0 ? [...selectedImages] : undefined,
+        pdfs: selectedPDFs.length > 0 ? [...selectedPDFs] : undefined
+      }]);
+      
+      // Force scroll to the new message
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
+      
+      setConversation(prev => [...prev, { role: 'assistant', content: '' }]);
+      
+      setMessage('');
+      setSelectedImages([]);
+      setSelectedPDFs([]);
+
+      const history = conversation.slice(-6);
 
       let streamedText = '';
       let isThinking = false;
       if (useDeveloperMode && geminiApiKey) {
         await streamDeveloperContent(
-          messageText,
-          conversation.slice(-6),
+          message,
+          history,
           (token) => {
             if (token.includes('<think>')) {
               isThinking = true;
@@ -381,8 +347,8 @@ export default function ChatPage() {
         );
       } else if ((useWebSearch || useReasoning) && perplexityApiKey) {
         await streamPerplexityContent(
-          messageText,
-          conversation.slice(-6),
+          message,
+          history,
           (token) => {
             if (token.includes('<think>')) {
               isThinking = true;
@@ -417,8 +383,136 @@ export default function ChatPage() {
         );
       } else {
         await streamGenerateContent(
-          messageText,
-          [...conversation.slice(-6), { role: 'user', content: messageText }],
+          message,
+          [...history, { role: 'user', content: message, images: selectedImages, pdfs: selectedPDFs }],
+          (token) => {
+            streamedText += token;
+            setConversation(prev => {
+              const newConv = [...prev];
+              newConv[newConv.length - 1] = {
+                role: 'assistant',
+                content: streamedText
+              };
+              return newConv;
+            });
+          }
+        );
+      }
+
+    } catch (error) {
+      console.error('Error generating response:', error);
+      setError(error instanceof Error ? error.message : 'Failed to generate response. Please try again.');
+      setConversation(prev => prev.slice(0, -1));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePromptClick = (prompt: string) => {
+    setIsInitialView(false);
+    setTimeout(() => {
+      setConversation(prev => [...prev, { 
+        role: 'user', 
+        content: prompt,
+        images: [],
+        pdfs: []
+      }]);
+      
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
+      
+      setConversation(prev => [...prev, { role: 'assistant', content: '' }]);
+      
+      handleSubmitPrompt(prompt);
+    }, 0);
+  };
+
+  const handleSubmitPrompt = async (promptMessage: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const history = conversation.slice(-6);
+      
+      let streamedText = '';
+      let isThinking = false;
+      
+      if (useDeveloperMode && geminiApiKey) {
+        await streamDeveloperContent(
+          promptMessage,
+          history,
+          (token) => {
+            if (token.includes('<think>')) {
+              isThinking = true;
+              streamedText = '';
+              return;
+            }
+            if (token.includes('</think>')) {
+              isThinking = false;
+              streamedText = '';
+              return;
+            }
+            streamedText += token;
+            setConversation(prev => {
+              const newConv = [...prev];
+              const lastMessage = newConv[newConv.length - 1];
+              if (isThinking) {
+                newConv[newConv.length - 1] = {
+                  ...lastMessage,
+                  content: `<think>${streamedText}</think>`
+                };
+              } else {
+                const { thinking } = processThinkingContent(lastMessage.content);
+                newConv[newConv.length - 1] = {
+                  ...lastMessage,
+                  content: thinking ? `<think>${thinking}</think>${streamedText}` : streamedText
+                };
+              }
+              return newConv;
+            });
+          }
+        );
+      } else if ((useWebSearch || useReasoning) && perplexityApiKey) {
+        await streamPerplexityContent(
+          promptMessage,
+          history,
+          (token) => {
+            if (token.includes('<think>')) {
+              isThinking = true;
+              streamedText = '';
+              return;
+            }
+            if (token.includes('</think>')) {
+              isThinking = false;
+              streamedText = '';
+              return;
+            }
+            streamedText += token;
+            setConversation(prev => {
+              const newConv = [...prev];
+              const lastMessage = newConv[newConv.length - 1];
+              if (isThinking) {
+                newConv[newConv.length - 1] = {
+                  ...lastMessage,
+                  content: `<think>${streamedText}</think>`
+                };
+              } else {
+                const { thinking } = processThinkingContent(lastMessage.content);
+                newConv[newConv.length - 1] = {
+                  ...lastMessage,
+                  content: thinking ? `<think>${thinking}</think>${streamedText}` : streamedText
+                };
+              }
+              return newConv;
+            });
+          },
+          useReasoning ? 'sonar-reasoning' : 'sonar'
+        );
+      } else {
+        await streamGenerateContent(
+          promptMessage,
+          [...history, { role: 'user', content: promptMessage }],
           (token) => {
             streamedText += token;
             setConversation(prev => {
@@ -527,7 +621,7 @@ export default function ChatPage() {
               </div>
             </div>
           ) : isInitialView ? (
-            <div className="flex flex-col items-center gap-6 sm:gap-8 px-4 sm:px-0">
+            <div className="flex flex-col items-center gap-10 sm:gap-14 px-4 sm:px-0">
               <div className="text-center">
                 <p className="text-3xl sm:text-4xl font-medium tracking-wide text-foreground" style={{ fontFamily: 'Kelly Slab' }}>
                   What do you want to search?
@@ -728,30 +822,24 @@ export default function ChatPage() {
                     Please set your API keys in the settings to start chatting
                   </p>
                 )}
-
-                {/* Suggested Prompts - Clean design with hover effects */}
-                <div className="mt-6 grid grid-cols-2 gap-2">
-                  {randomPrompts.map((prompt, index) => (
+                
+                {/* Add suggested prompts */}
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {suggestedPrompts.map((prompt, index) => (
                     <button
                       key={index}
-                      onClick={() => handlePromptClick(prompt.text)}
-                      className="group relative overflow-hidden rounded-lg border bg-background/50 hover:bg-background/80 transition-all duration-300 p-3 text-left"
+                      onClick={() => handlePromptClick(prompt)}
+                      className={cn(
+                        "p-4 text-sm text-left rounded-xl border bg-background/50 backdrop-blur-sm",
+                        "hover:bg-background/80 hover:border-primary/50 transition-all duration-200",
+                        "group relative overflow-hidden"
+                      )}
+                      disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
                     >
-                      {/* Hover gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      
-                      {/* Content */}
-                      <div className="relative space-y-2">
-                        <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-300 line-clamp-2">
-                          {prompt.text}
-                        </p>
-                        <span className="text-[10px] text-primary/70 font-medium">
-                          {prompt.category}
-                        </span>
-                      </div>
-                      
-                      {/* Bottom highlight */}
-                      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-primary/10 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                      <span className="line-clamp-2 text-muted-foreground group-hover:text-foreground transition-colors">
+                        {prompt}
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300" />
                     </button>
                   ))}
                 </div>
