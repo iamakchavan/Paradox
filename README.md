@@ -14,94 +14,86 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
 
 ## Features
 
-### Multiple AI Models & Voice Integration
-- **Gemini Pro** - For general chat and image analysis
-- **Perplexity** - For web search and reasoning capabilities
-- **Developer Mode** - Specialized coding assistant with enhanced technical capabilities
-- **ElevenLabs Voice Agent** - Interactive voice conversations with AI
-  - Real-time voice input and response
-  - Custom voice selection
-  - Smooth animations and visual feedback
+### AI Integration & Model Support
+- **Multi-Model Architecture**
+  - Gemini Pro for advanced language processing and image analysis
+  - Perplexity integration for real-time web search capabilities
+  - DeepSeek R1 for enhanced reasoning and problem-solving
+  - Specialized developer mode for technical assistance
 
-### User Interface
-- **Modern Design**
-  - Clean, minimalist interface with dark/light theme support
-  - Responsive layout optimized for desktop and mobile
-  - Smooth animations and transitions
-  - Visual feedback for AI interactions
-  - Customizable theme preferences (Light/Dark/System)
+### Voice Capabilities
+- **ElevenLabs Integration**
+  - Real-time voice input processing
+  - Natural language voice synthesis
+  - Custom voice profile support
+  - Dynamic voice agent configuration
+  - Real-time connection status monitoring
 
-### Core Capabilities
-- **Image Support** 
-  - Upload and analyze multiple images
-  - Inline preview with drag-and-drop support
-  - Image analysis with Gemini Pro Vision
-  - Support for multiple image formats
-  - Real-time image processing
-  - Size limit of 20MB per image
+### Advanced UI/UX
+- **Modern Interface**
+  - Responsive design optimized for all devices
+  - Dynamic dark/light theme support
+  - Real-time streaming responses with typing indicators
+  - Smooth transitions and animations
+  - Accessibility-first approach with ARIA support
 
-- **Document Analysis**
-  - PDF document support with 10MB size limit
-  - Multiple file upload capability
-  - Document preview and management
-  - Integrated file handling
+### Document & Media Processing
+- **Image Analysis**
+  - Multi-image upload support (up to 20MB per image)
+  - Real-time image processing and analysis
+  - Drag-and-drop functionality
+  - Inline image preview and management
+
+- **Document Handling**
+  - PDF document analysis (10MB limit)
+  - Multi-document upload capability
   - Inline PDF preview in conversations
-  - Seamless PDF context integration with AI models
+  - Context-aware document processing
+  - Seamless integration with AI models
 
-- **Data Export & Analysis**
-  - CSV export for tabular data
-  - One-click table downloads
-  - Clean data formatting
+### Data Management
+- **Export Capabilities**
+  - One-click CSV export for tabular data
+  - Structured data formatting
   - Automatic number alignment
-  - Preserves data structure in exports
+  - Preserved table structure in exports
+  - Clean data presentation
 
-- **Web Search & Reasoning** 
-  - Real-time internet search capabilities
-  - Clean presentation of search results
-  - Integration with Perplexity API
-  - Advanced reasoning mode with DeepSeek R1
+### Search & Analysis
+- **Web Integration**
+  - Real-time internet search functionality
+  - Structured search result presentation
+  - Deep web content analysis
+  - Source verification and citation
+
+- **Reasoning Engine**
   - Step-by-step thinking process visualization
+  - Expandable reasoning breakdown
+  - Complex problem decomposition
+  - Logical flow visualization
 
-- **Voice Interaction**
-  - Real-time voice conversations
-  - Custom voice agent support
-  - Visual feedback during conversations
-  - Smooth transition animations
-  - Connection status indicators
-
-- **Developer Mode** 
-  - Specialized mode for coding and technical tasks
+### Developer Tools
+- **Technical Features**
   - Syntax-highlighted code blocks
-  - Best practices and code quality focus
+  - Multiple programming language support
+  - Code quality analysis
+  - Best practices implementation
   - Technical documentation integration
-  - Enhanced reasoning for coding tasks
 
-- **Performance Monitoring**
-  - Integrated Speed Insights
-  - Performance metrics tracking
-  - Real-time analytics
-  - User interaction monitoring
+### System Performance
+- **Monitoring & Analytics**
+  - Real-time performance tracking
+  - Speed Insights integration
+  - Response time monitoring
+  - System health indicators
+  - Usage analytics
 
-### Advanced Features
-- **Streaming Responses** 
-  - Real-time response streaming
-  - Visible thinking process
-  - Smooth animations and transitions
-  - Progressive content loading
-  - Expandable thinking process view
-  - Step-by-step reasoning display
-
-- **Rich Text Support**
-  - Beautiful syntax highlighting for code blocks
-  - Full markdown support with remark-gfm
-  - Custom styling for different content types
-  - Responsive typography
-
-- **Accessibility**
-  - Keyboard navigation support
-  - Screen reader compatibility
-  - Responsive design
-  - High contrast modes
+### Security & Privacy
+- **Data Protection**
+  - Secure API key management
+  - Client-side processing
+  - No data persistence
+  - Configurable security settings
 
 ## Getting Started
 
