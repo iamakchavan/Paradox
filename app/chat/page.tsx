@@ -629,7 +629,7 @@ export default function ChatPage() {
               </div>
             </div>
           ) : isInitialView ? (
-            <div className="flex flex-col items-center gap-10 sm:gap-14 px-4 sm:px-0">
+            <div className="flex flex-col items-center gap-10 sm:gap-14 px-4 sm:px-0 relative">
               <div className="text-center animate-fade-in-up [animation-delay:200ms]">
                 <p className="text-3xl sm:text-4xl font-medium tracking-wide text-foreground" style={{ fontFamily: 'Kelly Slab' }}>
                   What do you want to search?
@@ -637,7 +637,7 @@ export default function ChatPage() {
               </div>
 
               {/* Input box for initial view */}
-              <div className="w-full max-w-2xl animate-fade-in-up [animation-delay:400ms]">
+              <div className="w-full max-w-2xl animate-fade-in-up [animation-delay:400ms] relative z-10">
                 {error && (
                   <div className="mb-4 p-3 sm:p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive text-sm sm:text-base">
                     {error}
@@ -832,7 +832,7 @@ export default function ChatPage() {
                 )}
                 
                 {/* Add suggested prompts */}
-                <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in-up [animation-delay:600ms]">
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in-up [animation-delay:600ms] relative z-0">
                   {suggestedPrompts.map((prompt, index) => (
                     <button
                       key={index}
