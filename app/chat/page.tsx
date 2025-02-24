@@ -413,6 +413,10 @@ export default function ChatPage() {
       setConversation(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
+      // Auto-focus the textarea after response generation
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -540,6 +544,10 @@ export default function ChatPage() {
       setConversation(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
+      // Auto-focus the textarea after response generation
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -645,7 +653,7 @@ export default function ChatPage() {
                 )}
 
                 <div className="relative">
-                  <div className="w-full rounded-xl border bg-background shadow-lg overflow-hidden">
+                  <div className="w-full rounded-xl border bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden group focus-within:border-black/[0.12] dark:focus-within:border-white/[0.12] focus-within:ring-1 focus-within:ring-black/[0.12] dark:focus-within:ring-white/[0.12] transition-all duration-200">
                     {selectedImages.length > 0 && (
                       <div className="flex gap-2 p-3 sm:p-4 pb-0 overflow-x-auto">
                         {selectedImages.map((img, index) => (
@@ -1093,7 +1101,7 @@ export default function ChatPage() {
             )}
 
             <div className="relative">
-              <div className="w-full rounded-xl border bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden">
+              <div className="w-full rounded-xl border bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden group focus-within:border-black/[0.12] dark:focus-within:border-white/[0.12] focus-within:ring-1 focus-within:ring-black/[0.12] dark:focus-within:ring-white/[0.12] transition-all duration-200">
                 <textarea
                   ref={textareaRef}
                   value={message}
