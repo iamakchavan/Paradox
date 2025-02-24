@@ -838,16 +838,19 @@ export default function ChatPage() {
                       key={index}
                       onClick={() => handlePromptClick(prompt)}
                       className={cn(
-                        "p-4 text-sm text-left rounded-xl border bg-background/50 backdrop-blur-sm",
-                        "hover:bg-background/80 hover:border-primary/50 transition-all duration-200",
-                        "group relative overflow-hidden"
+                        "p-4 text-sm text-left rounded-xl bg-white dark:bg-white/5",
+                        "border border-black/[0.08] dark:border-white/[0.08]",
+                        "hover:border-black/[0.15] dark:hover:border-white/[0.15]",
+                        "hover:bg-white dark:hover:bg-white/10",
+                        "transition-all duration-200",
+                        "group relative overflow-hidden shadow-sm"
                       )}
                       disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
                     >
-                      <span className="line-clamp-2 text-muted-foreground group-hover:text-foreground transition-colors">
+                      <span className="line-clamp-2 text-foreground/80 group-hover:text-foreground transition-colors">
                         {prompt}
                       </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.08] to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300" />
                     </button>
                   ))}
                 </div>
@@ -874,7 +877,7 @@ export default function ChatPage() {
                   )}>
                     {msg.role === 'user' ? (
                       <div className="flex justify-end mb-12">
-                        <div className="bg-primary/10 rounded-2xl rounded-br-none px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
+                        <div className="bg-white dark:bg-white/5 border border-black/[0.08] dark:border-white/[0.08] rounded-2xl rounded-br-none px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
                           {msg.images && msg.images.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-2">
                               {msg.images.map((img, imgIndex) => (
@@ -903,7 +906,9 @@ export default function ChatPage() {
                               ))}
                             </div>
                           )}
-                          {msg.content}
+                          <div className="whitespace-pre-wrap break-words">
+                            {msg.content}
+                          </div>
                         </div>
                       </div>
                     ) : (
