@@ -4,24 +4,31 @@ import { GeistSans } from 'geist/font';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Paradox',
-  description: 'AI chat interface with Gemini and Perplexity integration',
-  manifest: '/manifest.json',
-  themeColor: '#ffffff',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Paradox'
-  },
+  description: 'Modern AI chat interface with dark theme',
   icons: {
-    icon: '/icon-192x192.png',
-    apple: '/icon-512x512.png'
+    icon: [
+      {
+        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png',
+        sizes: '32x32',
+        type: 'image/png'
+      }
+    ],
+    shortcut: [
+      {
+        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png',
+        type: 'image/png'
+      }
+    ],
+    apple: [
+      {
+        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png',
+        sizes: '180x180',
+        type: 'image/png'
+      }
+    ]
   }
 };
 
@@ -49,16 +56,11 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap"
         />
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Paradox" />
-        <link rel="apple-touch-icon" href="/icon-512x512.png" />
       </head>
       <body className={GeistSans.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
