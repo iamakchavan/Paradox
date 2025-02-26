@@ -551,6 +551,59 @@ export default function ChatPage() {
     }
   };
 
+  const generateFollowUpQuestions = async (content: string) => {
+    try {
+      let streamedText = '';
+      const prompt = `Based on the previous answer: "${content.slice(0, 500)}...", generate 4 insightful follow-up questions that would lead to deeper understanding or practical applications of the topic. Make questions natural and conversational. Return ONLY the questions, each on a new line, no numbering or additional text.`;
+      
+      if (useDeveloperMode && geminiApiKey) {
+        await streamDeveloperContent(
+          prompt,
+          [],
+          (token) => {
+            streamedText += token;
+          }
+        );
+      } else if ((useWebSearch || useReasoning) && perplexityApiKey) {
+        await streamPerplexityContent(
+          prompt,
+          [],
+          (token) => {
+            streamedText += token;
+          },
+          useReasoning ? 'sonar-reasoning' : 'sonar'
+        );
+      } else {
+        await streamGenerateContent(
+          prompt,
+          [{ role: 'user', content: prompt }],
+          (token) => {
+            streamedText += token;
+          }
+        );
+      }
+      
+      // Only filter out empty lines and limit to 4 questions
+      return streamedText.split('\n')
+        .filter(q => q.trim())
+        .slice(0, 4);
+    } catch (error) {
+      console.error('Error generating follow-up questions:', error);
+      return [];
+    }
+  };
+
+  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
+
+  // Modify the streaming completion handlers to generate follow-up questions
+  useEffect(() => {
+    const lastMessage = conversation[conversation.length - 1];
+    if (lastMessage?.role === 'assistant' && !isLoading && processThinkingContent(lastMessage.content).mainContent) {
+      generateFollowUpQuestions(processThinkingContent(lastMessage.content).mainContent)
+        .then(questions => setFollowUpQuestions(questions));
+    }
+  }, [conversation, isLoading]);
+
   return (
     <main className="flex flex-col min-h-screen bg-background">
       {/* Header */}
@@ -885,7 +938,7 @@ export default function ChatPage() {
                   )}>
                     {msg.role === 'user' ? (
                       <div className="flex justify-end mb-12">
-                        <div className="bg-white dark:bg-white/5 border border-black/[0.08] dark:border-white/[0.08] rounded-2xl rounded-br-none px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
+                        <div className="bg-white dark:bg-white/10 border border-black/[0.08] dark:border-white/[0.08] rounded-2xl rounded-br-none px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
                           {msg.images && msg.images.length > 0 && (
                             <div className="flex flex-wrap gap-2 mb-2">
                               {msg.images.map((img, imgIndex) => (
@@ -1031,6 +1084,49 @@ export default function ChatPage() {
                               <span className="copy-text">Copy</span>
                               <span className="check-text opacity-0 absolute">Copied!</span>
                             </button>
+                          )}
+
+                          {/* Add follow-up questions section */}
+                          {!isLoading && 
+                           index === conversation.length - 1 && 
+                           msg.role === 'assistant' && 
+                           processThinkingContent(msg.content).mainContent && 
+                           followUpQuestions.length > 0 && (
+                            <div className="mt-8 relative">
+                              <div className="absolute -left-6 top-0 bottom-0 w-[2px] bg-gradient-to-b from-primary/80 via-primary/50 to-transparent" />
+                              
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="relative">
+                                    <div className="w-2 h-2 rounded-full bg-primary/90" />
+                                    <div className="absolute inset-0 w-2 h-2 rounded-full bg-primary animate-ping opacity-75" />
+                                  </div>
+                                  <h3 className="text-sm font-medium bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                                    Related Questions
+                                  </h3>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-2">
+                                  {followUpQuestions.map((question, promptIndex) => (
+                                    <button
+                                      key={promptIndex}
+                                      onClick={() => handlePromptClick(question)}
+                                      className="group/button relative flex items-center gap-3 w-full p-3 text-sm text-left rounded-lg bg-background/40 dark:bg-white/[0.03] border border-border/40 dark:border-white/[0.05] hover:bg-background dark:hover:bg-white/[0.05] hover:border-primary/20 dark:hover:border-primary/20 transition-all duration-200 shadow-sm"
+                                      disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
+                                    >
+                                      <div className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center bg-primary/5 dark:bg-primary/5 group-hover/button:bg-primary/10 dark:group-hover/button:bg-primary/10 transition-colors duration-200">
+                                        <ArrowUp 
+                                          className="w-3 h-3 text-primary/60 rotate-45 group-hover/button:rotate-[30deg] group-hover/button:text-primary/80 transition-all duration-200"
+                                        />
+                                      </div>
+                                      <span className="text-muted-foreground group-hover/button:text-foreground transition-colors duration-200">
+                                        {question}
+                                      </span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
                           )}
                         </div>
                       </div>

@@ -110,6 +110,10 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
+.prose strong {
+  @apply text-cyan-500 dark:text-cyan-400 font-semibold;
+}
+
 /* Table styles for Excel-like formatting */
 .table-container {
   @apply relative my-6;
@@ -435,4 +439,56 @@
 .animate-fade-in-up {
   animation: fade-in-up 0.5s ease-out forwards;
   opacity: 0;
+}
+
+/* Follow-up Questions Styling */
+.group\/button .w-6.h-6 {
+  @apply bg-cyan-500/5 dark:bg-cyan-400/5 border border-cyan-500/10 dark:border-cyan-400/10;
+}
+
+.group\/button:hover .w-6.h-6 {
+  @apply bg-cyan-500/10 dark:bg-cyan-400/10 border-cyan-500/20 dark:border-cyan-400/20;
+}
+
+.group\/button .w-3.h-3 {
+  @apply text-cyan-500/60 dark:text-cyan-400/60;
+}
+
+.group\/button:hover .w-3.h-3 {
+  @apply text-cyan-500 dark:text-cyan-400 rotate-[30deg] scale-110;
+}
+
+.group\/button {
+  @apply shadow-sm hover:shadow-md transition-shadow duration-300;
+}
+
+.group\/button:hover {
+  @apply bg-cyan-50/50 dark:bg-cyan-950/10;
+}
+
+.group\/button span {
+  @apply text-muted-foreground/90 font-medium;
+}
+
+.group\/button:hover span {
+  @apply text-cyan-600 dark:text-cyan-400;
+}
+
+/* Enhance the gradient line */
+.absolute.-left-6 {
+  @apply bg-gradient-to-b from-cyan-500/80 via-cyan-500/50 to-transparent;
+}
+
+/* Enhance the dot indicator */
+.w-2.h-2.rounded-full.bg-primary\/90 {
+  @apply bg-cyan-500 dark:bg-cyan-400;
+}
+
+.absolute.inset-0.w-2.h-2.rounded-full.bg-primary {
+  @apply bg-cyan-500 dark:bg-cyan-400;
+}
+
+/* Enhance the section title */
+.text-sm.font-medium.bg-gradient-to-r {
+  @apply from-cyan-500 to-cyan-600 dark:from-cyan-400 dark:to-cyan-500;
 }
