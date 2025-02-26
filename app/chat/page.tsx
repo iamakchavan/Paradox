@@ -23,6 +23,7 @@ import { useTheme } from 'next-themes';
 import { Typewriter } from '@/components/typewriter';
 import { initDeveloperMode, streamDeveloperContent } from '@/lib/developer-mode';
 import Link from 'next/link';
+import { registerServiceWorker } from '../pwa';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -218,6 +219,10 @@ export default function ChatPage() {
       setIsInitialView(false);
     }
   }, [conversation]);
+
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   const handleNewChat = () => {
     setConversation([]);
