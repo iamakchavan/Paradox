@@ -556,32 +556,14 @@ export default function ChatPage() {
       let streamedText = '';
       const prompt = `Based on the previous answer: "${content.slice(0, 500)}...", generate 4 insightful follow-up questions that would lead to deeper understanding or practical applications of the topic. Make questions natural and conversational. Return ONLY the questions, each on a new line, no numbering or additional text.`;
       
-      if (useDeveloperMode && geminiApiKey) {
-        await streamDeveloperContent(
-          prompt,
-          [],
-          (token) => {
-            streamedText += token;
-          }
-        );
-      } else if ((useWebSearch || useReasoning) && perplexityApiKey) {
-        await streamPerplexityContent(
-          prompt,
-          [],
-          (token) => {
-            streamedText += token;
-          },
-          useReasoning ? 'sonar-reasoning' : 'sonar'
-        );
-      } else {
-        await streamGenerateContent(
-          prompt,
-          [{ role: 'user', content: prompt }],
-          (token) => {
-            streamedText += token;
-          }
-        );
-      }
+      // Always use Gemini API regardless of mode
+      await streamGenerateContent(
+        prompt,
+        [{ role: 'user', content: prompt }],
+        (token) => {
+          streamedText += token;
+        }
+      );
       
       // Only filter out empty lines and limit to 4 questions
       return streamedText.split('\n')
