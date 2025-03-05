@@ -126,7 +126,7 @@ export default function ChatPage() {
     // 1. When a new user message is added (handled in handleSubmit)
     // 2. When the initial view changes to chat view
     if (conversation.length === 1) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [conversation]);
 
@@ -242,7 +242,10 @@ export default function ChatPage() {
       if (useDeveloperMode && geminiApiKey) {
         await streamDeveloperContent(
           message,
-          history,
+          conversation.map(msg => ({
+            role: msg.role,
+            content: msg.content
+          })),
           (token) => {
             if (token.includes('<think>')) {
               isThinking = true;
@@ -599,7 +602,7 @@ export default function ChatPage() {
                 
                 <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in-up [animation-delay:600ms]">
                   {suggestedPrompts.map((prompt, index) => (
-                    <button
+                            <button
                       key={index}
                       onClick={() => handlePromptClick(prompt)}
                       className={cn(
@@ -616,18 +619,18 @@ export default function ChatPage() {
                         {prompt}
                       </span>
                       <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.08] to-transparent translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+                            </button>
+                        ))}
+                      </div>
+                                </div>
+                      </div>
           ) : (
             <div className="space-y-6 pb-64 sm:pb-72">
               {conversation.map((msg: Message, index: number) => (
-                <div key={`message-${index}-${msg.role}`} className={cn(
-                  "group",
-                  index === conversation.length - 1 && msg.role === 'assistant' && "animate-fade-in"
-                )}>
+                  <div key={`message-${index}-${msg.role}`} className={cn(
+                    "group",
+                    index === conversation.length - 1 && msg.role === 'assistant' && "animate-fade-in"
+                  )}>
                   <Message
                     message={msg}
                     index={index}
@@ -637,9 +640,9 @@ export default function ChatPage() {
                     setExpandedThinking={setExpandedThinking}
                     followUpQuestions={index === conversation.length - 1 ? followUpQuestions : []}
                     onQuestionClick={handlePromptClick}
-                  />
-                </div>
-              ))}
+                                  />
+                                </div>
+                              ))}
               <div ref={messagesEndRef} className="h-px" />
             </div>
           )}
