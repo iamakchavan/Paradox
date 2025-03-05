@@ -33,7 +33,7 @@ export const Message = ({
   followUpQuestions = [],
   onQuestionClick
 }: MessageProps) => {
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
 
   const processThinkingContent = (content: string) => {
     const thinkMatch = content.match(/<think>([\s\S]*?)<\/think>/);
@@ -42,10 +42,11 @@ export const Message = ({
     return { thinking, mainContent };
   };
 
-  const handleCopyClick = (text: string, index: number) => {
+  const handleCopyClick = (text: string) => {
+    const blockId = `${index}-${text}`;
     navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2000);
+    setCopiedBlockId(blockId);
+    setTimeout(() => setCopiedBlockId(null), 2000);
   };
 
   if (message.role === 'user') {
@@ -142,27 +143,31 @@ export const Message = ({
               
               if (!isInline && language) {
                 const codeString = String(children).replace(/\n$/, '');
+                const blockId = `${index}-${codeString}`;
                 return (
-                  <div className="relative group">
-                    <div className="absolute -right-4 sm:-right-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="relative group rounded-lg overflow-hidden mb-6">
+                    <div className="flex items-center justify-between px-4 py-2 bg-gray-800 dark:bg-secondary/50 border-b border-border/40">
+                      <div className="text-xs text-gray-200 dark:text-muted-foreground font-mono lowercase">
+                        {language}
+                      </div>
                       <button
-                        onClick={() => handleCopyClick(codeString, index)}
-                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        onClick={() => handleCopyClick(codeString)}
+                        className="flex items-center gap-1.5 text-xs text-gray-200 hover:text-white dark:text-muted-foreground dark:hover:text-foreground transition-colors"
                       >
-                        <div className="p-1.5 hover:bg-secondary rounded-md transition-colors relative">
-                          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("text-muted-foreground", copiedIndex === index ? "opacity-0" : "opacity-100")}>
+                        <div className="p-1 hover:bg-gray-700/80 dark:hover:bg-secondary/80 rounded transition-colors relative flex items-center gap-1">
+                          <svg width="14" height="14" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("text-muted-foreground", copiedBlockId === blockId ? "opacity-0" : "opacity-100")}>
                             <path d="M1 9.50006C1 10.3285 1.67157 11.0001 2.5 11.0001H4L4 10.0001H2.5C2.22386 10.0001 2 9.7762 2 9.50006L2 2.50006C2 2.22392 2.22386 2.00006 2.5 2.00006L9.5 2.00006C9.77614 2.00006 10 2.22392 10 2.50006V4.00002H5.5C4.67158 4.00002 4 4.67159 4 5.50002V12.5C4 13.3284 4.67158 14 5.5 14H12.5C13.3284 14 14 13.3284 14 12.5V5.50002C14 4.67159 13.3284 4.00002 12.5 4.00002H11V2.50006C11 1.67163 10.3284 1.00006 9.5 1.00006H2.5C1.67157 1.00006 1 1.67163 1 2.50006V9.50006ZM5 5.50002C5 5.22388 5.22386 5.00002 5.5 5.00002H12.5C12.7761 5.00002 13 5.22388 13 5.50002V12.5C13 12.7762 12.7761 13 12.5 13H5.5C5.22386 13 5 12.7762 5 12.5V5.50002Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
                           </svg>
-                          <svg className={cn("w-[15px] h-[15px] absolute inset-0 m-auto text-green-500", copiedIndex === index ? "opacity-100" : "opacity-0")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <span className={cn("text-xs", copiedBlockId === blockId ? "opacity-0" : "opacity-100")}>
+                            Copy
+                          </span>
+                          <svg className={cn("w-[14px] h-[14px] absolute left-1 text-green-500", copiedBlockId === blockId ? "opacity-100" : "opacity-0")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="20 6 9 17 4 12"></polyline>
                           </svg>
+                          <span className={cn("text-xs", copiedBlockId === blockId ? "opacity-100" : "opacity-0")}>
+                            Copied!
+                          </span>
                         </div>
-                        <span className={cn("transition-opacity", copiedIndex === index ? "opacity-0" : "opacity-100")}>
-                          Copy
-                        </span>
-                        <span className={cn("absolute right-0 transition-opacity", copiedIndex === index ? "opacity-100" : "opacity-0")}>
-                          Copied!
-                        </span>
                       </button>
                     </div>
                     <SyntaxHighlighter
@@ -171,7 +176,9 @@ export const Message = ({
                       customStyle={{
                         margin: 0,
                         padding: '1rem',
-                        borderRadius: '0.5rem',
+                        borderRadius: '0 0 0.5rem 0.5rem',
+                        fontSize: '0.875rem',
+                        fontFamily: 'JetBrains Mono, monospace',
                       }}
                     >
                       {codeString}

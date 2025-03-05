@@ -101,12 +101,15 @@
 
 /* Markdown Styles */
 .prose pre {
-  @apply bg-secondary/50 border border-border rounded-lg p-4 overflow-x-auto;
-  font-family: 'JetBrains Mono', monospace;
+  @apply overflow-x-auto;
 }
 
 .prose pre code {
   @apply block whitespace-pre;
+}
+
+.prose code:not(pre code) {
+  @apply bg-secondary/50 px-1.5 py-0.5 rounded text-sm;
   font-family: 'JetBrains Mono', monospace;
 }
 
@@ -188,11 +191,6 @@
     @apply sticky top-0 z-10;
     background-color: hsl(var(--secondary));
   }
-}
-
-.prose code:not(pre code) {
-  @apply bg-secondary/50 px-1.5 py-0.5 rounded text-sm;
-  font-family: 'JetBrains Mono', monospace;
 }
 
 .prose h1, .prose h2, .prose h3, .prose h4 {
