@@ -67,8 +67,8 @@ export default function ChatPage() {
   const [useReasoning, setUseReasoning] = useState(false);
   const [useDeveloperMode, setUseDeveloperMode] = useState(false);
   const [showDeveloperModeMessage, setShowDeveloperModeMessage] = useState(false);
+  const [shouldFocus, setShouldFocus] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isInitialView, setIsInitialView] = useState(true);
   const { setTheme, theme } = useTheme();
@@ -147,10 +147,14 @@ export default function ChatPage() {
     setUseReasoning(false);
     setUseDeveloperMode(false);
     setShowDeveloperModeMessage(false);
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
+    setShouldFocus(true);
   };
+
+  useEffect(() => {
+    if (shouldFocus) {
+      setShouldFocus(false);
+    }
+  }, [shouldFocus]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -330,10 +334,6 @@ export default function ChatPage() {
       setConversation(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
-      // Auto-focus the textarea after response generation
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 0);
     }
   };
 
@@ -461,10 +461,6 @@ export default function ChatPage() {
       setConversation(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
-      // Auto-focus the textarea after response generation
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 0);
     }
   };
 
@@ -598,6 +594,7 @@ export default function ChatPage() {
                   removePDF={removePDF}
                   error={error}
                   isInitialView={true}
+                  shouldFocus={shouldFocus}
                 />
                 
                 <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in-up [animation-delay:600ms]">
@@ -681,6 +678,7 @@ export default function ChatPage() {
             removePDF={removePDF}
             error={error}
             isInitialView={false}
+            shouldFocus={shouldFocus}
           />
         </div>
       )}

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Paperclip, ArrowUp, Globe2, Code2, Lightbulb, X, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,6 +34,7 @@ interface ChatInputProps {
   removePDF: (index: number) => void;
   error: string | null;
   isInitialView?: boolean;
+  shouldFocus?: boolean;
 }
 
 export const ChatInput = ({
@@ -60,10 +61,23 @@ export const ChatInput = ({
   selectedPDFs,
   removePDF,
   error,
-  isInitialView = false
+  isInitialView = false,
+  shouldFocus = false
 }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isLoading && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [isLoading]);
+
+  useEffect(() => {
+    if ((shouldFocus || isInitialView) && textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, [shouldFocus, isInitialView]);
 
   return (
     <div className="w-full">
