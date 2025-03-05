@@ -152,20 +152,59 @@ export const Message = ({
                       </div>
                       <button
                         onClick={() => handleCopyClick(codeString)}
-                        className="flex items-center gap-1.5 text-xs text-gray-200 hover:text-white dark:text-muted-foreground dark:hover:text-foreground transition-colors"
+                        className="flex items-center gap-2 text-xs text-gray-200 hover:text-white dark:text-muted-foreground dark:hover:text-foreground transition-colors"
                       >
-                        <div className="p-1 hover:bg-gray-700/80 dark:hover:bg-secondary/80 rounded transition-colors relative flex items-center gap-1">
-                          <svg width="14" height="14" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className={cn("text-muted-foreground", copiedBlockId === blockId ? "opacity-0" : "opacity-100")}>
-                            <path d="M1 9.50006C1 10.3285 1.67157 11.0001 2.5 11.0001H4L4 10.0001H2.5C2.22386 10.0001 2 9.7762 2 9.50006L2 2.50006C2 2.22392 2.22386 2.00006 2.5 2.00006L9.5 2.00006C9.77614 2.00006 10 2.22392 10 2.50006V4.00002H5.5C4.67158 4.00002 4 4.67159 4 5.50002V12.5C4 13.3284 4.67158 14 5.5 14H12.5C13.3284 14 14 13.3284 14 12.5V5.50002C14 4.67159 13.3284 4.00002 12.5 4.00002H11V2.50006C11 1.67163 10.3284 1.00006 9.5 1.00006H2.5C1.67157 1.00006 1 1.67163 1 2.50006V9.50006ZM5 5.50002C5 5.22388 5.22386 5.00002 5.5 5.00002H12.5C12.7761 5.00002 13 5.22388 13 5.50002V12.5C13 12.7762 12.7761 13 12.5 13H5.5C5.22386 13 5 12.7762 5 12.5V5.50002Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
-                          </svg>
-                          <span className={cn("text-xs", copiedBlockId === blockId ? "opacity-0" : "opacity-100")}>
-                            Copy
-                          </span>
-                          <svg className={cn("w-[14px] h-[14px] absolute left-1 text-green-500", copiedBlockId === blockId ? "opacity-100" : "opacity-0")} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                          <span className={cn("text-xs", copiedBlockId === blockId ? "opacity-100" : "opacity-0")}>
-                            Copied!
+                        <div className="relative flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-700/80 dark:hover:bg-secondary/80 transition-all duration-200">
+                          <div className="relative w-4 h-4">
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              className={cn(
+                                "absolute inset-0 w-4 h-4 transition-all duration-200",
+                                copiedBlockId === blockId ? "opacity-0 scale-75" : "opacity-100 scale-100"
+                              )}
+                            >
+                              <path
+                                d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                              />
+                              <path
+                                d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                              />
+                            </svg>
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              className={cn(
+                                "absolute inset-0 w-4 h-4 text-green-500 transition-all duration-200",
+                                copiedBlockId === blockId ? "opacity-100 scale-100" : "opacity-0 scale-75"
+                              )}
+                            >
+                              <path
+                                d="M4.5 12.75L10.5 18.75L19.5 5.25"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
+                          <span className="relative">
+                            <span className={cn(
+                              "inline-block transition-all duration-200",
+                              copiedBlockId === blockId ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                            )}>
+                              Copy
+                            </span>
+                            <span className={cn(
+                              "absolute left-0 top-0 inline-block transition-all duration-200",
+                              copiedBlockId === blockId ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
+                            )}>
+                              Copied!
+                            </span>
                           </span>
                         </div>
                       </button>
@@ -195,13 +234,82 @@ export const Message = ({
                 messageIndex={index}
                 currentMessageIndex={currentMessageIndex}
               >
-                <table {...props}>{children}</table>
+                <table {...props} className="border-collapse">{children}</table>
               </TableWrapper>
+            ),
+            th: ({ children }) => (
+              <th className="px-4 py-2.5 text-left text-sm font-medium border-b bg-secondary/10">{children}</th>
+            ),
+            td: ({ children }) => (
+              <td className="px-4 py-2.5 text-sm border-b">{children}</td>
             ),
           }}
         >
           {mainContent}
         </ReactMarkdown>
+
+        {!isLoading && mainContent && (
+          <div className="mt-4 flex justify-start opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <button
+              onClick={() => handleCopyClick(mainContent)}
+              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-md bg-secondary/30 hover:bg-secondary/50 transition-all duration-200">
+                <div className="relative w-4 h-4">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className={cn(
+                      "absolute inset-0 w-4 h-4 transition-all duration-200",
+                      copiedBlockId === `${index}-${mainContent}` ? "opacity-0 scale-75" : "opacity-100 scale-100"
+                    )}
+                  >
+                    <path
+                      d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                    <path
+                      d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                  </svg>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className={cn(
+                      "absolute inset-0 w-4 h-4 text-green-500 transition-all duration-200",
+                      copiedBlockId === `${index}-${mainContent}` ? "opacity-100 scale-100" : "opacity-0 scale-75"
+                    )}
+                  >
+                    <path
+                      d="M4.5 12.75L10.5 18.75L19.5 5.25"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <span className="relative">
+                  <span className={cn(
+                    "inline-block transition-all duration-200",
+                    copiedBlockId === `${index}-${mainContent}` ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
+                  )}>
+                    Copy answer
+                  </span>
+                  <span className={cn(
+                    "absolute left-0 top-0 inline-block transition-all duration-200",
+                    copiedBlockId === `${index}-${mainContent}` ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
+                  )}>
+                    Copied!
+                  </span>
+                </span>
+              </div>
+            </button>
+          </div>
+        )}
 
         {!isLoading && mainContent && followUpQuestions.length > 0 && index === currentMessageIndex && (
           <div className="mt-8 relative">

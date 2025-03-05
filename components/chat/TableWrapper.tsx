@@ -62,9 +62,11 @@ export const TableWrapper = ({ children, isLoading, messageContent, messageIndex
   }, [tableData, messageContent, messageIndex, currentMessageIndex, isLoading, handleDownload]);
 
   return (
-    <div className="table-container">
+    <div className="table-container mx-2 sm:mx-4">
       <div className="overflow-x-auto">
-        <table ref={tableRef}>{children}</table>
+        <table ref={tableRef} className="min-w-full border border-border/30 rounded-md">
+          {children}
+        </table>
       </div>
       {DownloadButton}
     </div>

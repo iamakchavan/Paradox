@@ -1,5 +1,5 @@
-import { useRef, useEffect } from 'react';
-import { Paperclip, ArrowUp, Globe2, Code2, Lightbulb, X, FileText } from 'lucide-react';
+import { useRef, useEffect, useState } from 'react';
+import { Paperclip, ArrowUp, Globe2, Code2, Lightbulb, X, FileText, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -8,6 +8,21 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
+
+const gradientAnimation = {
+  '@keyframes gradient-x': {
+    '0%, 100%': {
+      'background-position': '0% 50%'
+    },
+    '50%': {
+      'background-position': '100% 50%'
+    }
+  },
+  '.animate-gradient-x': {
+    animation: 'gradient-x 3s ease infinite',
+    'background-size': '200% 200%'
+  }
+} as const;
 
 interface ChatInputProps {
   message: string;
@@ -66,6 +81,7 @@ export const ChatInput = ({
 }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (!isLoading && textareaRef.current) {
@@ -79,6 +95,36 @@ export const ChatInput = ({
     }
   }, [shouldFocus, isInitialView]);
 
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    // Create a fake event to reuse existing file upload logic
+    const event = {
+      target: {
+        files
+      }
+    } as unknown as React.ChangeEvent<HTMLInputElement>;
+    
+    handleFileUpload(event);
+  };
+
   return (
     <div className="w-full">
       {error && (
@@ -90,7 +136,40 @@ export const ChatInput = ({
         </div>
       )}
 
-      <div className="w-full rounded-xl border bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden group focus-within:border-black/[0.12] dark:focus-within:border-white/[0.12] focus-within:ring-1 focus-within:ring-black/[0.12] dark:focus-within:ring-white/[0.12] transition-all duration-200">
+      <div 
+        className={cn(
+          "w-full rounded-xl border bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden group focus-within:border-black/[0.12] dark:focus-within:border-white/[0.12] focus-within:ring-1 focus-within:ring-black/[0.12] dark:focus-within:ring-white/[0.12] transition-all duration-300 relative",
+          isDragging && "ring-[3px] ring-primary/30 border-primary shadow-[0_0_15px_rgba(var(--primary),0.15)]"
+        )}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {isDragging && (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 animate-gradient-x pointer-events-none" />
+            <div className="absolute inset-0 bg-primary/[0.02] backdrop-blur-[1px] flex items-center justify-center pointer-events-none z-10">
+              <div className="flex flex-col items-center gap-3">
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/40 via-primary/60 to-primary/40 rounded-full animate-pulse" style={{ padding: '20px' }} />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/30 via-primary/50 to-primary/30 rounded-full animate-ping" style={{ padding: '20px', animationDuration: '2s' }} />
+                  <div className="relative bg-background/95 dark:bg-background/95 p-3 rounded-full border-2 border-primary/20 shadow-xl shadow-primary/20">
+                    <Upload className="w-6 h-6 text-primary animate-bounce" style={{ animationDuration: '2s' }} />
+                  </div>
+                </div>
+                <div className="flex flex-col items-center gap-1.5 bg-background/95 dark:bg-background/95 px-5 py-2 rounded-lg border shadow-lg">
+                  <div className="text-sm font-medium bg-gradient-to-r from-primary/90 via-primary to-primary/90 text-transparent bg-clip-text">
+                    Drop files to attach
+                  </div>
+                  <div className="text-muted-foreground/80 text-[10px]">
+                    Images and PDFs supported
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
         {selectedImages.length > 0 && (
           <div className="flex gap-2 p-3 sm:p-4 pb-0 overflow-x-auto">
             {selectedImages.map((img, index) => (
@@ -144,6 +223,29 @@ export const ChatInput = ({
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
               handleSubmit();
+            }
+          }}
+          onPaste={(e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (let i = 0; i < items.length; i++) {
+              const item = items[i];
+              if (item.type.indexOf('image') !== -1) {
+                e.preventDefault();
+                const file = item.getAsFile();
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (readerEvent: ProgressEvent<FileReader>) => {
+                    const dataUrl = readerEvent.target?.result as string;
+                    if (dataUrl) {
+                      const event = { target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>;
+                      handleFileUpload(event);
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }
             }
           }}
           placeholder="Type your message..."
