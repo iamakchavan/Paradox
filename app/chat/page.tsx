@@ -23,6 +23,11 @@ import { useTheme } from 'next-themes';
 import { Typewriter } from '@/components/typewriter';
 import { initDeveloperMode, streamDeveloperContent } from '@/lib/developer-mode';
 import Link from 'next/link';
+import { TableWrapper } from '@/components/chat/TableWrapper';
+import { processThinkingContent } from '@/utils/chat';
+import { ChatInput } from '@/components/chat/ChatInput';
+import { Message } from '@/components/chat/Message';
+import { generateFollowUpQuestions } from '@/utils/followUpQuestions';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -30,17 +35,6 @@ interface Message {
   images?: string[];
   pdfs?: { name: string; data: string }[];
 }
-
-const processThinkingContent = (content: string) => {
-  const thinkRegex = /<think>([\s\S]*?)<\/think>/;
-  const thinkMatch = content.match(thinkRegex);
-  if (!thinkMatch) return { thinking: null, mainContent: content };
-  
-  const thinking = thinkMatch[1].trim();
-  const mainContent = content.replace(thinkRegex, '').trim();
-  
-  return { thinking, mainContent };
-};
 
 const tableToCSV = (table: HTMLTableElement) => {
   const rows = Array.from(table.querySelectorAll('tr'));
@@ -58,83 +52,6 @@ const tableToCSV = (table: HTMLTableElement) => {
   }).join('\n');
   
   return csv;
-};
-
-interface TableWrapperProps {
-  children: React.ReactNode;
-  isLoading: boolean;
-  messageContent: string;
-  messageIndex: number;
-  currentMessageIndex: number;
-}
-
-const TableWrapper = ({ children, isLoading, messageContent, messageIndex, currentMessageIndex }: TableWrapperProps) => {
-  const tableRef = useRef<HTMLTableElement>(null);
-  const [tableData, setTableData] = useState<string>('');
-  
-  useEffect(() => {
-    // This ensures we have access to the rendered table
-    if (tableRef.current) {
-      const table = tableRef.current;
-      // Convert table to CSV when table is mounted
-      const csv = tableToCSV(table);
-      setTableData(csv);
-      
-      // Handle number alignment
-      table.querySelectorAll('td').forEach(cell => {
-        if (/^\d+(\.\d+)?$/.test(cell.textContent || '')) {
-          cell.setAttribute('data-type', 'number');
-        }
-      });
-    }
-  }, []);
-
-  const handleDownload = useCallback(() => {
-    if (tableData) {
-      const blob = new Blob([tableData], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', 'table_data.csv');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-  }, [tableData]);
-
-  const DownloadButton = useMemo(() => {
-    // Only show download button if:
-    // 1. We have table data
-    // 2. The message has content
-    // 3. Either:
-    //    a. This is not the current message being generated, OR
-    //    b. This is the current message but it's finished loading
-    if (!tableData || 
-        !processThinkingContent(messageContent).mainContent || 
-        (messageIndex === currentMessageIndex && isLoading)) {
-      return null;
-    }
-    return (
-      <button
-        onClick={handleDownload}
-        className="download-csv-button"
-        title="Download as CSV"
-      >
-        <Download className="w-4 h-4" />
-        <span>Download CSV</span>
-      </button>
-    );
-  }, [tableData, messageContent, messageIndex, currentMessageIndex, isLoading, handleDownload]);
-
-  return (
-    <div className="table-container">
-      <div className="overflow-x-auto">
-        <table ref={tableRef}>{children}</table>
-      </div>
-      {DownloadButton}
-    </div>
-  );
 };
 
 export default function ChatPage() {
@@ -551,33 +468,9 @@ export default function ChatPage() {
     }
   };
 
-  const generateFollowUpQuestions = async (content: string) => {
-    try {
-      let streamedText = '';
-      const prompt = `Based on the previous answer: "${content.slice(0, 500)}...", generate 4 insightful follow-up questions that would lead to deeper understanding or practical applications of the topic. Make questions natural and conversational. Return ONLY the questions, each on a new line, no numbering or additional text.`;
-      
-      // Always use Gemini API regardless of mode
-      await streamGenerateContent(
-        prompt,
-        [{ role: 'user', content: prompt }],
-        (token) => {
-          streamedText += token;
-        }
-      );
-      
-      // Only filter out empty lines and limit to 4 questions
-      return streamedText.split('\n')
-        .filter(q => q.trim())
-        .slice(0, 4);
-    } catch (error) {
-      console.error('Error generating follow-up questions:', error);
-      return [];
-    }
-  };
-
   const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
 
-  // Modify the streaming completion handlers to generate follow-up questions
+  // Update the effect to use the imported function
   useEffect(() => {
     const lastMessage = conversation[conversation.length - 1];
     if (lastMessage?.role === 'assistant' && !isLoading && processThinkingContent(lastMessage.content).mainContent) {
@@ -679,202 +572,34 @@ export default function ChatPage() {
                 </p>
               </div>
 
-              {/* Input box for initial view */}
               <div className="w-full max-w-2xl animate-fade-in-up [animation-delay:400ms]">
-                {error && (
-                  <div className="mb-4 p-3 sm:p-4 bg-destructive/10 border border-destructive rounded-lg text-destructive text-sm sm:text-base">
-                    {error}
-                  </div>
-                )}
-
-                <div className="relative">
-                  <div className="w-full rounded-xl border bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden group focus-within:border-black/[0.12] dark:focus-within:border-white/[0.12] focus-within:ring-1 focus-within:ring-black/[0.12] dark:focus-within:ring-white/[0.12] transition-all duration-200">
-                    {selectedImages.length > 0 && (
-                      <div className="flex gap-2 p-3 sm:p-4 pb-0 overflow-x-auto">
-                        {selectedImages.map((img, index) => (
-                          <div key={index} className="relative shrink-0">
-                            <img
-                              src={img}
-                              alt={`Selected ${index + 1}`}
-                              className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg border"
-                            />
-                            <button
-                              onClick={() => removeImage(index)}
-                              className="absolute -top-2 -right-2 bg-background rounded-full p-0.5 shadow-sm border"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {selectedPDFs.length > 0 && (
-                      <div className="flex gap-2 p-3 sm:p-4 pb-0 overflow-x-auto">
-                        {selectedPDFs.map((pdf, index) => (
-                          <div key={index} className="relative shrink-0 flex items-center gap-2 bg-secondary/20 rounded-lg p-3 border border-border/50">
-                            <div className="w-8 h-8 flex items-center justify-center">
-                              <FileText className="w-5 h-5 text-primary" />
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-sm font-medium truncate max-w-[150px]">{pdf.name}</span>
-                              <span className="text-xs text-muted-foreground">PDF Document</span>
-                            </div>
-                            <button
-                              onClick={() => removePDF(index)}
-                              className="ml-2 p-1 hover:bg-secondary/50 rounded-full transition-colors"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <textarea
-                      ref={textareaRef}
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSubmit();
-                        }
-                      }}
-                      placeholder="Type your message..."
-                      className="w-full min-h-[100px] sm:min-h-[110px] max-h-[200px] p-6 sm:p-7 placeholder:text-muted-foreground focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-lg sm:text-xl"
-                      disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
-                    />
-                    <div className="flex items-center gap-1 sm:gap-2 bg-background/80 backdrop-blur-sm px-2 py-1.5 border-t">
-                      <div className="flex-1 flex items-center gap-1 sm:gap-2">
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleFileUpload}
-                          accept="image/*,.pdf"
-                          multiple
-                          className="hidden"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 sm:h-9 sm:w-9"
-                          disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || useWebSearch || useReasoning || useDeveloperMode}
-                          title="Attach images and PDFs"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          <Paperclip className="w-4 h-4" />
-                        </Button>
-                        <TooltipProvider delayDuration={300}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant={useDeveloperMode ? "default" : "ghost"}
-                                size="icon"
-                                className={cn(
-                                  "transition-all duration-200 overflow-hidden h-8 w-8 sm:h-9 sm:w-9",
-                                  useDeveloperMode && "w-[120px] sm:w-[140px]",
-                                  !useDeveloperMode && "w-8 sm:w-9"
-                                )}
-                                disabled={!geminiApiKey || isLoading || useWebSearch || useReasoning}
-                                onClick={() => {
-                                  if (!useDeveloperMode) {
-                                    setPreviousTheme(theme || 'light');
-                                    setTheme('dark');
-                                    setShowDeveloperModeMessage(true);
-                                  } else {
-                                    setTheme(previousTheme);
-                                  }
-                                  setUseDeveloperMode(!useDeveloperMode);
-                                  if (useWebSearch) setUseWebSearch(false);
-                                  if (useReasoning) setUseReasoning(false);
-                                }}
-                              >
-                                <div className="flex items-center">
-                                  <Code2 className="w-4 h-4 shrink-0" />
-                                  {useDeveloperMode && <span className="ml-2 whitespace-nowrap">DEVELOPER</span>}
-                                </div>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                              <p>Switch to developer mode</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider delayDuration={300}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant={useReasoning ? "default" : "ghost"}
-                                size="icon"
-                                disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode}
-                                className={cn(
-                                  "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
-                                  useReasoning && "w-[90px] sm:w-[110px]",
-                                  !useReasoning && "w-8 sm:w-9"
-                                )}
-                                onClick={() => {
-                                  setUseReasoning(!useReasoning);
-                                  if (useWebSearch) setUseWebSearch(false);
-                                }}
-                              >
-                                <Lightbulb className="w-4 h-4" />
-                                {useReasoning && <span className="ml-2 text-sm sm:text-base">REASON</span>}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                              <p>Reason with DeepSeek R1 (US Hosted)</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider delayDuration={300}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant={useWebSearch ? "default" : "ghost"}
-                                size="icon"
-                                disabled={!perplexityApiKey || isLoading || useReasoning || useDeveloperMode}
-                                className={cn(
-                                  "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
-                                  useWebSearch && "w-[80px] sm:w-[90px]",
-                                  !useWebSearch && "w-8 sm:w-9"
-                                )}
-                                onClick={() => {
-                                  setUseWebSearch(!useWebSearch);
-                                  if (useReasoning) setUseReasoning(false);
-                                }}
-                              >
-                                <Globe2 className="w-4 h-4" />
-                                {useWebSearch && <span className="ml-2 text-sm sm:text-base">WEB</span>}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                              <p>Search the web</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <Button
-                        onClick={handleSubmit}
-                        disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || (!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0)}
-                        size="icon"
-                        className="bg-primary h-8 w-8 sm:h-9 sm:w-9"
-                        title="Send message"
-                      >
-                        {isLoading ? (
-                          <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <ArrowUp className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                {!geminiApiKey && !perplexityApiKey && (
-                  <p className="text-center text-muted-foreground mt-4">
-                    Please set your API keys in the settings to start chatting
-                  </p>
-                )}
+                <ChatInput
+                  message={message}
+                  setMessage={setMessage}
+                  handleSubmit={handleSubmit}
+                  isLoading={isLoading}
+                  geminiApiKey={geminiApiKey}
+                  perplexityApiKey={perplexityApiKey}
+                  useWebSearch={useWebSearch}
+                  setUseWebSearch={setUseWebSearch}
+                  useReasoning={useReasoning}
+                  setUseReasoning={setUseReasoning}
+                  useDeveloperMode={useDeveloperMode}
+                  setUseDeveloperMode={setUseDeveloperMode}
+                  handleFileUpload={handleFileUpload}
+                  theme={theme}
+                  setTheme={setTheme}
+                  previousTheme={previousTheme}
+                  setPreviousTheme={setPreviousTheme}
+                  setShowDeveloperModeMessage={setShowDeveloperModeMessage}
+                  selectedImages={selectedImages}
+                  removeImage={removeImage}
+                  selectedPDFs={selectedPDFs}
+                  removePDF={removePDF}
+                  error={error}
+                  isInitialView={true}
+                />
                 
-                {/* Add suggested prompts */}
                 <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-fade-in-up [animation-delay:600ms]">
                   {suggestedPrompts.map((prompt, index) => (
                     <button
@@ -901,221 +626,23 @@ export default function ChatPage() {
             </div>
           ) : (
             <div className="space-y-6 pb-64 sm:pb-72">
-              {conversation.map((msg: Message, index: number) => {
-                const MessageTable: React.ComponentType<React.TableHTMLAttributes<HTMLTableElement>> = ({ children, ...props }) => (
-                  <TableWrapper 
+              {conversation.map((msg: Message, index: number) => (
+                <div key={`message-${index}-${msg.role}`} className={cn(
+                  "group",
+                  index === conversation.length - 1 && msg.role === 'assistant' && "animate-fade-in"
+                )}>
+                  <Message
+                    message={msg}
+                    index={index}
                     isLoading={isLoading}
-                    messageContent={msg.content}
-                    messageIndex={index}
                     currentMessageIndex={conversation.length - 1}
-                  >
-                    <table {...props}>{children}</table>
-                  </TableWrapper>
-                );
-
-                return (
-                  <div key={`message-${index}-${msg.role}`} className={cn(
-                    "group",
-                    index === conversation.length - 1 && msg.role === 'assistant' && "animate-fade-in"
-                  )}>
-                    {msg.role === 'user' ? (
-                      <div className="flex justify-end mb-12">
-                        <div className="bg-white dark:bg-white/10 border border-black/[0.08] dark:border-white/[0.08] rounded-2xl rounded-br-none px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
-                          {msg.images && msg.images.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {msg.images.map((img, imgIndex) => (
-                                <div key={imgIndex} className="relative w-20 h-20">
-                                  <img
-                                    src={img}
-                                    alt={`Uploaded ${imgIndex + 1}`}
-                                    className="w-full h-full object-cover rounded-lg"
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          {msg.pdfs && msg.pdfs.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {msg.pdfs.map((pdf, pdfIndex) => (
-                                <div key={pdfIndex} className="flex items-center gap-2 bg-secondary/20 rounded-lg p-3 border border-border/50">
-                                  <div className="w-8 h-8 flex items-center justify-center">
-                                    <FileText className="w-5 h-5 text-primary" />
-                                  </div>
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="text-sm font-medium truncate max-w-[150px]">{pdf.name}</span>
-                                    <span className="text-xs text-muted-foreground">PDF Document</span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          <div className="whitespace-pre-wrap break-words">
-                            {msg.content}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="pl-2 sm:pl-4 pr-8 sm:pr-12 mb-12 text-foreground">
-                        {processThinkingContent(msg.content).thinking && (
-                          <div className="mb-4">
-                            <button
-                              onClick={() => setExpandedThinking(prev => 
-                                prev.includes(index) 
-                                  ? prev.filter(i => i !== index)
-                                  : [...prev, index]
-                              )}
-                              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              <ChevronDown className={cn(
-                                "w-4 h-4 transition-transform",
-                                expandedThinking.includes(index) ? "rotate-180" : ""
-                              )} />
-                              {index === conversation.length - 1 && isLoading && !processThinkingContent(msg.content).mainContent ? (
-                                <span className="thinking-shine">Thinking...</span>
-                              ) : (
-                                "Show thinking"
-                              )}
-                            </button>
-                            {expandedThinking.includes(index) && (
-                              <div className={cn(
-                                "mt-2 pl-4 border-l-2 border-muted text-muted-foreground text-sm tracking-wide",
-                                index === conversation.length - 1 && isLoading && "animate-thinking"
-                              )} style={{ fontFamily: 'Instrument Serif', fontStyle: 'italic', letterSpacing: '0.025em' }}>
-                                <ReactMarkdown 
-                                  remarkPlugins={[remarkGfm]}
-                                  className="prose dark:prose-invert max-w-none prose-sm"
-                                >
-                                  {processThinkingContent(msg.content).thinking}
-                                </ReactMarkdown>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        <div className="relative group">
-                          <ReactMarkdown 
-                            remarkPlugins={[remarkGfm]}
-                            className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent"
-                            components={{
-                              p: ({ children }) => (
-                                <p className="mb-4 last:mb-0">{children}</p>
-                              ),
-                              code: ({ className, children, ...props }) => {
-                                const match = /language-(\w+)/.exec(className || '');
-                                const language = match ? match[1] : '';
-                                const isInline = !match;
-                                
-                                if (!isInline && language) {
-                                  return (
-                                    <div className="rounded-lg overflow-hidden my-4 bg-[#282c34] -mx-4 sm:mx-0">
-                                      <div className="px-4 py-2 bg-[#21252b] border-b border-[#1e2227]">
-                                        <span className="text-xs text-muted-foreground font-mono">{language}</span>
-                                      </div>
-                                      <div className="overflow-x-auto">
-                                        <SyntaxHighlighter
-                                          style={oneDark}
-                                          language={language}
-                                          PreTag="div"
-                                          customStyle={{
-                                            margin: 0,
-                                            background: 'transparent',
-                                            padding: '1rem',
-                                            minWidth: '100%',
-                                          }}
-                                          wrapLongLines={false}
-                                          showLineNumbers={true}
-                                        >
-                                          {String(children).replace(/\n$/, '')}
-                                        </SyntaxHighlighter>
-                                      </div>
-                                    </div>
-                                  );
-                                }
-                                return <code className={cn("bg-[#282c34] rounded px-1.5 py-0.5 font-mono text-sm", className)} {...props}>{children}</code>;
-                              },
-                              table: MessageTable,
-                            }}
-                          >
-                            {processThinkingContent(msg.content).mainContent}
-                          </ReactMarkdown>
-                          {!isLoading && processThinkingContent(msg.content).mainContent && (
-                            <button
-                              onClick={() => {
-                                const content = processThinkingContent(msg.content).mainContent;
-                                navigator.clipboard.writeText(content).then(() => {
-                                  const button = document.getElementById(`copy-button-${index}`);
-                                  if (button) {
-                                    button.classList.add('copied');
-                                    setTimeout(() => {
-                                      button.classList.remove('copied');
-                                    }, 2000);
-                                  }
-                                });
-                              }}
-                              id={`copy-button-${index}`}
-                              className="mt-2 flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-all copy-button"
-                              title="Copy to clipboard"
-                            >
-                              <div className="p-1.5 hover:bg-secondary rounded-md transition-colors relative">
-                                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-muted-foreground copy-icon">
-                                  <path d="M1 9.50006C1 10.3285 1.67157 11.0001 2.5 11.0001H4L4 10.0001H2.5C2.22386 10.0001 2 9.7762 2 9.50006L2 2.50006C2 2.22392 2.22386 2.00006 2.5 2.00006L9.5 2.00006C9.77614 2.00006 10 2.22392 10 2.50006V4.00002H5.5C4.67158 4.00002 4 4.67159 4 5.50002V12.5C4 13.3284 4.67158 14 5.5 14H12.5C13.3284 14 14 13.3284 14 12.5V5.50002C14 4.67159 13.3284 4.00002 12.5 4.00002H11V2.50006C11 1.67163 10.3284 1.00006 9.5 1.00006H2.5C1.67157 1.00006 1 1.67163 1 2.50006V9.50006ZM5 5.50002C5 5.22388 5.22386 5.00002 5.5 5.00002H12.5C12.7761 5.00002 13 5.22388 13 5.50002V12.5C13 12.7762 12.7761 13 12.5 13H5.5C5.22386 13 5 12.7762 5 12.5V5.50002Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path>
-                                </svg>
-                                <svg className="w-[15px] h-[15px] absolute inset-0 m-auto text-green-500 check-icon opacity-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                              </div>
-                              <span className="copy-text">Copy</span>
-                              <span className="check-text opacity-0 absolute">Copied!</span>
-                            </button>
-                          )}
-
-                          {/* Add follow-up questions section */}
-                          {!isLoading && 
-                           index === conversation.length - 1 && 
-                           msg.role === 'assistant' && 
-                           processThinkingContent(msg.content).mainContent && 
-                           followUpQuestions.length > 0 && (
-                            <div className="mt-8 relative">
-                              <div className="absolute -left-6 top-0 bottom-0 w-[2px] bg-gradient-to-b from-primary/80 via-primary/50 to-transparent" />
-                              
-                              <div className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="relative">
-                                    <div className="w-2 h-2 rounded-full bg-primary/90" />
-                                    <div className="absolute inset-0 w-2 h-2 rounded-full bg-primary animate-ping opacity-75" />
-                                  </div>
-                                  <h3 className="text-sm font-medium bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                                    Related Questions
-                                  </h3>
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-2">
-                                  {followUpQuestions.map((question, promptIndex) => (
-                                    <button
-                                      key={promptIndex}
-                                      onClick={() => handlePromptClick(question)}
-                                      className="group/button relative flex items-center gap-3 w-full p-3 text-sm text-left rounded-lg bg-background/40 dark:bg-white/[0.03] border border-border/40 dark:border-white/[0.05] hover:bg-background dark:hover:bg-white/[0.05] hover:border-primary/20 dark:hover:border-primary/20 transition-all duration-200 shadow-sm"
-                                      disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
-                                    >
-                                      <div className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center bg-primary/5 dark:bg-primary/5 group-hover/button:bg-primary/10 dark:group-hover/button:bg-primary/10 transition-colors duration-200">
-                                        <ArrowUp 
-                                          className="w-3 h-3 text-primary/60 rotate-45 group-hover/button:rotate-[30deg] group-hover/button:text-primary/80 transition-all duration-200"
-                                        />
-                                      </div>
-                                      <span className="text-muted-foreground group-hover/button:text-foreground transition-colors duration-200">
-                                        {question}
-                                      </span>
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                    expandedThinking={expandedThinking}
+                    setExpandedThinking={setExpandedThinking}
+                    followUpQuestions={index === conversation.length - 1 ? followUpQuestions : []}
+                    onQuestionClick={handlePromptClick}
+                  />
+                </div>
+              ))}
               <div ref={messagesEndRef} className="h-px" />
             </div>
           )}
@@ -1129,197 +656,32 @@ export default function ChatPage() {
           "max-w-2xl left-1/2 -translate-x-1/2 z-10",
           "bottom-6 sm:bottom-12 px-2 sm:px-4"
         )}>
-          <div className="w-full">
-            {error && (
-              <div className="mb-2 sm:mb-4 p-2 sm:p-3 bg-destructive/10 border border-destructive rounded-lg text-destructive text-sm backdrop-blur-sm">
-                {error}
-              </div>
-            )}
-
-            {selectedImages.length > 0 && (
-              <div className="flex gap-2 mb-2 sm:mb-4 overflow-x-auto pb-2">
-                {selectedImages.map((img, index) => (
-                  <div key={index} className="relative shrink-0">
-                    <img
-                      src={img}
-                      alt={`Selected ${index + 1}`}
-                      className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-lg"
-                    />
-                    <button
-                      onClick={() => removeImage(index)}
-                      className="absolute -top-1.5 -right-1.5 bg-background rounded-full p-0.5 shadow-sm border"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {selectedPDFs.length > 0 && (
-              <div className="flex gap-2 mb-2 sm:mb-4 overflow-x-auto pb-2">
-                {selectedPDFs.map((pdf, index) => (
-                  <div key={index} className="relative shrink-0 flex items-center gap-2 bg-secondary/20 rounded-lg p-3 border border-border/50">
-                    <div className="w-8 h-8 flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-sm font-medium truncate max-w-[150px]">{pdf.name}</span>
-                      <span className="text-xs text-muted-foreground">PDF Document</span>
-                    </div>
-                    <button
-                      onClick={() => removePDF(index)}
-                      className="ml-2 p-1 hover:bg-secondary/50 rounded-full transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="relative">
-              <div className="w-full rounded-xl border bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden group focus-within:border-black/[0.12] dark:focus-within:border-white/[0.12] focus-within:ring-1 focus-within:ring-black/[0.12] dark:focus-within:ring-white/[0.12] transition-all duration-200">
-                <textarea
-                  ref={textareaRef}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmit();
-                    }
-                  }}
-                  placeholder="Type your message..."
-                  className="w-full min-h-[45px] sm:min-h-[50px] max-h-[200px] p-2 sm:p-3 placeholder:text-muted-foreground focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-sm sm:text-base"
-                  disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
-                />
-                <div className="flex items-center gap-1 sm:gap-2 bg-background/80 backdrop-blur-sm px-2 py-1.5 border-t">
-                  <div className="flex-1 flex items-center gap-1 sm:gap-2">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileUpload}
-                      accept="image/*,.pdf"
-                      multiple
-                      className="hidden"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 sm:h-9 sm:w-9"
-                      disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || useWebSearch || useReasoning || useDeveloperMode}
-                      title="Attach images and PDFs"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Paperclip className="w-4 h-4" />
-                    </Button>
-                    <TooltipProvider delayDuration={300}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant={useDeveloperMode ? "default" : "ghost"}
-                            size="icon"
-                            className={cn(
-                              "transition-all duration-200 overflow-hidden h-8 w-8 sm:h-9 sm:w-9",
-                              useDeveloperMode && "w-[120px] sm:w-[140px]",
-                              !useDeveloperMode && "w-8 sm:w-9"
-                            )}
-                            disabled={!geminiApiKey || isLoading || useWebSearch || useReasoning}
-                            onClick={() => {
-                              if (!useDeveloperMode) {
-                                setPreviousTheme(theme || 'light');
-                                setTheme('dark');
-                                setShowDeveloperModeMessage(true);
-                              } else {
-                                setTheme(previousTheme);
-                              }
-                              setUseDeveloperMode(!useDeveloperMode);
-                              if (useWebSearch) setUseWebSearch(false);
-                              if (useReasoning) setUseReasoning(false);
-                            }}
-                          >
-                            <div className="flex items-center">
-                              <Code2 className="w-4 h-4 shrink-0" />
-                              {useDeveloperMode && <span className="ml-2 whitespace-nowrap">DEVELOPER</span>}
-                            </div>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                          <p>Switch to developer mode</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider delayDuration={300}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant={useReasoning ? "default" : "ghost"}
-                            size="icon"
-                            disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode}
-                            className={cn(
-                              "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
-                              useReasoning && "w-[90px] sm:w-[110px]",
-                              !useReasoning && "w-8 sm:w-9"
-                            )}
-                            onClick={() => {
-                              setUseReasoning(!useReasoning);
-                              if (useWebSearch) setUseWebSearch(false);
-                            }}
-                          >
-                            <Lightbulb className="w-4 h-4" />
-                            {useReasoning && <span className="ml-2 text-sm sm:text-base">REASON</span>}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                          <p>Reason with DeepSeek R1 (US Hosted)</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <TooltipProvider delayDuration={300}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant={useWebSearch ? "default" : "ghost"}
-                            size="icon"
-                            disabled={!perplexityApiKey || isLoading || useReasoning || useDeveloperMode}
-                            className={cn(
-                              "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
-                              useWebSearch && "w-[80px] sm:w-[90px]",
-                              !useWebSearch && "w-8 sm:w-9"
-                            )}
-                            onClick={() => {
-                              setUseWebSearch(!useWebSearch);
-                              if (useReasoning) setUseReasoning(false);
-                            }}
-                          >
-                            <Globe2 className="w-4 h-4" />
-                            {useWebSearch && <span className="ml-2 text-sm sm:text-base">WEB</span>}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                          <p>Search the web</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || (!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0)}
-                    size="icon"
-                    className="bg-primary h-8 w-8 sm:h-9 sm:w-9"
-                    title="Send message"
-                  >
-                    {isLoading ? (
-                      <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <ArrowUp className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ChatInput
+            message={message}
+            setMessage={setMessage}
+            handleSubmit={handleSubmit}
+            isLoading={isLoading}
+            geminiApiKey={geminiApiKey}
+            perplexityApiKey={perplexityApiKey}
+            useWebSearch={useWebSearch}
+            setUseWebSearch={setUseWebSearch}
+            useReasoning={useReasoning}
+            setUseReasoning={setUseReasoning}
+            useDeveloperMode={useDeveloperMode}
+            setUseDeveloperMode={setUseDeveloperMode}
+            handleFileUpload={handleFileUpload}
+            theme={theme}
+            setTheme={setTheme}
+            previousTheme={previousTheme}
+            setPreviousTheme={setPreviousTheme}
+            setShowDeveloperModeMessage={setShowDeveloperModeMessage}
+            selectedImages={selectedImages}
+            removeImage={removeImage}
+            selectedPDFs={selectedPDFs}
+            removePDF={removePDF}
+            error={error}
+            isInitialView={false}
+          />
         </div>
       )}
       
