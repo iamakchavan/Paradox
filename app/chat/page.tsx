@@ -239,6 +239,11 @@ export default function ChatPage() {
 
       let streamedText = '';
       let isThinking = false;
+      let thinkingStartTime = 0;
+      let thinkingDuration = 0;
+
+      const promptMessage = message;
+
       if (useDeveloperMode && geminiApiKey) {
         await streamDeveloperContent(
           message,
@@ -279,19 +284,27 @@ export default function ChatPage() {
         );
       } else if ((useWebSearch || useReasoning) && perplexityApiKey) {
         await streamPerplexityContent(
-          message,
+          promptMessage,
           history,
           (token) => {
             if (token.includes('<think>')) {
               isThinking = true;
+              if (thinkingStartTime === 0) {
+                thinkingStartTime = Date.now();
+              }
               streamedText = '';
               return;
             }
+            
             if (token.includes('</think>')) {
+              if (thinkingStartTime > 0) {
+                thinkingDuration = (Date.now() - thinkingStartTime) / 1000;
+              }
               isThinking = false;
               streamedText = '';
               return;
             }
+            
             streamedText += token;
             setConversation(prev => {
               const newConv = [...prev];
@@ -305,7 +318,9 @@ export default function ChatPage() {
                 const { thinking } = processThinkingContent(lastMessage.content);
                 newConv[newConv.length - 1] = {
                   ...lastMessage,
-                  content: thinking ? `<think>${thinking}</think>${streamedText}` : streamedText
+                  content: thinking 
+                    ? `<think>${thinking}</think><thinkingTime>${thinkingDuration.toFixed(1)}</thinkingTime>${streamedText}` 
+                    : streamedText
                 };
               }
               return newConv;
@@ -369,6 +384,8 @@ export default function ChatPage() {
       
       let streamedText = '';
       let isThinking = false;
+      let thinkingStartTime = 0;
+      let thinkingDuration = 0;
       
       if (useDeveloperMode && geminiApiKey) {
         await streamDeveloperContent(
@@ -412,14 +429,22 @@ export default function ChatPage() {
           (token) => {
             if (token.includes('<think>')) {
               isThinking = true;
+              if (thinkingStartTime === 0) {
+                thinkingStartTime = Date.now();
+              }
               streamedText = '';
               return;
             }
+            
             if (token.includes('</think>')) {
+              if (thinkingStartTime > 0) {
+                thinkingDuration = (Date.now() - thinkingStartTime) / 1000;
+              }
               isThinking = false;
               streamedText = '';
               return;
             }
+            
             streamedText += token;
             setConversation(prev => {
               const newConv = [...prev];
@@ -433,7 +458,9 @@ export default function ChatPage() {
                 const { thinking } = processThinkingContent(lastMessage.content);
                 newConv[newConv.length - 1] = {
                   ...lastMessage,
-                  content: thinking ? `<think>${thinking}</think>${streamedText}` : streamedText
+                  content: thinking 
+                    ? `<think>${thinking}</think><thinkingTime>${thinkingDuration.toFixed(1)}</thinkingTime>${streamedText}` 
+                    : streamedText
                 };
               }
               return newConv;

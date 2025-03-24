@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, FileText, ArrowUp } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -34,11 +34,65 @@ export const Message = ({
   onQuestionClick
 }: MessageProps) => {
   const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
+  const [thinkingTime, setThinkingTime] = useState(0);
+  const [hasFinishedThinking, setHasFinishedThinking] = useState(false);
+  const thinkingTimerRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    if (index === currentMessageIndex && isLoading) {
+      const hasThinkTag = message.content.includes('<think>');
+      const hasEndThinkTag = message.content.includes('</think>');
+
+      if (hasThinkTag && !hasEndThinkTag) {
+        // Only start/continue timer if we're in thinking phase
+        thinkingTimerRef.current = setInterval(() => {
+          setThinkingTime(prev => prev + 0.1);
+        }, 100);
+      } else if (hasEndThinkTag && !hasFinishedThinking) {
+        // Stop timer when thinking ends and mark as finished
+        if (thinkingTimerRef.current) {
+          clearInterval(thinkingTimerRef.current);
+        }
+        setHasFinishedThinking(true);
+      }
+
+      return () => {
+        if (thinkingTimerRef.current) {
+          clearInterval(thinkingTimerRef.current);
+        }
+      };
+    } else if (!isLoading) {
+      // Clear timer when loading stops but keep the time
+      if (thinkingTimerRef.current) {
+        clearInterval(thinkingTimerRef.current);
+      }
+    }
+  }, [index, currentMessageIndex, isLoading, message.content, hasFinishedThinking]);
+
+  // Reset states when message changes
+  useEffect(() => {
+    setThinkingTime(0);
+    setHasFinishedThinking(false);
+  }, [message.content === '']);
 
   const processThinkingContent = (content: string) => {
     const thinkMatch = content.match(/<think>([\s\S]*?)<\/think>/);
     const thinking = thinkMatch ? thinkMatch[1].trim() : '';
-    const mainContent = content.replace(/<think>[\s\S]*?<\/think>/, '').trim();
+    
+    // Extract thinking time if present in the content
+    const timeMatch = content.match(/<thinkingTime>([\d\.]+)<\/thinkingTime>/);
+    const extractedTime = timeMatch ? parseFloat(timeMatch[1]) : 0;
+    
+    // If we have extracted time, use it
+    if (extractedTime > 0 && thinkingTime === 0) {
+      setThinkingTime(extractedTime);
+    }
+    
+    const mainContent = content
+      .replace(/<think>[\s\S]*?<\/think>/, '')
+      .replace(/<thinkingTime>[\d\.]+<\/thinkingTime>/, '')
+      .trim();
+      
     return { thinking, mainContent };
   };
 
@@ -110,7 +164,12 @@ export const Message = ({
             {index === currentMessageIndex && isLoading && !mainContent ? (
               <span className="thinking-shine">Thinking...</span>
             ) : (
-              "Show thinking"
+              <div className="flex items-center gap-2">
+                <span>Show thinking</span>
+                <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                  {thinkingTime.toFixed(1)}s
+                </span>
+              </div>
             )}
           </button>
           {expandedThinking.includes(index) && (
