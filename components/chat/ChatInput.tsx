@@ -276,22 +276,26 @@ export const ChatInput = ({
               "w-full placeholder:text-muted-foreground/70 focus:outline-none focus:ring-0 resize-none border-0 bg-transparent",
               "selection:bg-primary/20 selection:text-foreground",
               "transition-all duration-200 ease-out",
-              "scrollbar-thin scrollbar-thumb-primary/10 scrollbar-track-transparent",
+              "scrollbar-none overflow-y-auto",
+              "hover:overflow-y-auto active:overflow-y-auto focus:overflow-y-auto",
+              "[&::-webkit-scrollbar]{display:none}",
+              "hover:[&::-webkit-scrollbar]{display:block;width:1px}",
+              "hover:[&::-webkit-scrollbar-thumb]{background-color:rgb(var(--muted-foreground) / 0.08)}",
               isInitialView 
-                ? "min-h-[100px] sm:min-h-[110px] p-6 sm:p-7 text-lg sm:text-xl"
-                : "min-h-[45px] sm:min-h-[50px] p-3 sm:p-4 text-sm sm:text-base"
+                ? "min-h-[100px] sm:min-h-[110px] p-5 sm:p-6 text-sm sm:text-base leading-[1.6]"
+                : "min-h-[45px] sm:min-h-[50px] p-3 sm:p-4 text-xs sm:text-sm leading-[1.6]"
             )}
             disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
           />
 
           <div className={cn(
-            "flex items-center justify-between gap-2 border-t border-border/40",
+            "flex items-center justify-between gap-1.5 sm:gap-2 border-t border-border/40",
             "bg-gradient-to-b from-muted/30 to-muted/10",
             "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]",
-            "sm:px-4 sm:py-2.5",
-            isInitialView ? "px-6 py-3" : "px-3 py-2"
+            "px-2 py-1.5 sm:px-4 sm:py-2.5",
+            isInitialView ? "px-5 py-2.5 sm:px-6 sm:py-3" : "px-2.5 py-1.5 sm:px-4 sm:py-2"
           )}>
-            <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-0.5 sm:gap-2 overflow-x-auto scrollbar-none">
               <input
                 type="file"
                 ref={fileInputRef}
