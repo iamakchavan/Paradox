@@ -713,7 +713,7 @@ export default function ChatPage() {
                     followUpQuestions={index === conversation.length - 1 ? followUpQuestions : []}
                     onQuestionClick={handlePromptClick}
                     isGeneratingQuestions={isGeneratingQuestions}
-                  />
+                                  />
                                 </div>
                               ))}
               <div ref={messagesEndRef} className="h-px" />
