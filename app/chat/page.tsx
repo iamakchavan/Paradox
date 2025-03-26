@@ -75,6 +75,8 @@ export default function ChatPage() {
   const [previousTheme, setPreviousTheme] = useState<string>('');
   const [expandedThinking, setExpandedThinking] = useState<number[]>([]);
   const [processingPDF, setProcessingPDF] = useState(false);
+  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
 
   const promptSets = [
     [
@@ -494,16 +496,30 @@ export default function ChatPage() {
     }
   };
 
-  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
-
-  // Update the effect to use the imported function
+  // Update the effect to handle loading state
   useEffect(() => {
     const lastMessage = conversation[conversation.length - 1];
     if (lastMessage?.role === 'assistant' && !isLoading && processThinkingContent(lastMessage.content).mainContent) {
+      setIsGeneratingQuestions(true);
+      setFollowUpQuestions([]); // Clear old questions while generating new ones
       generateFollowUpQuestions(processThinkingContent(lastMessage.content).mainContent)
-        .then(questions => setFollowUpQuestions(questions));
+        .then(questions => {
+          setFollowUpQuestions(questions);
+          setIsGeneratingQuestions(false);
+        })
+        .catch(() => {
+          setIsGeneratingQuestions(false);
+        });
     }
   }, [conversation, isLoading]);
+
+  // Clear follow-up questions when starting a new response
+  useEffect(() => {
+    if (isLoading) {
+      setFollowUpQuestions([]);
+      setIsGeneratingQuestions(false);
+    }
+  }, [isLoading]);
 
   return (
     <main className="flex flex-col min-h-screen bg-background">
@@ -667,7 +683,8 @@ export default function ChatPage() {
                     setExpandedThinking={setExpandedThinking}
                     followUpQuestions={index === conversation.length - 1 ? followUpQuestions : []}
                     onQuestionClick={handlePromptClick}
-                                  />
+                    isGeneratingQuestions={isGeneratingQuestions}
+                  />
                                 </div>
                               ))}
               <div ref={messagesEndRef} className="h-px" />

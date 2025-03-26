@@ -21,6 +21,7 @@ interface MessageProps {
   setExpandedThinking: (value: (prev: number[]) => number[]) => void;
   followUpQuestions?: string[];
   onQuestionClick?: (question: string) => void;
+  isGeneratingQuestions?: boolean;
 }
 
 export const Message = ({
@@ -31,7 +32,8 @@ export const Message = ({
   expandedThinking,
   setExpandedThinking,
   followUpQuestions = [],
-  onQuestionClick
+  onQuestionClick,
+  isGeneratingQuestions
 }: MessageProps) => {
   const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
   const [thinkingTime, setThinkingTime] = useState(0);
@@ -463,7 +465,7 @@ export const Message = ({
           </div>
         )}
 
-        {!isLoading && mainContent && followUpQuestions.length > 0 && index === currentMessageIndex && (
+        {!isLoading && mainContent && followUpQuestions && followUpQuestions.length > 0 && index === currentMessageIndex && (
           <div className="mt-8 relative">
             <div className="absolute -left-6 top-0 bottom-0 w-[2px] bg-gradient-to-b from-primary/80 via-primary/50 to-transparent" />
             
@@ -478,7 +480,7 @@ export const Message = ({
                 </h3>
               </div>
 
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid gap-2">
                 {followUpQuestions.map((question, promptIndex) => (
                   <button
                     key={promptIndex}
@@ -495,6 +497,39 @@ export const Message = ({
                       {question}
                     </span>
                   </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isGeneratingQuestions && index === currentMessageIndex && (
+          <div className="mt-8 relative animate-fade-in">
+            <div className="absolute -left-6 top-0 bottom-0 w-[2px] bg-gradient-to-b from-primary/80 via-primary/50 to-transparent" />
+            
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-2 h-2 rounded-full bg-primary/90" />
+                  <div className="absolute inset-0 w-2 h-2 rounded-full bg-primary animate-ping opacity-75" />
+                </div>
+                <h3 className="text-sm font-medium bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent flex items-center gap-2">
+                  Generating Related Questions
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse [animation-delay:200ms]" />
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse [animation-delay:400ms]" />
+                </h3>
+              </div>
+
+              <div className="grid gap-2">
+                {[1, 2, 3, 4].map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 w-full p-3 text-sm rounded-lg bg-background/40 dark:bg-white/[0.03] border border-border/40 dark:border-white/[0.05] animate-pulse"
+                  >
+                    <div className="shrink-0 w-6 h-6 rounded-md bg-primary/5" />
+                    <div className="flex-1 h-4 bg-primary/5 rounded" />
+                  </div>
                 ))}
               </div>
             </div>
