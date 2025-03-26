@@ -93,9 +93,34 @@ export const streamGenerateContent = async (
 
   try {
     const result = await chat.sendMessageStream(parts);
+    let buffer = '';
+    let lastChunkTime = Date.now();
+    const MIN_CHUNK_DELAY = 50; // Minimum delay between chunks
+
     for await (const chunk of result.stream) {
       const chunkText = chunk.text();
-      onToken(chunkText);
+      buffer += chunkText;
+
+      // Add controlled delay between chunks
+      const timeSinceLastChunk = Date.now() - lastChunkTime;
+      if (timeSinceLastChunk < MIN_CHUNK_DELAY) {
+        await new Promise(resolve => setTimeout(resolve, MIN_CHUNK_DELAY - timeSinceLastChunk));
+      }
+
+      // Send buffer in smaller chunks for smoother appearance
+      const words = buffer.split(' ');
+      while (words.length > 3) { // Send 3 words at a time
+        const chunk = words.splice(0, 3).join(' ') + ' ';
+        onToken(chunk);
+        await new Promise(resolve => setTimeout(resolve, 30)); // Small delay between word groups
+      }
+      buffer = words.join(' ');
+      lastChunkTime = Date.now();
+    }
+
+    // Send remaining buffer
+    if (buffer) {
+      onToken(buffer);
     }
   } catch (error) {
     console.error('Error in Gemini stream:', error);
