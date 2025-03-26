@@ -271,8 +271,14 @@ export const Message = ({
                 return (
                   <div className="relative group rounded-[4px] overflow-hidden mb-6">
                     <div className="flex items-center justify-between px-4 py-2 bg-gray-800 dark:bg-secondary/50 border-b border-border/40">
-                      <div className="text-xs text-gray-200 dark:text-muted-foreground font-mono lowercase">
-                        {language}
+                      <div className="flex items-center gap-4">
+                        <div className="text-xs text-gray-200 dark:text-muted-foreground font-['Space_Mono'] lowercase">
+                          {language}
+                        </div>
+                        <div className="text-[11px] text-yellow-200/70 dark:text-yellow-200/50 font-['Space_Mono'] flex items-center gap-1.5">
+                          <div className="w-1 h-1 rounded-full bg-yellow-400/70 dark:bg-yellow-400/50" />
+                          Use code with caution
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
