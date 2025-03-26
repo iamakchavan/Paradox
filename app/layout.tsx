@@ -42,6 +42,10 @@ export default function RootLayout({
       <head>
         <link
           rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap"
+        />
+        <link
+          rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
         />
         <link

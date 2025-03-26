@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, FileText, ArrowUp } from 'lucide-react';
+import { ChevronDown, FileText, ArrowUp, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
@@ -103,6 +103,71 @@ export const Message = ({
     setTimeout(() => setCopiedBlockId(null), 2000);
   };
 
+  const handleDownloadClick = (code: string, language: string) => {
+    // Map language to file extension
+    const extensionMap: { [key: string]: string } = {
+      javascript: 'js',
+      typescript: 'ts',
+      python: 'py',
+      java: 'java',
+      cpp: 'cpp',
+      'c++': 'cpp',
+      ruby: 'rb',
+      php: 'php',
+      swift: 'swift',
+      go: 'go',
+      rust: 'rs',
+      csharp: 'cs',
+      html: 'html',
+      css: 'css',
+      sql: 'sql',
+      yaml: 'yml',
+      json: 'json',
+      xml: 'xml',
+      markdown: 'md',
+      bash: 'sh',
+      shell: 'sh',
+      dockerfile: 'Dockerfile',
+      env: '.env'
+    };
+
+    // Generate filename based on content and language
+    const extension = extensionMap[language.toLowerCase()] || language.toLowerCase();
+    let filename = '';
+    
+    // Try to infer a meaningful name from the first line or content
+    const firstLine = code.split('\n')[0].toLowerCase();
+    if (firstLine.includes('class')) {
+      filename = firstLine.split('class')[1].trim().split(/[\s{]/)[0];
+    } else if (firstLine.includes('function')) {
+      filename = firstLine.split('function')[1].trim().split(/[\s(]/)[0];
+    } else if (language === 'env') {
+      filename = '.env';
+    } else {
+      // Default name based on type of content
+      if (code.includes('router') || code.includes('app.use')) {
+        filename = 'routes';
+      } else if (code.includes('component') || code.includes('render')) {
+        filename = 'component';
+      } else if (code.includes('test') || code.includes('describe')) {
+        filename = 'test';
+      } else {
+        filename = 'code';
+      }
+    }
+
+    // Create file and trigger download
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename === '.env' ? filename : `${filename}.${extension}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
   if (message.role === 'user') {
     return (
       <div className="flex justify-end mb-12">
@@ -204,80 +269,102 @@ export const Message = ({
                 const codeString = String(children).replace(/\n$/, '');
                 const blockId = `${index}-${codeString}`;
                 return (
-                  <div className="relative group rounded-lg overflow-hidden mb-6">
+                  <div className="relative group rounded-[4px] overflow-hidden mb-6">
                     <div className="flex items-center justify-between px-4 py-2 bg-gray-800 dark:bg-secondary/50 border-b border-border/40">
                       <div className="text-xs text-gray-200 dark:text-muted-foreground font-mono lowercase">
                         {language}
                       </div>
-                      <button
-                        onClick={() => handleCopyClick(codeString)}
-                        className="flex items-center gap-2 text-xs text-gray-200 hover:text-white dark:text-muted-foreground dark:hover:text-foreground transition-colors"
-                      >
-                        <div className="relative flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-700/80 dark:hover:bg-secondary/80 transition-all duration-200">
-                          <div className="relative w-4 h-4">
-                            <svg
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              className={cn(
-                                "absolute inset-0 w-4 h-4 transition-all duration-200",
-                                copiedBlockId === blockId ? "opacity-0 scale-75" : "opacity-100 scale-100"
-                              )}
-                            >
-                              <path
-                                d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                              />
-                              <path
-                                d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                              />
-                            </svg>
-                            <svg
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              className={cn(
-                                "absolute inset-0 w-4 h-4 text-green-500 transition-all duration-200",
-                                copiedBlockId === blockId ? "opacity-100 scale-100" : "opacity-0 scale-75"
-                              )}
-                            >
-                              <path
-                                d="M4.5 12.75L10.5 18.75L19.5 5.25"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleDownloadClick(codeString, language)}
+                          className="flex items-center gap-2 text-xs text-gray-200 hover:text-white dark:text-muted-foreground dark:hover:text-foreground transition-colors"
+                        >
+                          <div className="relative flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-700/80 dark:hover:bg-secondary/80 transition-all duration-200">
+                            <Download className="w-4 h-4" />
                           </div>
-                          <span className="relative">
-                            <span className={cn(
-                              "inline-block transition-all duration-200",
-                              copiedBlockId === blockId ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
-                            )}>
-                              Copy
-                            </span>
-                            <span className={cn(
-                              "absolute left-0 top-0 inline-block transition-all duration-200",
-                              copiedBlockId === blockId ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
-                            )}>
-                              Copied!
-                            </span>
-                          </span>
-                        </div>
-                      </button>
+                        </button>
+                        <button
+                          onClick={() => handleCopyClick(codeString)}
+                          className="flex items-center gap-2 text-xs text-gray-200 hover:text-white dark:text-muted-foreground dark:hover:text-foreground transition-colors"
+                        >
+                          <div className="relative flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-700/80 dark:hover:bg-secondary/80 transition-all duration-200">
+                            <div className="relative w-4 h-4">
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                className={cn(
+                                  "absolute inset-0 w-4 h-4 transition-all duration-200",
+                                  copiedBlockId === blockId ? "opacity-0 scale-75" : "opacity-100 scale-100"
+                                )}
+                              >
+                                <path
+                                  d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                />
+                                <path
+                                  d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5"
+                                  stroke="currentColor"
+                                  strokeWidth="1.5"
+                                />
+                              </svg>
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                className={cn(
+                                  "absolute inset-0 w-4 h-4 text-green-500 transition-all duration-200",
+                                  copiedBlockId === blockId ? "opacity-100 scale-100" : "opacity-0 scale-75"
+                                )}
+                              >
+                                <path
+                                  d="M4.5 12.75L10.5 18.75L19.5 5.25"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </div>
+                          </div>
+                        </button>
+                      </div>
                     </div>
                     <SyntaxHighlighter
                       language={language}
-                      style={oneDark}
+                      style={{
+                        ...oneDark,
+                        'pre[class*="language-"]': {
+                          ...oneDark['pre[class*="language-"]'],
+                          background: 'hsl(200, 25%, 10%)', // Modern dark cyan tint
+                          fontFamily: "'Space Mono', monospace",
+                        },
+                        'code[class*="language-"]': {
+                          ...oneDark['code[class*="language-"]'],
+                          background: 'hsl(200, 25%, 10%)', // Modern dark cyan tint
+                          fontFamily: "'Space Mono', monospace",
+                        }
+                      }}
+                      showLineNumbers={true}
+                      lineNumberStyle={{
+                        minWidth: '3.5em',
+                        paddingRight: '1em',
+                        textAlign: 'right',
+                        color: 'hsl(200, 10%, 45%)',
+                        fontFamily: "'Space Mono', monospace",
+                        borderRight: '1px solid hsl(200, 15%, 15%)',
+                        marginRight: '1em',
+                        userSelect: 'none'
+                      }}
                       customStyle={{
                         margin: 0,
                         padding: '1rem',
-                        borderRadius: '0 0 0.5rem 0.5rem',
+                        borderRadius: '0 0 4px 4px',
                         fontSize: '0.875rem',
-                        fontFamily: 'JetBrains Mono, monospace',
+                        fontFamily: "'Space Mono', monospace",
+                        background: 'hsl(200, 25%, 10%)', // Modern dark cyan tint
                       }}
+                      className="syntax-highlighter"
+                      wrapLongLines={false}
                     >
                       {codeString}
                     </SyntaxHighlighter>

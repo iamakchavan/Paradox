@@ -490,3 +490,35 @@
 .text-sm.font-medium.bg-gradient-to-r {
   @apply from-cyan-500 to-cyan-600 dark:from-cyan-400 dark:to-cyan-500;
 }
+
+/* Code block scrollbar styling */
+.syntax-highlighter::-webkit-scrollbar {
+  height: 6px;
+  cursor: pointer;
+}
+
+.syntax-highlighter::-webkit-scrollbar-track {
+  background: hsl(200, 25%, 15%);
+  border-radius: 0 0 4px 4px;
+}
+
+.syntax-highlighter::-webkit-scrollbar-thumb {
+  background: hsl(200, 20%, 30%);
+  border-radius: 4px;
+}
+
+.syntax-highlighter::-webkit-scrollbar-thumb:hover {
+  background: hsl(200, 20%, 40%);
+}
+
+.dark .syntax-highlighter::-webkit-scrollbar-track {
+  background: hsl(200, 25%, 8%);
+}
+
+.dark .syntax-highlighter::-webkit-scrollbar-thumb {
+  background: hsl(200, 15%, 25%);
+}
+
+.dark .syntax-highlighter::-webkit-scrollbar-thumb:hover {
+  background: hsl(200, 15%, 35%);
+}
