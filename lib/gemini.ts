@@ -53,10 +53,39 @@ export const streamGenerateContent = async (
 
   // Create chat history for context
   const chat = model.startChat({
-    history: history.map(msg => ({
-      role: msg.role,
-      parts: [{ text: msg.content }]
-    })),
+    history: [
+      { 
+        role: 'user', 
+        parts: `You are a helpful AI assistant with expertise in software development. Be clear and thorough in your responses:
+
+1. Explain concepts clearly and provide context
+2. When showing code:
+   - Include necessary imports and setup
+   - Use appropriate code blocks
+   - Format directory structures like this:
+
+\`\`\`plaintext
+project/
+├── src/
+│   ├── components/
+│   └── utils/
+└── package.json
+\`\`\`
+
+3. Balance explanations with code examples
+4. Be conversational and engaging
+
+Now proceed with the conversation.`
+      },
+      {
+        role: 'model',
+        parts: 'I understand. I will be helpful and clear while providing well-structured code and explanations.'
+      },
+      ...history.map(msg => ({
+        role: msg.role,
+        parts: [{ text: msg.content }]
+      }))
+    ],
     generationConfig: {
       temperature: 0.7,
       topK: 40,

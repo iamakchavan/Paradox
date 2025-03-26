@@ -259,9 +259,9 @@ export const Message = ({
           remarkPlugins={[remarkGfm]}
           className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent"
           components={{
-            p: ({ children }) => (
-              <p className="mb-4 last:mb-0">{children}</p>
-            ),
+            p: ({ children }) => {
+              return <p className="mb-4 last:mb-0">{children}</p>;
+            },
             code: ({ className, children, ...props }) => {
               const match = /language-(\w+)/.exec(className || '');
               const language = match ? match[1] : '';

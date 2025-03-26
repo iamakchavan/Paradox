@@ -101,12 +101,41 @@ export default function ChatPage() {
     ]
   ];
 
-  const [suggestedPrompts, setSuggestedPrompts] = useState(promptSets[0]);
+  // Function to get random prompts using a seed
+  const getRandomPrompts = (seed: number = 0) => {
+    const usedIndices = new Set<number>();
+    const result: string[] = [];
+    
+    // Use a deterministic way to select prompts based on the seed
+    const setIndex = seed % promptSets.length;
+    const promptSet = promptSets[setIndex];
+    
+    // Select all prompts from the same set to ensure consistency
+    result.push(...promptSet);
+    
+    return result;
+  };
+
+  // Initialize with a fixed seed for server-side rendering
+  const [suggestedPrompts, setSuggestedPrompts] = useState(() => getRandomPrompts(0));
 
   useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * promptSets.length);
-    setSuggestedPrompts(promptSets[randomIndex]);
-  }, []);
+    // Only update prompts on the client side after initial render
+    if (typeof window !== 'undefined') {
+      const timeBasedSeed = Math.floor(Date.now() / 30000); // Change every 30 seconds
+      setSuggestedPrompts(getRandomPrompts(timeBasedSeed));
+
+      // Refresh prompts every 30 seconds if the page is in initial view
+      const interval = setInterval(() => {
+        if (isInitialView) {
+          const newSeed = Math.floor(Date.now() / 30000);
+          setSuggestedPrompts(getRandomPrompts(newSeed));
+        }
+      }, 30000);
+
+      return () => clearInterval(interval);
+    }
+  }, [isInitialView]);
 
   useEffect(() => {
     const storedGeminiKey = localStorage.getItem('gemini-api-key');
