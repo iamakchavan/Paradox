@@ -94,28 +94,39 @@ export const streamGenerateContent = async (
   try {
     const result = await chat.sendMessageStream(parts);
     let buffer = '';
-    let lastChunkTime = Date.now();
-    const MIN_CHUNK_DELAY = 50; // Minimum delay between chunks
+    let lastUpdateTime = Date.now();
+    let totalLength = 0;
+    
+    // Dynamic chunk sizing and delay calculation
+    const getChunkConfig = (length: number) => {
+      if (length > 5000) return { words: 25, delay: 10 };
+      if (length > 2000) return { words: 15, delay: 20 };
+      if (length > 1000) return { words: 10, delay: 25 };
+      return { words: 5, delay: 30 };
+    };
 
     for await (const chunk of result.stream) {
       const chunkText = chunk.text();
       buffer += chunkText;
+      totalLength += chunkText.length;
 
-      // Add controlled delay between chunks
-      const timeSinceLastChunk = Date.now() - lastChunkTime;
-      if (timeSinceLastChunk < MIN_CHUNK_DELAY) {
-        await new Promise(resolve => setTimeout(resolve, MIN_CHUNK_DELAY - timeSinceLastChunk));
-      }
+      const { words, delay } = getChunkConfig(totalLength);
+      const timeSinceLastUpdate = Date.now() - lastUpdateTime;
 
-      // Send buffer in smaller chunks for smoother appearance
-      const words = buffer.split(' ');
-      while (words.length > 3) { // Send 3 words at a time
-        const chunk = words.splice(0, 3).join(' ') + ' ';
-        onToken(chunk);
-        await new Promise(resolve => setTimeout(resolve, 30)); // Small delay between word groups
+      // Process buffer if we have enough words or enough time has passed
+      if (timeSinceLastUpdate >= delay * 2) {
+        const words = buffer.split(' ');
+        const chunkSize = Math.min(words.length, Math.ceil(buffer.length / 50)); // Dynamic chunk size
+        
+        while (words.length >= chunkSize) {
+          const chunk = words.splice(0, chunkSize).join(' ') + ' ';
+          onToken(chunk);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        buffer = words.join(' ');
+        lastUpdateTime = Date.now();
       }
-      buffer = words.join(' ');
-      lastChunkTime = Date.now();
     }
 
     // Send remaining buffer
