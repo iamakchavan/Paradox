@@ -82,6 +82,7 @@ export const ChatInput = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
@@ -107,6 +108,20 @@ export const ChatInput = ({
       textareaRef.current.focus();
     }
   }, [shouldFocus, isInitialView]);
+
+  useEffect(() => {
+    // Detect mobile device
+    const checkMobile = () => {
+      setIsMobile(
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        (window.innerWidth <= 768 && 'ontouchstart' in window)
+      );
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -243,9 +258,15 @@ export const ChatInput = ({
               adjustTextareaHeight();
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit();
+              // On mobile: Enter always creates new line
+              // On desktop: Shift+Enter creates new line, Enter sends message
+              if (e.key === 'Enter') {
+                if (isMobile || e.shiftKey) {
+                  return; // Let the default behavior create a new line
+                } else {
+                  e.preventDefault();
+                  handleSubmit();
+                }
               }
             }}
             onPaste={(e: React.ClipboardEvent<HTMLTextAreaElement>) => {
