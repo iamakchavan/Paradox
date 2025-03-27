@@ -356,7 +356,7 @@ export const ChatInput = ({
                       className={cn(
                         "transition-all duration-200 overflow-hidden shrink-0",
                         "h-8 w-8 sm:h-9 sm:w-9",
-                        useDeveloperMode && "w-[120px] sm:w-[140px] bg-primary/10 hover:bg-primary/20",
+                        useDeveloperMode && "w-[120px] sm:w-[140px] bg-cyan-600 text-white hover:bg-cyan-700",
                         !useDeveloperMode && "w-8 sm:w-9 hover:bg-primary/10",
                       )}
                       disabled={!geminiApiKey || isLoading || useWebSearch || useReasoning}
@@ -399,7 +399,7 @@ export const ChatInput = ({
                       className={cn(
                         "transition-all duration-200 overflow-hidden shrink-0",
                         "h-8 w-8 sm:h-9 sm:w-9",
-                        useReasoning && "w-[90px] sm:w-[110px] bg-primary/10 hover:bg-primary/20",
+                        useReasoning && "w-[90px] sm:w-[110px] bg-cyan-600 text-white hover:bg-cyan-700",
                         !useReasoning && "w-8 sm:w-9 hover:bg-primary/10",
                       )}
                       onClick={() => {
@@ -433,7 +433,7 @@ export const ChatInput = ({
                       className={cn(
                         "transition-all duration-200 overflow-hidden shrink-0",
                         "h-8 w-8 sm:h-9 sm:w-9",
-                        useWebSearch && "w-[80px] sm:w-[90px] bg-primary/10 hover:bg-primary/20",
+                        useWebSearch && "w-[80px] sm:w-[90px] bg-cyan-600 text-white hover:bg-cyan-700",
                         !useWebSearch && "w-8 sm:w-9 hover:bg-primary/10",
                       )}
                       onClick={() => {

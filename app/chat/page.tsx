@@ -678,12 +678,10 @@ export default function ChatPage() {
                       key={index}
                       onClick={() => handlePromptClick(prompt)}
                       className={cn(
-                        "p-4 text-sm text-left rounded-xl bg-white dark:bg-white/5",
-                        "border border-black/[0.08] dark:border-white/[0.08]",
-                        "hover:border-black/[0.15] dark:hover:border-white/[0.15]",
-                        "hover:bg-white dark:hover:bg-white/10",
-                        "transition-all duration-200",
-                        "group relative overflow-hidden shadow-sm"
+                        "p-4 text-sm text-left rounded-md bg-background/80 backdrop-blur-sm",
+                        "border border-border hover:border-primary/20 dark:hover:border-primary/20",
+                        "shadow-lg transition-all duration-200",
+                        "group relative overflow-hidden"
                       )}
                       disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
                     >
