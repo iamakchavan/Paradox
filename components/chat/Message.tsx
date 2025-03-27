@@ -277,8 +277,8 @@ export const Message = ({
                         <div className="text-xs text-gray-200 dark:text-muted-foreground font-['Space_Mono'] lowercase">
                           {language}
                         </div>
-                        <div className="text-[11px] text-yellow-200/70 dark:text-yellow-200/50 font-['Space_Mono'] flex items-center gap-1.5">
-                          <div className="w-1 h-1 rounded-full bg-yellow-400/70 dark:bg-yellow-400/50" />
+                        <div className="text-[11px] text-cyan-200/70 dark:text-cyan-200/50 font-['Space_Mono'] flex items-center gap-1.5">
+                          <div className="w-1 h-1 rounded-full bg-cyan-400/70 dark:bg-cyan-400/50" />
                           Use code with caution
                         </div>
                       </div>

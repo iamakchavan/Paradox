@@ -292,7 +292,7 @@ export const ChatInput = ({
                 }
               }
             }}
-            placeholder="Type your message..."
+            placeholder="Ask anything..."
             className={cn(
               "w-full placeholder:text-muted-foreground/70 focus:outline-none focus:ring-0 resize-none border-0 bg-transparent",
               "selection:bg-primary/20 selection:text-foreground",
