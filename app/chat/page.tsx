@@ -77,6 +77,7 @@ export default function ChatPage() {
   const [processingPDF, setProcessingPDF] = useState(false);
   const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
 
   const promptSets = [
     [
@@ -550,6 +551,32 @@ export default function ChatPage() {
     }
   }, [isLoading]);
 
+  // Add a new useEffect to handle scroll button visibility
+  useEffect(() => {
+    if (isInitialView) return;
+    
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      const scrollHeight = document.body.scrollHeight;
+      const windowHeight = window.innerHeight;
+      
+      // Show button when scrolled up at least 200px from bottom
+      const threshold = 200;
+      const isNearBottom = scrollHeight - (scrollPosition + windowHeight) <= threshold;
+      setShowScrollButton(!isNearBottom && scrollHeight > windowHeight + threshold);
+    };
+    
+    // Initial check
+    handleScroll();
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isInitialView]);
+  
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <main className="flex flex-col min-h-screen bg-background">
       {/* Header */}
@@ -728,6 +755,23 @@ export default function ChatPage() {
           "max-w-2xl left-1/2 -translate-x-1/2 z-10",
           "bottom-6 sm:bottom-12 px-2 sm:px-4"
         )}>
+          <div className="absolute right-4 -top-14 z-20">
+            <Button 
+              onClick={scrollToBottom} 
+              size="icon" 
+              className={cn(
+                "h-10 w-10 rounded-full shadow-md border-none",
+                "bg-cyan-600 text-white hover:bg-cyan-700",
+                "dark:bg-cyan-800/80 dark:hover:bg-cyan-700/90",
+                "transform transition-all duration-300 ease-in-out",
+                "flex items-center justify-center",
+                showScrollButton ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
+              )}
+              aria-label="Scroll to bottom"
+            >
+              <ArrowUp className="h-5 w-5 rotate-180" />
+            </Button>
+          </div>
           <ChatInput
             message={message}
             setMessage={setMessage}
