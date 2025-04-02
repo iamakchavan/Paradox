@@ -12,8 +12,10 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
   <img src="components/paradoxpre.png" alt="Paradox Site Preview" width="100%">
 </p>
 
-[![Deploy your own](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamakchavan%2Fparadox)
-[![Uses Vercel AI SDK](https://img.shields.io/badge/Uses-Vercel%20AI%20SDK-black?style=flat-square)](https://sdk.vercel.ai/docs)
+<div align="center">
+  
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamakchavan%2Fparadox)
+[![Built with Vercel AI SDK](https://img.shields.io/badge/Built%20with-Vercel%20AI%20SDK-black?style=for-the-badge&logo=vercel)](https://sdk.vercel.ai/docs)
 
 </div>
 
@@ -266,7 +268,7 @@ The voice agent features:
 ## Technical Architecture
 
 ### Frontend Architecture
-- **Next.js 14+**
+- **Next.js**
   - App Router for optimized routing
   - Server and Client Components
   - React Server Components (RSC)
@@ -426,5 +428,5 @@ Paradox is licensed under the MIT License. See the [LICENSE](LICENSE) file for d
 ---
 
 <div align="center">
-Made with ❤️ by [iamakchavan](https://github.com/iamakchavan) & [bytesizeddiva](https://github.com/bytesizeddiva)
+Made with ❤️ by <a href="https://github.com/iamakchavan">iamakchavan</a> & <a href="https://github.com/bytesizeddiva">bytesizeddiva</a>
 </div>
