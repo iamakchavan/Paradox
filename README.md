@@ -12,10 +12,8 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
   <img src="components/paradoxpre.png" alt="Paradox Site Preview" width="100%">
 </p>
 
-<div align="center">
-  
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamakchavan%2Fparadox)
-[![Built with Vercel AI SDK](https://img.shields.io/badge/Built%20with-Vercel%20AI%20SDK-black?style=for-the-badge&logo=vercel)](https://sdk.vercel.ai/docs)
+[![Deploy your own](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fiamakchavan%2Fparadox)
+[![Uses Vercel AI SDK](https://img.shields.io/badge/Vercel%20AI%20SDK-black?style=for-the-badge&logo=vercel)](https://sdk.vercel.ai/docs)
 
 </div>
 
