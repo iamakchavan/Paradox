@@ -18,7 +18,7 @@
 # misc
 .DS_Store
 *.pem
-.bolt/prompt
+.paradox-config/prompt
 
 # debug
 npm-debug.log*
