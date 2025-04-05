@@ -24,6 +24,35 @@ interface MessageProps {
   isGeneratingQuestions?: boolean;
 }
 
+// Language logo mapping
+const getLanguageLogo = (language: string): string => {
+  const logos: { [key: string]: string } = {
+    javascript: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg',
+    typescript: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg',
+    python: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg',
+    java: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg',
+    cpp: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg',
+    'c++': 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/cplusplus/cplusplus-original.svg',
+    ruby: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ruby/ruby-original.svg',
+    php: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg',
+    swift: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg',
+    go: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg',
+    rust: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg',
+    csharp: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg',
+    html: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg',
+    css: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg',
+    sql: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg',
+    yaml: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/yaml/yaml-original.svg',
+    json: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg',
+    xml: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/xml/xml-original.svg',
+    markdown: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/markdown/markdown-original.svg',
+    bash: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg',
+    shell: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bash/bash-original.svg',
+    dockerfile: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg',
+  };
+  return logos[language.toLowerCase()] || '';
+};
+
 export const Message = ({
   message,
   index,
@@ -270,11 +299,19 @@ export const Message = ({
               if (!isInline && language) {
                 const codeString = String(children).replace(/\n$/, '');
                 const blockId = `${index}-${codeString}`;
+                const languageLogo = getLanguageLogo(language);
                 return (
                   <div className="relative group rounded-[4px] overflow-hidden mb-6">
-                    <div className="flex items-center justify-between px-4 py-2 bg-gray-800 dark:bg-secondary/50 border-b border-border/40">
+                    <div className="h-12 flex items-center justify-between px-4 bg-gray-800 dark:bg-secondary/50 border-b border-border/40">
                       <div className="flex items-center gap-4">
-                        <div className="text-xs text-gray-200 dark:text-muted-foreground font-['Space_Mono'] lowercase">
+                        <div className="h-full flex items-center gap-1.5 text-xs text-gray-200 dark:text-muted-foreground font-['Space_Mono'] lowercase">
+                          {languageLogo && (
+                            <img 
+                              src={languageLogo} 
+                              alt={`${language} logo`} 
+                              className="w-3.5 h-3.5"
+                            />
+                          )}
                           {language}
                         </div>
                         <div className="text-[11px] text-cyan-400/90 dark:text-cyan-300/90 font-['Space_Mono'] flex items-center gap-1.5">
