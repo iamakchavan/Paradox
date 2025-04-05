@@ -428,3 +428,10 @@ Paradox is licensed under the MIT License. See the [LICENSE](LICENSE) file for d
 <div align="center">
 Made with ❤️ by <a href="https://github.com/iamakchavan">iamakchavan</a> & <a href="https://github.com/bytesizeddiva">bytesizeddiva</a>
 </div>
+
+## Recent Updates
+
+### Code Blocks
+- Added language logos in code block headers
+- Supports 45+ programming languages and file types
+- Has copy and download functionality
