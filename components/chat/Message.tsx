@@ -84,9 +84,9 @@ const getLanguageLogo = (language: string): string => {
     mongodb: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg',
     postgresql: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg',
     redis: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg',
-    text: 'https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/main/icons/text.svg',
-    plaintext: 'https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/main/icons/text.svg',
-    txt: 'https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/main/icons/text.svg',
+    text: 'https://cdn.jsdelivr.net/gh/PKief/vscode-material-icon-theme/icons/file.svg',
+    plaintext: 'https://cdn.jsdelivr.net/gh/PKief/vscode-material-icon-theme/icons/file.svg',
+    txt: 'https://cdn.jsdelivr.net/gh/PKief/vscode-material-icon-theme/icons/file.svg',
     csv: 'https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/main/icons/table.svg',
   };
   return logos[language.toLowerCase()] || '';
