@@ -88,6 +88,38 @@ const getLanguageLogo = (language: string): string => {
     plaintext: 'https://cdn.jsdelivr.net/gh/PKief/vscode-material-icon-theme/icons/file.svg',
     txt: 'https://cdn.jsdelivr.net/gh/PKief/vscode-material-icon-theme/icons/file.svg',
     csv: 'https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/main/icons/table.svg',
+    terraform: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/terraform/terraform-original.svg',
+    tf: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/terraform/terraform-original.svg',
+    hcl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/terraform/terraform-original.svg',
+    puppet: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/puppeteer/puppeteer-original.svg',
+    powershell: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/powershell/powershell-original.svg',
+    ps1: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/powershell/powershell-original.svg',
+    cfengine: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_cf.svg',
+    cf: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_cf.svg',
+    handlebars: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/handlebars/handlebars-original.svg',
+    hbs: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/handlebars/handlebars-original.svg',
+    maxscript: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/threedsmax/threedsmax-original.svg',
+    cairo: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/cairo/cairo-original.svg',
+    ini: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_ini.svg',
+    apl: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_apl.svg',
+    malbolge: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_binary.svg',
+    brainfuck: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_binary.svg',
+    lolcode: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_binary.svg',
+    intercal: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_binary.svg',
+    spl: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_binary.svg',
+    chef: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_binary.svg',
+    unlambda: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_binary.svg',
+    varfuck: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_binary.svg',
+    whitespace: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_binary.svg',
+    prolog: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prolog/prolog-original.svg',
+    forth: 'https://forth-standard.org/images/forth.png',
+    ceylon: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_ceylon.svg',
+    clarity: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_clarity.svg',
+    crystal: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/crystal/crystal-original.svg',
+    gherkin: 'https://cucumber.io/img/logo.svg',
+    cucumber: 'https://cucumber.io/img/logo.svg',
+    gitignore: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_git.svg',
+    env: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_env.svg',
   };
   return logos[language.toLowerCase()] || '';
 };
@@ -178,52 +210,112 @@ export const Message = ({
     const extensionMap: { [key: string]: string } = {
       javascript: 'js',
       typescript: 'ts',
+      jsx: 'jsx',
+      tsx: 'tsx',
       python: 'py',
       java: 'java',
       cpp: 'cpp',
       'c++': 'cpp',
+      c: 'c',
+      csharp: 'cs',
+      'c#': 'cs',
       ruby: 'rb',
-      php: 'php',
-      swift: 'swift',
       go: 'go',
       rust: 'rs',
-      csharp: 'cs',
+      php: 'php',
+      swift: 'swift',
+      kotlin: 'kt',
+      scala: 'scala',
       html: 'html',
       css: 'css',
-      sql: 'sql',
-      yaml: 'yml',
-      json: 'json',
+      scss: 'scss',
+      sass: 'sass',
+      less: 'less',
       xml: 'xml',
+      json: 'json',
+      yaml: 'yml',
+      yml: 'yml',
       markdown: 'md',
-      bash: 'sh',
+      md: 'md',
+      sql: 'sql',
       shell: 'sh',
+      bash: 'sh',
+      zsh: 'zsh',
+      powershell: 'ps1',
       dockerfile: 'Dockerfile',
-      env: '.env'
+      docker: 'Dockerfile',
+      env: 'env',
+      gitignore: 'gitignore',
+      ini: 'ini',
+      toml: 'toml',
+      lua: 'lua',
+      perl: 'pl',
+      r: 'r',
+      dart: 'dart',
+      vue: 'vue',
+      svelte: 'svelte',
+      graphql: 'graphql',
+      gql: 'graphql',
+      terraform: 'tf',
+      tf: 'tf',
+      hcl: 'hcl',
+      puppet: 'pp',
+      handlebars: 'hbs',
+      hbs: 'hbs',
+      maxscript: 'ms',
+      arduino: 'ino',
+      cairo: 'cairo',
+      apl: 'apl',
+      malbolge: 'mal',
+      brainfuck: 'bf',
+      lolcode: 'lol',
+      intercal: 'i',
+      spl: 'spl',
+      chef: 'chef',
+      unlambda: 'unl',
+      varfuck: 'vf',
+      whitespace: 'ws',
+      prolog: 'pl',
+      forth: 'fth',
+      ceylon: 'ceylon',
+      clarity: 'clar',
+      crystal: 'cr',
+      gherkin: 'feature',
+      cucumber: 'feature',
+      nginx: 'nginx.conf',
+      apache: 'htaccess',
+      properties: 'properties',
+      config: 'config',
+      conf: 'conf',
+      rc: 'rc',
+      editorconfig: 'editorconfig',
+      npmrc: 'npmrc',
+      yarnrc: 'yarnrc',
+      log: 'log'
     };
 
-    // Generate filename based on content and language
-    const extension = extensionMap[language.toLowerCase()] || language.toLowerCase();
+    // Special filename handling for certain types
     let filename = '';
-    
-    // Try to infer a meaningful name from the first line or content
-    const firstLine = code.split('\n')[0].toLowerCase();
-    if (firstLine.includes('class')) {
-      filename = firstLine.split('class')[1].trim().split(/[\s{]/)[0];
-    } else if (firstLine.includes('function')) {
-      filename = firstLine.split('function')[1].trim().split(/[\s(]/)[0];
+    if (language === 'dockerfile') {
+      filename = 'Dockerfile';
     } else if (language === 'env') {
       filename = '.env';
+    } else if (language === 'gitignore') {
+      filename = '.gitignore';
+    } else if (language === 'editorconfig') {
+      filename = '.editorconfig';
+    } else if (language === 'npmrc') {
+      filename = '.npmrc';
+    } else if (language === 'yarnrc') {
+      filename = '.yarnrc';
+    } else if (language === 'nginx') {
+      filename = 'nginx.conf';
+    } else if (language === 'apache') {
+      filename = '.htaccess';
     } else {
       // Default name based on type of content
-      if (code.includes('router') || code.includes('app.use')) {
-        filename = 'routes';
-      } else if (code.includes('component') || code.includes('render')) {
-        filename = 'component';
-      } else if (code.includes('test') || code.includes('describe')) {
-        filename = 'test';
-      } else {
-        filename = 'code';
-      }
+      const extension = extensionMap[language.toLowerCase()] || language;
+      filename = `code.${extension}`;
     }
 
     // Create file and trigger download
@@ -231,7 +323,7 @@ export const Message = ({
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = filename === '.env' ? filename : `${filename}.${extension}`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
