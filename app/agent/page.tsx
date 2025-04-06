@@ -95,6 +95,7 @@ export default function AgentPage() {
       <SettingsDialog 
         onApiKeySet={() => {}} 
         onPerplexityApiKeySet={() => {}}
+        onMistralApiKeySet={() => {}}
       />
     </main>
   );
