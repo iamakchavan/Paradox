@@ -326,7 +326,7 @@ export const ChatInput = ({
                 ref={fileInputRef}
                 onChange={handleFileUpload}
                 className="hidden"
-                accept="image/*,application/pdf"
+                accept={useFastResponse ? "image/*" : "image/*,application/pdf"}
                 multiple
               />
               <TooltipProvider delayDuration={300}>

@@ -201,6 +201,10 @@ export default function ChatPage() {
 
     for (const file of Array.from(files)) {
       if (file.type === 'application/pdf') {
+        if (useFastResponse) {
+          setError('PDF uploads are not supported in fast response mode');
+          continue;
+        }
         if (file.size > 10 * 1024 * 1024) { // 10MB limit for PDFs
           setError('PDF size should be less than 10MB');
           continue;
@@ -373,11 +377,19 @@ export default function ChatPage() {
         );
       } else if (useFastResponse && mistralApiKey) {
         await streamMistralContent(
-          message,
-          history.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          })),
+          promptMessage,
+          [
+            ...history.map(msg => ({
+              role: msg.role,
+              content: msg.content,
+              images: msg.images
+            })),
+            {
+              role: 'user',
+              content: promptMessage,
+              images: selectedImages.length > 0 ? selectedImages : undefined
+            }
+          ],
           (token) => {
             streamedText += token;
             setConversation(prev => {
@@ -529,6 +541,32 @@ export default function ChatPage() {
             });
           },
           useReasoning ? 'sonar-reasoning' : 'sonar'
+        );
+      } else if (useFastResponse && mistralApiKey) {
+        await streamMistralContent(
+          promptMessage,
+          [
+            ...history.map(msg => ({
+              role: msg.role,
+              content: msg.content,
+              images: msg.images
+            })),
+            {
+              role: 'user',
+              content: promptMessage
+            }
+          ],
+          (token) => {
+            streamedText += token;
+            setConversation(prev => {
+              const newConv = [...prev];
+              newConv[newConv.length - 1] = {
+                role: 'assistant',
+                content: streamedText
+              };
+              return newConv;
+            });
+          }
         );
       } else {
         await streamGenerateContent(

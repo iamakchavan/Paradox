@@ -1,3 +1,13 @@
+// Types for Mistral API content
+type MistralContentType = 
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: string };
+
+type MistralMessage = {
+  role: string;
+  content: string | MistralContentType[];
+};
+
 let mistralApiKey: string | null = null;
 
 export const initMistral = (apiKey: string) => {
@@ -14,12 +24,33 @@ export const getMistralApi = () => {
 
 export const streamMistralContent = async (
   message: string,
-  history: { role: string; content: string }[],
+  history: { role: string; content: string; images?: string[] }[],
   onToken: (token: string) => void
 ) => {
   const api = getMistralApi();
   
   try {
+    // Convert history and current message to Mistral's format
+    const formattedMessages: MistralMessage[] = history.map(msg => {
+      if (msg.images && msg.images.length > 0) {
+        const content: MistralContentType[] = [
+          { type: 'text', text: msg.content },
+          ...msg.images.map(img => ({
+            type: 'image_url' as const,
+            image_url: img
+          }))
+        ];
+        return { role: msg.role, content };
+      }
+      return { role: msg.role, content: msg.content };
+    });
+
+    // Add current message to messages array
+    formattedMessages.push({
+      role: 'user',
+      content: message
+    });
+
     const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -28,10 +59,7 @@ export const streamMistralContent = async (
       },
       body: JSON.stringify({
         model: 'mistral-small-latest',
-        messages: [
-          ...history,
-          { role: 'user', content: message }
-        ],
+        messages: formattedMessages,
         stream: true,
         temperature: 0.7,
         max_tokens: 1000
