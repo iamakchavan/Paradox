@@ -380,7 +380,7 @@ export const Message = ({
   const { thinking, mainContent } = processThinkingContent(message.content);
 
   return (
-    <div className="pl-2 sm:pl-4 pr-8 sm:pr-12 mb-12 text-foreground">
+    <div className="pl-2 sm:pl-4 mb-12 text-foreground">
       {thinking && (
         <div className="mb-4">
           <button
@@ -421,7 +421,7 @@ export const Message = ({
           )}
         </div>
       )}
-      <div className="relative group">
+      <div className="relative group w-full">
         <ReactMarkdown 
           remarkPlugins={[remarkGfm]}
           className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0"
