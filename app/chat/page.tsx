@@ -664,7 +664,7 @@ export default function ChatPage() {
             <div className="flex flex-col items-center gap-10 sm:gap-14 px-4 sm:px-0">
               <div className="text-center animate-fade-in-up [animation-delay:200ms]">
                 <p className="text-2xl sm:text-3xl font-medium tracking-wide text-foreground" style={{ fontFamily: 'Kelly Slab' }}>
-                  What do you want to search?
+                  What should I get done today?
                 </p>
               </div>
 
