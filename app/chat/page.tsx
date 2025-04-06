@@ -5,6 +5,7 @@ import { Paperclip, ArrowUp, Globe2, PlusCircle, Settings, X, Lightbulb, Code2, 
 import { SettingsDialog } from '@/components/settings-dialog';
 import { getGeminiApi, initGemini, streamGenerateContent } from '@/lib/gemini';
 import { getPerplexityApi, initPerplexity, streamPerplexityContent } from '@/lib/perplexity';
+import { getMistralApi, initMistral, streamMistralContent } from '@/lib/mistral';
 import { ThemeToggle } from '@/components/theme-toggle';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -56,6 +57,7 @@ export default function ChatPage() {
   const [message, setMessage] = useState('');
   const [geminiApiKey, setGeminiApiKey] = useState<string | null>(null);
   const [perplexityApiKey, setPerplexityApiKey] = useState<string | null>(null);
+  const [mistralApiKey, setMistralApiKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conversation, setConversation] = useState<Message[]>([]);
@@ -64,6 +66,7 @@ export default function ChatPage() {
   const [useWebSearch, setUseWebSearch] = useState(false);
   const [useReasoning, setUseReasoning] = useState(false);
   const [useDeveloperMode, setUseDeveloperMode] = useState(false);
+  const [useFastResponse, setUseFastResponse] = useState(false);
   const [showDeveloperModeMessage, setShowDeveloperModeMessage] = useState(false);
   const [shouldFocus, setShouldFocus] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -139,6 +142,7 @@ export default function ChatPage() {
   useEffect(() => {
     const storedGeminiKey = localStorage.getItem('gemini-api-key');
     const storedPerplexityKey = localStorage.getItem('perplexity-api-key');
+    const storedMistralKey = localStorage.getItem('mistral-api-key');
     
     if (storedGeminiKey) {
       initGemini(storedGeminiKey);
@@ -148,6 +152,10 @@ export default function ChatPage() {
     if (storedPerplexityKey) {
       initPerplexity(storedPerplexityKey);
       setPerplexityApiKey(storedPerplexityKey);
+    }
+    if (storedMistralKey) {
+      initMistral(storedMistralKey);
+      setMistralApiKey(storedMistralKey);
     }
   }, []);
 
@@ -176,6 +184,7 @@ export default function ChatPage() {
     setUseWebSearch(false);
     setUseReasoning(false);
     setUseDeveloperMode(false);
+    setUseFastResponse(false);
     setShowDeveloperModeMessage(false);
     setShouldFocus(true);
   };
@@ -236,9 +245,13 @@ export default function ChatPage() {
   };
 
   const handleSubmit = async () => {
-    if ((!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0) || (!geminiApiKey && !perplexityApiKey)) return;
+    if ((!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0) || (!geminiApiKey && !perplexityApiKey && !mistralApiKey)) return;
     if ((useWebSearch || useReasoning) && !perplexityApiKey) {
       setError('Please set your Perplexity API key to use web search or reasoning');
+      return;
+    }
+    if (useFastResponse && !mistralApiKey) {
+      setError('Please set your Mistral API key to use fast response mode');
       return;
     }
 
@@ -357,6 +370,25 @@ export default function ChatPage() {
             });
           },
           useReasoning ? 'sonar-reasoning' : 'sonar'
+        );
+      } else if (useFastResponse && mistralApiKey) {
+        await streamMistralContent(
+          message,
+          history.map(msg => ({
+            role: msg.role,
+            content: msg.content
+          })),
+          (token) => {
+            streamedText += token;
+            setConversation(prev => {
+              const newConv = [...prev];
+              newConv[newConv.length - 1] = {
+                role: 'assistant',
+                content: streamedText
+              };
+              return newConv;
+            });
+          }
         );
       } else {
         await streamGenerateContent(
@@ -682,6 +714,8 @@ export default function ChatPage() {
                   setUseReasoning={setUseReasoning}
                   useDeveloperMode={useDeveloperMode}
                   setUseDeveloperMode={setUseDeveloperMode}
+                  useFastResponse={useFastResponse}
+                  setUseFastResponse={setUseFastResponse}
                   handleFileUpload={handleFileUpload}
                   theme={theme}
                   setTheme={setTheme}
@@ -783,6 +817,8 @@ export default function ChatPage() {
             setUseReasoning={setUseReasoning}
             useDeveloperMode={useDeveloperMode}
             setUseDeveloperMode={setUseDeveloperMode}
+            useFastResponse={useFastResponse}
+            setUseFastResponse={setUseFastResponse}
             handleFileUpload={handleFileUpload}
             theme={theme}
             setTheme={setTheme}
@@ -803,6 +839,7 @@ export default function ChatPage() {
       <SettingsDialog 
         onApiKeySet={setGeminiApiKey} 
         onPerplexityApiKeySet={setPerplexityApiKey}
+        onMistralApiKeySet={setMistralApiKey}
       />
 
       {processingPDF && (

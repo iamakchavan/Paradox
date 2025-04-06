@@ -13,11 +13,13 @@ import { Moon, Sun, Monitor } from "lucide-react";
 interface SettingsDialogProps {
   onApiKeySet: (apiKey: string) => void;
   onPerplexityApiKeySet: (apiKey: string) => void;
+  onMistralApiKeySet: (apiKey: string) => void;
 }
 
-export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet }: SettingsDialogProps) {
+export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet, onMistralApiKeySet }: SettingsDialogProps) {
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [perplexityApiKey, setPerplexityApiKey] = useState("");
+  const [mistralApiKey, setMistralApiKey] = useState("");
   const [elevenLabsApiKey, setElevenLabsApiKey] = useState("");
   const [elevenLabsAgentId, setElevenLabsAgentId] = useState("");
   const { theme, setTheme } = useTheme();
@@ -33,6 +35,10 @@ export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet }: SettingsD
       onPerplexityApiKeySet(perplexityApiKey.trim());
       localStorage.setItem("perplexity-api-key", perplexityApiKey.trim());
     }
+    if (mistralApiKey.trim()) {
+      onMistralApiKeySet(mistralApiKey.trim());
+      localStorage.setItem("mistral-api-key", mistralApiKey.trim());
+    }
     if (elevenLabsApiKey.trim()) {
       localStorage.setItem("elevenlabs-api-key", elevenLabsApiKey.trim());
     }
@@ -44,11 +50,15 @@ export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet }: SettingsD
   useEffect(() => {
     const storedElevenLabsKey = localStorage.getItem("elevenlabs-api-key");
     const storedElevenLabsAgentId = localStorage.getItem("elevenlabs-agent-id");
+    const storedMistralKey = localStorage.getItem("mistral-api-key");
     if (storedElevenLabsKey) {
       setElevenLabsApiKey(storedElevenLabsKey);
     }
     if (storedElevenLabsAgentId) {
       setElevenLabsAgentId(storedElevenLabsAgentId);
+    }
+    if (storedMistralKey) {
+      setMistralApiKey(storedMistralKey);
     }
   }, []);
 
@@ -62,9 +72,10 @@ export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet }: SettingsD
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="gemini" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="gemini">Gemini</TabsTrigger>
             <TabsTrigger value="perplexity">Perplexity</TabsTrigger>
+            <TabsTrigger value="mistral">Mistral</TabsTrigger>
             <TabsTrigger value="elevenlabs">ElevenLabs</TabsTrigger>
             <TabsTrigger value="appearance">Theme</TabsTrigger>
           </TabsList>
@@ -93,6 +104,20 @@ export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet }: SettingsD
                 value={perplexityApiKey}
                 onChange={(e) => setPerplexityApiKey(e.target.value)}
                 placeholder="Enter your Perplexity API key"
+              />
+            </div>
+          </TabsContent>
+          <TabsContent value="mistral" className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <label htmlFor="mistralApiKey" className="text-sm font-medium leading-none">
+                Mistral API Key
+              </label>
+              <Input
+                id="mistralApiKey"
+                type="password"
+                value={mistralApiKey}
+                onChange={(e) => setMistralApiKey(e.target.value)}
+                placeholder="Enter your Mistral API key"
               />
             </div>
           </TabsContent>

@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { Paperclip, ArrowUp, Globe2, Code2, Lightbulb, X, FileText, Upload } from 'lucide-react';
+import { Paperclip, ArrowUp, Globe2, Code2, Lightbulb, X, FileText, Upload, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -37,6 +37,8 @@ interface ChatInputProps {
   setUseReasoning: (value: boolean) => void;
   useDeveloperMode: boolean;
   setUseDeveloperMode: (value: boolean) => void;
+  useFastResponse: boolean;
+  setUseFastResponse: (value: boolean) => void;
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   theme?: string | null;
   setTheme: (theme: string) => void;
@@ -65,6 +67,8 @@ export const ChatInput = ({
   setUseReasoning,
   useDeveloperMode,
   setUseDeveloperMode,
+  useFastResponse,
+  setUseFastResponse,
   handleFileUpload,
   theme,
   setTheme,
@@ -453,6 +457,41 @@ export const ChatInput = ({
                   </TooltipTrigger>
                   <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
                     <p>Search the web</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={useFastResponse ? "default" : "ghost"}
+                      size="icon"
+                      disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode || useReasoning}
+                      className={cn(
+                        "transition-all duration-200 overflow-hidden shrink-0",
+                        "h-8 w-8 sm:h-9 sm:w-9",
+                        useFastResponse && "w-[80px] sm:w-[90px] bg-amber-500 text-white hover:bg-amber-600",
+                        !useFastResponse && "w-8 sm:w-9 hover:bg-primary/10",
+                      )}
+                      onClick={() => {
+                        setUseFastResponse(!useFastResponse);
+                        if (useWebSearch) setUseWebSearch(false);
+                        if (useReasoning) setUseReasoning(false);
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <Zap className="w-4 h-4 shrink-0" />
+                        {useFastResponse && (
+                          <span className="ml-2 whitespace-nowrap text-sm font-medium">
+                            FAST
+                          </span>
+                        )}
+                      </div>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
+                    <p>Fast response mode</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
