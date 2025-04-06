@@ -107,7 +107,8 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
 
 ### Prerequisites
 
-- Node.js (Latest LTS version recommended)
+- Node.js 18.17.0 or later
+- Next.js 15.2.4
 - API Keys:
   - Google Gemini API key
   - Perplexity Sonar API key
