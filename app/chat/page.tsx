@@ -17,8 +17,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Image from 'next/image';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { useTheme } from 'next-themes';
 import { Typewriter } from '@/components/typewriter';
 import { initDeveloperMode, streamDeveloperContent } from '@/lib/developer-mode';

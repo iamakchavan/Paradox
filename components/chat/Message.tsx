@@ -4,8 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { TableWrapper } from './TableWrapper';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { Highlight, themes } from 'prism-react-renderer';
 
 interface MessageProps {
   message: {
@@ -43,7 +42,7 @@ const getLanguageLogo = (language: string): string => {
     php: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg',
     swift: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/swift/swift-original.svg',
     go: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/go/go-original.svg',
-    rust: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg',
+    rust: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-original.svg',
     csharp: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg',
     'c#': 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/csharp/csharp-original.svg',
     html: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg',
@@ -120,6 +119,12 @@ const getLanguageLogo = (language: string): string => {
     cucumber: 'https://cucumber.io/img/logo.svg',
     gitignore: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_git.svg',
     env: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_env.svg',
+    assembly: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unix/unix-original.svg',
+    asm: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/unix/unix-original.svg',
+    lisp: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Lisp_logo.svg/512px-Lisp_logo.svg.png?20201113170541',
+    'common-lisp': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Lisp_logo.svg/512px-Lisp_logo.svg.png?20201113170541',
+    cl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Lisp_logo.svg/512px-Lisp_logo.svg.png?20201113170541',
+    toml: 'https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/icons/file_type_toml.svg'
   };
   return logos[language.toLowerCase()] || '';
 };
@@ -200,8 +205,10 @@ export const Message = ({
 
   const handleCopyClick = (text: string) => {
     const blockId = `${index}-${text}`;
+    const scrollPos = window.scrollY;
     navigator.clipboard.writeText(text);
     setCopiedBlockId(blockId);
+    window.scrollTo(0, scrollPos);
     setTimeout(() => setCopiedBlockId(null), 2000);
   };
 
@@ -417,154 +424,178 @@ export const Message = ({
       <div className="relative group">
         <ReactMarkdown 
           remarkPlugins={[remarkGfm]}
-          className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 prose-pre:bg-transparent"
+          className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0"
           components={{
             p: ({ children }) => {
               return <p className="mb-4 last:mb-0">{children}</p>;
             },
-            code: ({ className, children, ...props }) => {
-              const match = /language-(\w+)/.exec(className || '');
-              const language = match ? match[1] : '';
-              const isInline = !match;
-              
-              if (!isInline && language) {
-                const codeString = String(children).replace(/\n$/, '');
-                const blockId = `${index}-${codeString}`;
-                const languageLogo = getLanguageLogo(language);
-                return (
-                  <div className="relative group rounded-[4px] overflow-hidden mb-6">
-                    <div className="h-12 flex items-center justify-between px-4 bg-gray-800 dark:bg-secondary/50 border-b border-border/40">
-                      <div className="flex items-center gap-4">
-                        <div className="h-full flex items-center gap-1.5 text-xs text-gray-200 dark:text-muted-foreground font-['Space_Mono'] lowercase">
-                          {languageLogo && (
-                            <img 
-                              src={languageLogo} 
-                              alt={`${language} logo`} 
-                              className="w-3.5 h-3.5"
-                            />
-                          )}
-                          {language}
-                        </div>
-                        <div className="text-[11px] text-cyan-400/90 dark:text-cyan-300/90 font-['Space_Mono'] flex items-center gap-1.5">
-                          <div className="w-1 h-1 rounded-full bg-cyan-500/90 dark:bg-cyan-400/90" />
-                          Use code with caution
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleDownloadClick(codeString, language)}
-                          className="flex items-center gap-2 text-xs text-gray-200 hover:text-white dark:text-muted-foreground dark:hover:text-foreground transition-colors"
-                        >
-                          <div className="relative flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-700/80 dark:hover:bg-secondary/80 transition-all duration-200">
-                            <Download className="w-4 h-4" />
-                          </div>
-                        </button>
-                        <button
-                          onClick={() => handleCopyClick(codeString)}
-                          className="flex items-center gap-2 text-xs text-gray-200 hover:text-white dark:text-muted-foreground dark:hover:text-foreground transition-colors"
-                        >
-                          <div className="relative flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-700/80 dark:hover:bg-secondary/80 transition-all duration-200">
-                            <div className="relative w-4 h-4">
-                              <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                className={cn(
-                                  "absolute inset-0 w-4 h-4 transition-all duration-200",
-                                  copiedBlockId === blockId ? "opacity-0 scale-75" : "opacity-100 scale-100"
-                                )}
-                              >
-                                <path
-                                  d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z"
-                                  stroke="currentColor"
-                                  strokeWidth="1.5"
-                                />
-                                <path
-                                  d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5"
-                                  stroke="currentColor"
-                                  strokeWidth="1.5"
-                                />
-                              </svg>
-                              <svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                className={cn(
-                                  "absolute inset-0 w-4 h-4 text-green-500 transition-all duration-200",
-                                  copiedBlockId === blockId ? "opacity-100 scale-100" : "opacity-0 scale-75"
-                                )}
-                              >
-                                <path
-                                  d="M4.5 12.75L10.5 18.75L19.5 5.25"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </div>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                    <SyntaxHighlighter
-                      language={language}
-                      style={{
-                        ...oneDark,
-                        'pre[class*="language-"]': {
-                          ...oneDark['pre[class*="language-"]'],
-                          background: 'hsl(200, 25%, 10%)', // Modern dark cyan tint
-                          fontFamily: "'Space Mono', monospace",
-                        },
-                        'code[class*="language-"]': {
-                          ...oneDark['code[class*="language-"]'],
-                          background: 'hsl(200, 25%, 10%)', // Modern dark cyan tint
-                          fontFamily: "'Space Mono', monospace",
-                        }
-                      }}
-                      showLineNumbers={true}
-                      lineNumberStyle={{
-                        minWidth: '3.5em',
-                        paddingRight: '1em',
-                        textAlign: 'right',
-                        color: 'hsl(200, 10%, 45%)',
-                        fontFamily: "'Space Mono', monospace",
-                        borderRight: '1px solid hsl(200, 15%, 15%)',
-                        marginRight: '1em',
-                        userSelect: 'none'
-                      }}
-                      customStyle={{
-                        margin: 0,
-                        padding: '1rem',
-                        borderRadius: '0 0 4px 4px',
-                        fontSize: '0.875rem',
-                        fontFamily: "'Space Mono', monospace",
-                        background: 'hsl(200, 25%, 10%)', // Modern dark cyan tint
-                      }}
-                      className="syntax-highlighter"
-                      wrapLongLines={false}
-                    >
-                      {codeString}
-                    </SyntaxHighlighter>
-                  </div>
-                );
-              }
-              return <code {...props} className="bg-secondary/30 px-1.5 py-0.5 rounded-md text-[0.9em]">{children}</code>;
-            },
-            table: ({ children, ...props }) => (
+            pre: ({ children }) => children,
+            table: ({ children }) => (
               <TableWrapper 
                 isLoading={isLoading}
                 messageContent={message.content}
                 messageIndex={index}
                 currentMessageIndex={currentMessageIndex}
               >
-                <table {...props} className="border-collapse">{children}</table>
+                {children}
               </TableWrapper>
             ),
+            thead: ({ children }) => (
+              <thead className="bg-secondary/50 dark:bg-secondary/20">
+                {children}
+              </thead>
+            ),
+            tbody: ({ children }) => (
+              <tbody className="divide-y divide-border/30">
+                {children}
+              </tbody>
+            ),
+            tr: ({ children }) => (
+              <tr className="transition-colors hover:bg-secondary/30 dark:hover:bg-secondary/10">
+                {children}
+              </tr>
+            ),
             th: ({ children }) => (
-              <th className="px-4 py-2.5 text-left text-sm font-medium border-b bg-secondary/10">{children}</th>
+              <th className="px-4 py-2 text-left text-sm font-medium text-foreground/80">
+                {children}
+              </th>
             ),
             td: ({ children }) => (
-              <td className="px-4 py-2.5 text-sm border-b">{children}</td>
+              <td className="px-4 py-2 text-sm text-foreground/70 [&[data-type='number']]:text-right">
+                {children}
+              </td>
             ),
+            code: ({ className, children, ...props }) => {
+              const match = /language-(\w+)/.exec(className || '');
+              const language = match ? match[1] : '';
+              const isInline = !match;
+              
+              if (isInline) {
+                return <code {...props} className="bg-secondary/30 px-1.5 py-0.5 rounded-md text-[0.9em]">{children}</code>;
+              }
+
+              const codeString = String(children).replace(/\n$/, '');
+              const blockId = `${index}-${codeString}`;
+              const languageLogo = getLanguageLogo(language);
+
+              return (
+                <div className="relative group rounded-[4px] overflow-hidden mb-6">
+                  <div className="h-12 flex items-center justify-between px-4 bg-gray-800 dark:bg-secondary/50 border-b border-border/40">
+                    <div className="flex items-center gap-4">
+                      <div className="h-full flex items-center gap-1.5 text-xs text-gray-200 dark:text-muted-foreground font-['Space_Mono'] lowercase">
+                        {languageLogo && (
+                          <img 
+                            src={languageLogo} 
+                            alt={`${language} logo`} 
+                            className="w-3.5 h-3.5"
+                          />
+                        )}
+                        {language}
+                      </div>
+                      <div className="text-[11px] text-cyan-400/90 dark:text-cyan-300/90 font-['Space_Mono'] flex items-center gap-1.5">
+                        <div className="w-1 h-1 rounded-full bg-cyan-500/90 dark:bg-cyan-400/90" />
+                        Use code with caution
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleDownloadClick(codeString, language)}
+                        className="flex items-center gap-2 text-xs text-gray-200 hover:text-white dark:text-muted-foreground dark:hover:text-foreground transition-colors"
+                      >
+                        <div className="relative flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-700/80 dark:hover:bg-secondary/80 transition-all duration-200">
+                          <Download className="w-4 h-4" />
+                        </div>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCopyClick(codeString);
+                        }}
+                        className="flex items-center gap-2 text-xs text-gray-200 hover:text-white dark:text-muted-foreground dark:hover:text-foreground transition-colors"
+                      >
+                        <div className="relative flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-700/80 dark:hover:bg-secondary/80 transition-all duration-200">
+                          <div className="relative w-4 h-4">
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              className={cn(
+                                "absolute inset-0 w-4 h-4 transition-all duration-200",
+                                copiedBlockId === blockId ? "opacity-0 scale-75" : "opacity-100 scale-100"
+                              )}
+                            >
+                              <path
+                                d="M6 11C6 8.17157 6 6.75736 6.87868 5.87868C7.75736 5 9.17157 5 12 5H15C17.8284 5 19.2426 5 20.1213 5.87868C21 6.75736 21 8.17157 21 11V16C21 18.8284 21 20.2426 20.1213 21.1213C19.2426 22 17.8284 22 15 22H12C9.17157 22 7.75736 22 6.87868 21.1213C6 20.2426 6 18.8284 6 16V11Z"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                              />
+                              <path
+                                d="M6 19C4.34315 19 3 17.6569 3 16V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H15C16.6569 2 18 3.34315 18 5"
+                                stroke="currentColor"
+                                strokeWidth="1.5"
+                              />
+                            </svg>
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              className={cn(
+                                "absolute inset-0 w-4 h-4 text-green-500 transition-all duration-200",
+                                copiedBlockId === blockId ? "opacity-100 scale-100" : "opacity-0 scale-75"
+                              )}
+                            >
+                              <path
+                                d="M4.5 12.75L10.5 18.75L19.5 5.25"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                  <Highlight
+                    theme={themes.oneDark}
+                    code={codeString}
+                    language={language || 'text'}
+                  >
+                    {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                      <pre className={cn(className, 'p-4 overflow-x-auto custom-scrollbar')} style={{
+                        ...style,
+                        margin: 0,
+                        background: 'hsl(200, 25%, 10%)',
+                        fontFamily: "'Space Mono', monospace",
+                        fontSize: '0.875rem'
+                      }}>
+                        {tokens.map((line, i) => (
+                          <div key={i} {...getLineProps({ line })} style={{ display: 'table-row' }}>
+                            <span style={{ 
+                              display: 'table-cell', 
+                              textAlign: 'right', 
+                              paddingRight: '1.5em',
+                              userSelect: 'none',
+                              opacity: 0.4,
+                              fontFamily: "'Space Mono', monospace",
+                              fontStyle: 'italic',
+                              color: 'hsl(220, 15%, 60%)',
+                              borderRight: '1px solid hsl(220, 15%, 25%)',
+                              minWidth: '3em',
+                              paddingLeft: '1em'
+                            }}>{i + 1}</span>
+                            <span style={{ display: 'table-cell', paddingLeft: '1.5em' }}>
+                              {line.map((token, key) => (
+                                <span key={key} {...getTokenProps({ token })} />
+                              ))}
+                            </span>
+                          </div>
+                        ))}
+                      </pre>
+                    )}
+                  </Highlight>
+                </div>
+              );
+            }
           }}
         >
           {mainContent}
@@ -573,7 +604,10 @@ export const Message = ({
         {!isLoading && mainContent && (
           <div className="mt-4 flex justify-start opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <button
-              onClick={() => handleCopyClick(mainContent)}
+              onClick={(e) => {
+                e.preventDefault();
+                handleCopyClick(mainContent);
+              }}
               className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-md bg-secondary/30 hover:bg-secondary/50 transition-all duration-200">

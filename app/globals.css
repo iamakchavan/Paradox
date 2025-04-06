@@ -119,6 +119,34 @@
 
 /* Table styles for Excel-like formatting */
 .table-container {
+  position: relative;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.table-container table {
+  border-collapse: collapse;
+  width: 100%;
+  background: hsl(var(--background));
+}
+
+.download-csv-button {
+  @apply inline-flex items-center gap-2 mt-3 px-3 py-1.5 text-xs font-medium rounded-md 
+    bg-secondary hover:bg-secondary/80 text-foreground transition-colors duration-200
+    border border-border shadow-sm;
+}
+
+.download-csv-button:hover {
+  @apply bg-secondary/80;
+}
+
+.download-csv-button svg {
+  @apply w-4 h-4 text-foreground/70;
+}
+
+/* Table styles */
+.table-container {
   @apply relative my-6;
 }
 
@@ -409,36 +437,6 @@
   transform: translateX(0);
 }
 
-.download-csv-button {
-  @apply inline-flex items-center gap-2 mt-3 px-3 py-1.5 text-xs font-medium rounded-md 
-    bg-secondary hover:bg-secondary/80 text-foreground transition-colors duration-200
-    border border-border shadow-sm;
-}
-
-.download-csv-button:hover {
-  @apply bg-secondary/80;
-}
-
-.download-csv-button svg {
-  @apply w-4 h-4 text-foreground/70;
-}
-
-@keyframes fade-in-up {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.5s ease-out forwards;
-  opacity: 0;
-}
-
 /* Follow-up Questions Styling */
 .group\/button .w-6.h-6 {
   @apply bg-cyan-500/5 dark:bg-cyan-400/5 border border-cyan-500/10 dark:border-cyan-400/10;
@@ -511,6 +509,10 @@
   background: hsl(200, 20%, 40%);
 }
 
+.syntax-highlighter::-webkit-scrollbar-button {
+  display: none;
+}
+
 .dark .syntax-highlighter::-webkit-scrollbar-track {
   background: hsl(200, 25%, 8%);
 }
@@ -521,4 +523,58 @@
 
 .dark .syntax-highlighter::-webkit-scrollbar-thumb:hover {
   background: hsl(200, 15%, 35%);
+}
+
+/* Custom scrollbar styles */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(200, 20%, 30%) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(200, 20%, 40%);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(200, 20%, 50%);
+}
+
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Dark mode scrollbar */
+.dark .custom-scrollbar {
+  scrollbar-color: hsl(200, 15%, 35%) transparent;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(200, 15%, 35%);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(200, 15%, 45%);
+}
+
+/* Light mode scrollbar */
+.light .custom-scrollbar {
+  scrollbar-color: hsl(200, 20%, 60%) transparent;
+}
+
+.light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(200, 20%, 60%);
+}
+
+.light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(200, 20%, 50%);
 }
