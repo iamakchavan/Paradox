@@ -14,12 +14,14 @@ interface SettingsDialogProps {
   onApiKeySet: (apiKey: string) => void;
   onPerplexityApiKeySet: (apiKey: string) => void;
   onMistralApiKeySet: (apiKey: string) => void;
+  onInceptionApiKeySet: (apiKey: string) => void;
 }
 
-export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet, onMistralApiKeySet }: SettingsDialogProps) {
+export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet, onMistralApiKeySet, onInceptionApiKeySet }: SettingsDialogProps) {
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [perplexityApiKey, setPerplexityApiKey] = useState("");
   const [mistralApiKey, setMistralApiKey] = useState("");
+  const [inceptionApiKey, setInceptionApiKey] = useState("");
   const [elevenLabsApiKey, setElevenLabsApiKey] = useState("");
   const [elevenLabsAgentId, setElevenLabsAgentId] = useState("");
   const { theme, setTheme } = useTheme();
@@ -39,6 +41,10 @@ export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet, onMistralAp
       onMistralApiKeySet(mistralApiKey.trim());
       localStorage.setItem("mistral-api-key", mistralApiKey.trim());
     }
+    if (inceptionApiKey.trim()) {
+      onInceptionApiKeySet(inceptionApiKey.trim());
+      localStorage.setItem("inception-api-key", inceptionApiKey.trim());
+    }
     if (elevenLabsApiKey.trim()) {
       localStorage.setItem("elevenlabs-api-key", elevenLabsApiKey.trim());
     }
@@ -51,6 +57,7 @@ export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet, onMistralAp
     const storedElevenLabsKey = localStorage.getItem("elevenlabs-api-key");
     const storedElevenLabsAgentId = localStorage.getItem("elevenlabs-agent-id");
     const storedMistralKey = localStorage.getItem("mistral-api-key");
+    const storedInceptionKey = localStorage.getItem("inception-api-key");
     if (storedElevenLabsKey) {
       setElevenLabsApiKey(storedElevenLabsKey);
     }
@@ -59,6 +66,9 @@ export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet, onMistralAp
     }
     if (storedMistralKey) {
       setMistralApiKey(storedMistralKey);
+    }
+    if (storedInceptionKey) {
+      setInceptionApiKey(storedInceptionKey);
     }
   }, []);
 
@@ -72,10 +82,11 @@ export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet, onMistralAp
           <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="gemini" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="gemini">Gemini</TabsTrigger>
             <TabsTrigger value="perplexity">Perplexity</TabsTrigger>
             <TabsTrigger value="mistral">Mistral</TabsTrigger>
+            <TabsTrigger value="inception">Inception</TabsTrigger>
             <TabsTrigger value="elevenlabs">ElevenLabs</TabsTrigger>
             <TabsTrigger value="appearance">Theme</TabsTrigger>
           </TabsList>
@@ -118,6 +129,20 @@ export function SettingsDialog({ onApiKeySet, onPerplexityApiKeySet, onMistralAp
                 value={mistralApiKey}
                 onChange={(e) => setMistralApiKey(e.target.value)}
                 placeholder="Enter your Mistral API key"
+              />
+            </div>
+          </TabsContent>
+          <TabsContent value="inception" className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <label htmlFor="inceptionApiKey" className="text-sm font-medium leading-none">
+                Inception Labs API Key
+              </label>
+              <Input
+                id="inceptionApiKey"
+                type="password"
+                value={inceptionApiKey}
+                onChange={(e) => setInceptionApiKey(e.target.value)}
+                placeholder="Enter your Inception Labs API key"
               />
             </div>
           </TabsContent>

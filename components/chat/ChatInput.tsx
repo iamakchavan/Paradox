@@ -39,6 +39,8 @@ interface ChatInputProps {
   setUseDeveloperMode: (value: boolean) => void;
   useFastResponse: boolean;
   setUseFastResponse: (value: boolean) => void;
+  useDiffusion: boolean;
+  setUseDiffusion: (value: boolean) => void;
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   theme?: string | null;
   setTheme: (theme: string) => void;
@@ -69,6 +71,8 @@ export const ChatInput = ({
   setUseDeveloperMode,
   useFastResponse,
   setUseFastResponse,
+  useDiffusion,
+  setUseDiffusion,
   handleFileUpload,
   theme,
   setTheme,
@@ -492,6 +496,42 @@ export const ChatInput = ({
                   </TooltipTrigger>
                   <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
                     <p>Fast response mode</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={useDiffusion ? "default" : "ghost"}
+                      size="icon"
+                      disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode || useReasoning || useFastResponse}
+                      className={cn(
+                        "transition-all duration-200 overflow-hidden shrink-0",
+                        "h-8 w-8 sm:h-9 sm:w-9",
+                        useDiffusion && "w-[90px] sm:w-[110px] bg-purple-600 text-white hover:bg-purple-700",
+                        !useDiffusion && "w-8 sm:w-9 hover:bg-primary/10",
+                      )}
+                      onClick={() => {
+                        setUseDiffusion(!useDiffusion);
+                        if (useWebSearch) setUseWebSearch(false);
+                        if (useReasoning) setUseReasoning(false);
+                        if (useFastResponse) setUseFastResponse(false);
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <Zap className="w-4 h-4 shrink-0" />
+                        {useDiffusion && (
+                          <span className="ml-2 whitespace-nowrap text-sm font-medium">
+                            DIFFUSION
+                          </span>
+                        )}
+                      </div>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
+                    <p>Diffusion mode</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
