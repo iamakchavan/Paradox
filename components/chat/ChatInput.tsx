@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 const gradientAnimation = {
   '@keyframes gradient-x': {
@@ -521,7 +522,13 @@ export const ChatInput = ({
                       }}
                     >
                       <div className="flex items-center">
-                        <Zap className="w-4 h-4 shrink-0" />
+                        <Image
+                          src="/ui/mercury.png"
+                          alt="Diffusion"
+                          width={16}
+                          height={16}
+                          className="shrink-0"
+                        />
                         {useDiffusion && (
                           <span className="ml-2 whitespace-nowrap text-sm font-medium">
                             DIFFUSION
