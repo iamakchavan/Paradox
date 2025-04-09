@@ -49,12 +49,22 @@ export const streamInceptionContent = async (
 
   const decoder = new TextDecoder();
   let buffer = '';
+  let lastUpdateTime = Date.now();
+  let totalLength = 0;
+
+  // Dynamic chunk sizing and delay calculation
+  const getChunkConfig = (length: number) => {
+    if (length > 2000) return { words: 15, delay: 15 };
+    if (length > 1000) return { words: 10, delay: 20 };
+    return { words: 5, delay: 25 };
+  };
 
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
 
     buffer += decoder.decode(value, { stream: true });
+    totalLength += buffer.length;
     const lines = buffer.split('\n');
     buffer = lines.pop() || '';
 
@@ -65,10 +75,28 @@ export const streamInceptionContent = async (
       try {
         const data = JSON.parse(line.replace(/^data: /, ''));
         const token = data.choices[0]?.delta?.content || '';
-        if (token) onToken(token);
+        
+        if (token) {
+          const { words, delay } = getChunkConfig(totalLength);
+          const timeSinceLastUpdate = Date.now() - lastUpdateTime;
+
+          // Add controlled delay for smoother animation
+          if (timeSinceLastUpdate >= delay) {
+            onToken(token);
+            lastUpdateTime = Date.now();
+            await new Promise(resolve => setTimeout(resolve, delay));
+          } else {
+            buffer += token;
+          }
+        }
       } catch (error) {
         console.error('Error parsing SSE message:', error);
       }
     }
+  }
+
+  // Send any remaining buffered content
+  if (buffer) {
+    onToken(buffer);
   }
 }; 

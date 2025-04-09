@@ -427,7 +427,7 @@ export const ChatInput = ({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                    <p>Reason with DeepSeek R1 (US Hosted)</p>
+                    <p>DeepSeek R1 (US Hosted)</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -496,7 +496,7 @@ export const ChatInput = ({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                    <p>Fast response mode</p>
+                    <p>Mistral small</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -538,7 +538,7 @@ export const ChatInput = ({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                    <p>Diffusion mode</p>
+                    <p>Mercury Coder</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
