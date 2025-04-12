@@ -7,7 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: 'Paradox',
-  description: 'Modern AI chat interface with dark theme',
+  description: 'Minimilastic AI chat interface',
   icons: {
     icon: [
       {
