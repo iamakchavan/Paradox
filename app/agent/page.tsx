@@ -40,7 +40,7 @@ export default function AgentPage() {
                 transition={{ delay: 0.1, duration: 0.3 }}
               >
                 <Image 
-                  src="/ui/paracon.svg"
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png"
                   alt="Paradox Logo" 
                   width={32} 
                   height={32}

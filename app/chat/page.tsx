@@ -719,11 +719,10 @@ export default function ChatPage() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <Image 
-                src="/ui/paracon.svg"
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png"
                 alt="Paradox Logo" 
-                width={32} 
-                height={32}
-                className="w-8 h-8"
+                width={28} 
+                height={28}
               />
               <h1 className="text-xl font-semibold hidden sm:inline">Paradox</h1>
             </div>
