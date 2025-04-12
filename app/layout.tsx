@@ -7,26 +7,26 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: 'Paradox',
-  description: 'Minimilastic AI chat interface',
+  description: 'Modern AI chat interface with dark theme',
   icons: {
     icon: [
       {
-        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png',
+        url: '/ui/paracon.svg',
         sizes: '32x32',
-        type: 'image/png'
+        type: 'image/svg+xml'
       }
     ],
     shortcut: [
       {
-        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png',
-        type: 'image/png'
+        url: '/ui/paracon.svg',
+        type: 'image/svg+xml'
       }
     ],
     apple: [
       {
-        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png',
+        url: '/ui/paracon.svg',
         sizes: '180x180',
-        type: 'image/png'
+        type: 'image/svg+xml'
       }
     ]
   }

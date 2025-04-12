@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png" width="100" height="100" alt="Paradox Logo">
+  <img src="/ui/paracon.svg" width="100" height="100" alt="Paradox Logo">
 </p>
 
 <div align="center">
