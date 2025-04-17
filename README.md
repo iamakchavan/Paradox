@@ -23,7 +23,7 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
 - **Multi-Model Architecture**
   - Gemini Pro for advanced language processing and image analysis
   - Perplexity integration for real-time web search capabilities
-  - DeepSeek R1 for enhanced reasoning and problem-solving
+  - DeepSeek R1 (powered by perplexity sonar APIs) for enhanced reasoning and problem-solving
   - Specialized developer mode for technical assistance
 
 ### Voice Capabilities
