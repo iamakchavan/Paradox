@@ -610,3 +610,31 @@
 .table-container:hover .overflow-x-auto {
   scrollbar-color: hsl(var(--muted-foreground) / 0.25) transparent;
 }
+
+/* KaTeX math display block styles */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+  scrollbar-width: thin;
+}
+
+.katex-display::-webkit-scrollbar {
+  height: 4px;
+}
+
+.katex-display::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 10px;
+}
+
+.katex {
+  font-size: 1.05em;
+  line-height: 1.2;
+}
+
+/* Customize KaTeX error styling (e.g. for incomplete formulas during streaming) */
+.katex-error {
+  color: inherit !important;
+  background-color: transparent !important;
+}
