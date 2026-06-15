@@ -43,19 +43,20 @@ Remember to be thorough and code-focused while keeping instructions clear and ac
 export const streamDeveloperContent = async (
   message: string,
   history: { role: string; content: string }[],
-  onToken: (token: string) => void
+  onToken: (token: string) => void,
+  signal?: AbortSignal
 ) => {
   if (!geminiApi) throw new Error('Developer mode not initialized');
 
-  const model = geminiApi.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = geminiApi.getGenerativeModel({ model: 'gemini-3.5-flash' });
 
   const chat = model.startChat({
     history: [
-      { role: 'user', parts: DEVELOPER_SYSTEM_PROMPT },
-      { role: 'model', parts: 'I understand. I will provide detailed, step-by-step code implementations with clear instructions.' },
+      { role: 'user', parts: [{ text: DEVELOPER_SYSTEM_PROMPT }] },
+      { role: 'model', parts: [{ text: 'I understand. I will provide detailed, step-by-step code implementations with clear instructions.' }] },
       ...history.map(msg => ({
         role: msg.role as 'user' | 'model',
-        parts: msg.content
+        parts: [{ text: msg.content }]
       }))
     ],
     generationConfig: {
@@ -80,6 +81,7 @@ export const streamDeveloperContent = async (
 
   try {
     for await (const chunk of result.stream) {
+      if (signal?.aborted) throw new Error('Aborted');
       const chunkText = chunk.text();
       buffer += chunkText;
       totalLength += chunkText.length;
@@ -93,6 +95,7 @@ export const streamDeveloperContent = async (
         const chunkSize = Math.min(words.length, Math.ceil(buffer.length / 50)); // Dynamic chunk size
         
         while (words.length >= chunkSize) {
+          if (signal?.aborted) throw new Error('Aborted');
           const chunk = words.splice(0, chunkSize).join(' ') + ' ';
           onToken(chunk);
           await new Promise(resolve => setTimeout(resolve, delay));

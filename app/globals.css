@@ -120,21 +120,31 @@
 /* Table styles for Excel-like formatting */
 .table-container {
   position: relative;
-  margin: 1.5rem 0;
-  border-radius: 0.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
   overflow: hidden;
+}
+
+.dark .table-container {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: hsl(230, 10%, 12%);
 }
 
 .table-container table {
   border-collapse: collapse;
   width: 100%;
-  background: hsl(var(--background));
+  background: transparent;
 }
 
 .download-csv-button {
-  @apply inline-flex items-center gap-2 mt-3 px-3 py-1.5 text-xs font-medium rounded-md 
-    bg-secondary hover:bg-secondary/80 text-foreground transition-colors duration-200
-    border border-border shadow-sm;
+  @apply inline-flex items-center gap-2 mt-4 px-4 py-2 text-xs font-medium rounded-full 
+    bg-white hover:bg-gray-50 text-foreground transition-all duration-200
+    border border-border/80 shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:shadow-md;
+}
+
+.dark .download-csv-button {
+  @apply bg-secondary/80 hover:bg-secondary border-border/40;
 }
 
 .download-csv-button:hover {
@@ -146,12 +156,9 @@
 }
 
 /* Table styles */
-.table-container {
-  @apply relative my-6;
-}
-
 .table-container .overflow-x-auto {
-  @apply border border-border rounded-lg;
+  @apply rounded-none;
+  border: none;
 }
 
 .prose table {
@@ -160,28 +167,26 @@
 }
 
 .prose thead {
-  @apply bg-secondary/50 sticky top-0;
+  @apply bg-secondary/30 dark:bg-secondary/15 sticky top-0;
 }
 
 .prose thead tr {
-  @apply border-b-2 border-border;
+  @apply border-b border-border/60;
 }
 
 .prose tr {
-  @apply border-b border-border hover:bg-secondary/30 transition-colors;
+  @apply border-b border-border/40 hover:bg-secondary/10 dark:hover:bg-white/[0.015] transition-colors last:border-b-0;
 }
 
 .prose th {
-  @apply bg-secondary/50 px-4 py-2 text-left font-semibold border-r border-border last:border-r-0;
+  @apply px-4 py-2.5 text-left text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/85;
   white-space: nowrap;
   vertical-align: middle;
-  min-width: 120px;
 }
 
 .prose td {
-  @apply px-4 py-2 border-r border-border last:border-r-0;
+  @apply px-4 py-2 text-sm text-foreground/80;
   vertical-align: middle;
-  min-width: 120px;
 }
 
 /* Ensure proper cell content wrapping */
@@ -190,29 +195,21 @@
   max-width: 300px; /* Prevent cells from becoming too wide */
 }
 
-/* Number cells right-aligned */
-.prose td:where([data-type="number"]) {
-  @apply text-right;
-}
+
 
 /* Add responsive styles */
 @media (max-width: 640px) {
   .prose table {
-    @apply rounded-lg border border-border;
+    @apply rounded-none border-none;
     font-size: 0.875rem;
   }
   
   .prose td, .prose th {
-    @apply px-3 py-2;
-    min-width: 100px;
+    @apply px-3 py-1.5;
     max-width: 200px;
   }
 
-  /* Allow horizontal scrolling on mobile */
-  .prose table {
-    @apply -mx-4;
-    width: calc(100% + 2rem);
-  }
+
   
   /* Ensure header remains visible while scrolling */
   .prose thead {
@@ -223,7 +220,7 @@
 
 .prose h1, .prose h2, .prose h3, .prose h4 {
   @apply text-foreground font-semibold mt-6 mb-4;
-  font-family: 'Playfair Display', serif;
+  font-family: 'Sentient', serif;
 }
 
 .prose h1 {

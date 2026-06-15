@@ -25,7 +25,8 @@ export const getMistralApi = () => {
 export const streamMistralContent = async (
   message: string,
   history: { role: string; content: string; images?: string[] }[],
-  onToken: (token: string) => void
+  onToken: (token: string) => void,
+  signal?: AbortSignal
 ) => {
   const api = getMistralApi();
   
@@ -63,7 +64,8 @@ export const streamMistralContent = async (
         stream: true,
         temperature: 0.7,
         max_tokens: 1000
-      })
+      }),
+      signal
     });
 
     if (!response.ok) {
@@ -80,6 +82,7 @@ export const streamMistralContent = async (
     let buffer = '';
 
     while (true) {
+      if (signal?.aborted) throw new Error('Aborted');
       const { value, done } = await reader.read();
       if (done) break;
 

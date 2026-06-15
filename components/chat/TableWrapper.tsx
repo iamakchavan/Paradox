@@ -20,12 +20,6 @@ export const TableWrapper = ({ children, isLoading, messageContent, messageIndex
       const table = tableRef.current;
       const csv = tableToCSV(table);
       setTableData(csv);
-      
-      table.querySelectorAll('td').forEach(cell => {
-        if (/^\d+(\.\d+)?$/.test(cell.textContent || '')) {
-          cell.setAttribute('data-type', 'number');
-        }
-      });
     }
   }, []);
 
@@ -62,11 +56,13 @@ export const TableWrapper = ({ children, isLoading, messageContent, messageIndex
   }, [tableData, messageContent, messageIndex, currentMessageIndex, isLoading, handleDownload]);
 
   return (
-    <div className="table-container mx-2 sm:mx-4">
-      <div className="overflow-x-auto">
-        <table ref={tableRef} className="min-w-full border border-border/30 rounded-md">
-          {children}
-        </table>
+    <div className="my-6 mx-2 sm:mx-4">
+      <div className="table-container">
+        <div className="overflow-x-auto">
+          <table ref={tableRef} className="min-w-full">
+            {children}
+          </table>
+        </div>
       </div>
       {DownloadButton}
     </div>

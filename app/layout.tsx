@@ -1,6 +1,5 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { GeistSans } from 'geist/font';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -58,10 +57,14 @@ export default function RootLayout({
         />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap"
+          href="https://api.fontshare.com/css?f[]=sentient@500,600,700&display=swap"
+        />
+        <link
+          rel="stylesheet"
+          href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap"
         />
       </head>
-      <body className={GeistSans.className}>
+      <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

@@ -18,7 +18,8 @@ export const streamPerplexityContent = async (
   prompt: string,
   history: { role: string; content: string }[],
   onToken: (token: string) => void,
-  model: 'sonar' | 'sonar-reasoning' = 'sonar'
+  model: 'sonar' | 'sonar-reasoning' = 'sonar',
+  signal?: AbortSignal
 ) => {
   if (!perplexityApiKey) throw new Error('Perplexity API not initialized');
 
@@ -48,7 +49,8 @@ export const streamPerplexityContent = async (
         model,
         messages,
         stream: true
-      })
+      }),
+      signal
     });
 
     if (!response.ok) {
@@ -62,6 +64,7 @@ export const streamPerplexityContent = async (
     let buffer = '';
 
     while (true) {
+      if (signal?.aborted) throw new Error('Aborted');
       const { done, value } = await reader.read();
       if (done) break;
 

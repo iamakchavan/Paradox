@@ -15,7 +15,8 @@ export const getInceptionApi = () => {
 export const streamInceptionContent = async (
   message: string,
   history: { role: string; content: string; images?: string[] }[],
-  onToken: (token: string) => void
+  onToken: (token: string) => void,
+  signal?: AbortSignal
 ) => {
   const response = await fetch('https://api.inceptionlabs.ai/v1/chat/completions', {
     method: 'POST',
@@ -37,7 +38,8 @@ export const streamInceptionContent = async (
       ],
       max_tokens: 1000,
       stream: true
-    })
+    }),
+    signal
   });
 
   if (!response.ok) {
@@ -60,6 +62,7 @@ export const streamInceptionContent = async (
   };
 
   while (true) {
+    if (signal?.aborted) throw new Error('Aborted');
     const { done, value } = await reader.read();
     if (done) break;
 

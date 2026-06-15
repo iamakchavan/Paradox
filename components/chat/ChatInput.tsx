@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { Paperclip, ArrowUp, Globe2, Code2, Lightbulb, X, FileText, Upload, Zap } from 'lucide-react';
+import { Paperclip, ArrowUp, Globe2, Code2, Lightbulb, X, FileText, Upload, Zap, ChevronDown, Sparkles, Check, Cpu, Sparkle, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -29,9 +29,12 @@ interface ChatInputProps {
   message: string;
   setMessage: (message: string) => void;
   handleSubmit: () => void;
+  onStop: () => void;
   isLoading: boolean;
   geminiApiKey: string | null;
   perplexityApiKey: string | null;
+  mistralApiKey: string | null;
+  inceptionApiKey: string | null;
   useWebSearch: boolean;
   setUseWebSearch: (value: boolean) => void;
   useReasoning: boolean;
@@ -61,9 +64,12 @@ export const ChatInput = ({
   message,
   setMessage,
   handleSubmit,
+  onStop,
   isLoading,
   geminiApiKey,
   perplexityApiKey,
+  mistralApiKey,
+  inceptionApiKey,
   useWebSearch,
   setUseWebSearch,
   useReasoning,
@@ -92,6 +98,7 @@ export const ChatInput = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
@@ -162,6 +169,47 @@ export const ChatInput = ({
     handleFileUpload(event);
   };
 
+  const getActiveModeDetails = () => {
+    if (useDeveloperMode) return { label: 'Developer', icon: Code2, color: 'text-foreground/70' };
+    if (useReasoning) return { label: 'DeepSeek R1', icon: Lightbulb, color: 'text-foreground/70' };
+    if (useWebSearch) return { label: 'Web Search', icon: Globe2, color: 'text-foreground/70' };
+    if (useFastResponse) return { label: 'Mistral Fast', icon: Zap, color: 'text-foreground/70' };
+    if (useDiffusion) return { label: 'Mercury Coder', icon: Cpu, color: 'text-foreground/70' };
+    return { label: 'Gemini 3.5', icon: Sparkle, color: 'text-foreground/70' };
+  };
+
+  const activeMode = getActiveModeDetails();
+  const ActiveIcon = activeMode.icon;
+
+  const handleModelSelect = (mode: 'default' | 'developer' | 'reasoning' | 'web' | 'fast' | 'diffusion') => {
+    if (useDeveloperMode && mode !== 'developer') {
+      setTheme(previousTheme);
+    }
+
+    setUseDeveloperMode(false);
+    setUseReasoning(false);
+    setUseWebSearch(false);
+    setUseFastResponse(false);
+    setUseDiffusion(false);
+
+    if (mode === 'developer') {
+      setPreviousTheme(theme || 'light');
+      setTheme('dark');
+      setShowDeveloperModeMessage(true);
+      setUseDeveloperMode(true);
+    } else if (mode === 'reasoning') {
+      setUseReasoning(true);
+    } else if (mode === 'web') {
+      setUseWebSearch(true);
+    } else if (mode === 'fast') {
+      setUseFastResponse(true);
+    } else if (mode === 'diffusion') {
+      setUseDiffusion(true);
+    }
+
+    setShowModelDropdown(false);
+  };
+
   return (
     <div className="w-full">
       {error && (
@@ -175,7 +223,7 @@ export const ChatInput = ({
 
       <div 
         className={cn(
-          "w-full rounded-md border bg-background/80 backdrop-blur-sm shadow-lg overflow-hidden group transition-all duration-300 relative",
+          "w-full rounded-2xl border border-border/70 bg-background/95 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.15)] overflow-visible group transition-all duration-300 relative",
           "hover:border-primary/20 dark:hover:border-primary/20",
           "focus-within:border-primary/30 dark:focus-within:border-primary/30",
           "focus-within:ring-2 focus-within:ring-primary/20 dark:focus-within:ring-primary/20",
@@ -274,7 +322,9 @@ export const ChatInput = ({
                   return; // Let the default behavior create a new line
                 } else {
                   e.preventDefault();
-                  handleSubmit();
+                  if (!isLoading) {
+                    handleSubmit();
+                  }
                 }
               }
             }}
@@ -315,17 +365,16 @@ export const ChatInput = ({
                 ? "min-h-[100px] sm:min-h-[110px] p-5 sm:p-6 text-sm sm:text-base leading-[1.6]"
                 : "min-h-[45px] sm:min-h-[50px] p-3 sm:p-4 text-xs sm:text-sm leading-[1.6]"
             )}
-            disabled={(!geminiApiKey && !perplexityApiKey) || isLoading}
+            disabled={!geminiApiKey && !perplexityApiKey && !mistralApiKey && !inceptionApiKey}
           />
 
           <div className={cn(
-            "flex items-center justify-between gap-1.5 sm:gap-2 border-t border-border/40",
-            "bg-gradient-to-b from-muted/30 to-muted/10",
-            "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]",
-            "px-2 py-1.5 sm:px-4 sm:py-2.5",
-            isInitialView ? "px-5 py-2.5 sm:px-6 sm:py-3" : "px-2.5 py-1.5 sm:px-4 sm:py-2"
+            "flex items-center justify-between gap-2 border-t border-border/30",
+            "bg-muted/10 dark:bg-muted/[0.03] backdrop-blur-sm",
+            "px-3 py-2 sm:px-4 sm:py-2.5",
+            isInitialView ? "rounded-b-2xl" : "rounded-b-2xl"
           )}>
-            <div className="flex items-center gap-0.5 sm:gap-2 overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-1.5 relative">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -334,20 +383,19 @@ export const ChatInput = ({
                 accept={useFastResponse ? "image/*" : "image/*,application/pdf"}
                 multiple
               />
+              
+              {/* Attachment Button */}
               <TooltipProvider delayDuration={300}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={cn(
-                        "transition-all duration-200 h-8 w-8 sm:h-9 sm:w-9",
-                        "hover:bg-secondary/80"
-                      )}
+                      className="h-8 w-8 sm:h-9 sm:w-9 rounded-full hover:bg-secondary/80"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isLoading}
                     >
-                      <Paperclip className="w-4 h-4" />
+                      <Paperclip className="w-4 h-4 text-foreground/70" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
@@ -356,211 +404,204 @@ export const ChatInput = ({
                 </Tooltip>
               </TooltipProvider>
 
-              <TooltipProvider delayDuration={300}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={useDeveloperMode ? "default" : "ghost"}
-                      size="icon"
-                      className={cn(
-                        "transition-all duration-200 overflow-hidden shrink-0",
-                        "h-8 w-8 sm:h-9 sm:w-9",
-                        useDeveloperMode && "w-[120px] sm:w-[140px] bg-cyan-600 text-white hover:bg-cyan-700",
-                        !useDeveloperMode && "w-8 sm:w-9 hover:bg-primary/10",
-                      )}
-                      disabled={!geminiApiKey || isLoading || useWebSearch || useReasoning}
-                      onClick={() => {
-                        if (!useDeveloperMode) {
-                          setPreviousTheme(theme || 'light');
-                          setTheme('dark');
-                          setShowDeveloperModeMessage(true);
-                        } else {
-                          setTheme(previousTheme);
-                        }
-                        setUseDeveloperMode(!useDeveloperMode);
-                        if (useWebSearch) setUseWebSearch(false);
-                        if (useReasoning) setUseReasoning(false);
-                      }}
-                    >
-                      <div className="flex items-center">
-                        <Code2 className="w-4 h-4 shrink-0" />
-                        {useDeveloperMode && (
-                          <span className="ml-2 whitespace-nowrap text-sm font-medium">
-                            DEVELOPER
-                          </span>
-                        )}
-                      </div>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                    <p>Switch to developer mode</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              {/* Model Selector Dropdown Button */}
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowModelDropdown(!showModelDropdown)}
+                  className="h-8 sm:h-9 rounded-full px-3 py-1.5 flex items-center gap-1.5 border border-border/80 hover:bg-secondary/45 text-xs font-medium bg-background transition-all duration-200"
+                  disabled={isLoading}
+                >
+                  <ActiveIcon className={cn("w-3.5 h-3.5", activeMode.color)} />
+                  <span>{activeMode.label}</span>
+                  <ChevronDown className="w-3 h-3 text-muted-foreground/80 transition-transform duration-200" style={{ transform: showModelDropdown ? 'rotate(180deg)' : 'none' }} />
+                </Button>
 
-              <TooltipProvider delayDuration={300}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={useReasoning ? "default" : "ghost"}
-                      size="icon"
-                      disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode}
-                      className={cn(
-                        "transition-all duration-200 overflow-hidden shrink-0",
-                        "h-8 w-8 sm:h-9 sm:w-9",
-                        useReasoning && "w-[90px] sm:w-[110px] bg-cyan-600 text-white hover:bg-cyan-700",
-                        !useReasoning && "w-8 sm:w-9 hover:bg-primary/10",
-                      )}
-                      onClick={() => {
-                        setUseReasoning(!useReasoning);
-                        if (useWebSearch) setUseWebSearch(false);
-                      }}
-                    >
-                      <div className="flex items-center">
-                        <Lightbulb className="w-4 h-4 shrink-0" />
-                        {useReasoning && (
-                          <span className="ml-2 whitespace-nowrap text-sm font-medium">
-                            REASON
-                          </span>
-                        )}
-                      </div>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                    <p>DeepSeek R1 (US Hosted)</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                {/* Dropdown Backdrop to close on click outside */}
+                {showModelDropdown && (
+                  <div 
+                    className="fixed inset-0 z-40 bg-transparent cursor-default" 
+                    onClick={() => setShowModelDropdown(false)} 
+                  />
+                )}
 
-              <TooltipProvider delayDuration={300}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={useWebSearch ? "default" : "ghost"}
-                      size="icon"
-                      disabled={!perplexityApiKey || isLoading || useReasoning || useDeveloperMode}
+                {/* Dropdown Menu */}
+                {showModelDropdown && (
+                  <div className="absolute bottom-11 left-0 w-64 bg-background/95 dark:bg-background/95 border border-border/60 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.35)] p-1.5 z-50 flex flex-col gap-0.5 origin-bottom-left animate-in fade-in slide-in-from-bottom-2 duration-150 backdrop-blur-md">
+                    <div className="px-2.5 py-1 text-[10px] font-semibold text-muted-foreground/60 tracking-wider uppercase">
+                      Select Model
+                    </div>
+                    
+                    {/* Gemini 3.5 */}
+                    <button
+                      type="button"
+                      disabled={!geminiApiKey}
+                      onClick={() => handleModelSelect('default')}
                       className={cn(
-                        "transition-all duration-200 overflow-hidden shrink-0",
-                        "h-8 w-8 sm:h-9 sm:w-9",
-                        useWebSearch && "w-[80px] sm:w-[90px] bg-cyan-600 text-white hover:bg-cyan-700",
-                        !useWebSearch && "w-8 sm:w-9 hover:bg-primary/10",
+                        "group w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors",
+                        activeMode.label === 'Gemini 3.5' ? "bg-secondary/70 text-foreground font-medium" : "hover:bg-secondary/30 text-muted-foreground hover:text-foreground",
+                        !geminiApiKey && "opacity-40 cursor-not-allowed"
                       )}
-                      onClick={() => {
-                        setUseWebSearch(!useWebSearch);
-                        if (useReasoning) setUseReasoning(false);
-                      }}
                     >
-                      <div className="flex items-center">
-                        <Globe2 className="w-4 h-4 shrink-0" />
-                        {useWebSearch && (
-                          <span className="ml-2 whitespace-nowrap text-sm font-medium">
-                            WEB
-                          </span>
-                        )}
+                      <div className="flex items-start gap-3 min-w-0">
+                        <Sparkle className="w-4 h-4 mt-0.5 text-muted-foreground/85 group-hover:text-foreground shrink-0 transition-colors" />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-semibold">Gemini 3.5</span>
+                          <span className="text-[10px] text-muted-foreground/70 group-hover:text-muted-foreground/80 transition-colors truncate">Default model — Fast, smart & multimodal</span>
+                        </div>
                       </div>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                    <p>Search the web</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                      {activeMode.label === 'Gemini 3.5' && (
+                        <Check className="w-3.5 h-3.5 text-foreground shrink-0 ml-2" />
+                      )}
+                    </button>
 
-              <TooltipProvider delayDuration={300}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={useFastResponse ? "default" : "ghost"}
-                      size="icon"
-                      disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode || useReasoning}
+                    {/* Developer Mode */}
+                    <button
+                      type="button"
+                      disabled={!geminiApiKey}
+                      onClick={() => handleModelSelect('developer')}
                       className={cn(
-                        "transition-all duration-200 overflow-hidden shrink-0",
-                        "h-8 w-8 sm:h-9 sm:w-9",
-                        useFastResponse && "w-[80px] sm:w-[90px] bg-amber-500 text-white hover:bg-amber-600",
-                        !useFastResponse && "w-8 sm:w-9 hover:bg-primary/10",
+                        "group w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors",
+                        activeMode.label === 'Developer' ? "bg-secondary/70 text-foreground font-medium" : "hover:bg-secondary/30 text-muted-foreground hover:text-foreground",
+                        !geminiApiKey && "opacity-40 cursor-not-allowed"
                       )}
-                      onClick={() => {
-                        setUseFastResponse(!useFastResponse);
-                        if (useWebSearch) setUseWebSearch(false);
-                        if (useReasoning) setUseReasoning(false);
-                      }}
                     >
-                      <div className="flex items-center">
-                        <Zap className="w-4 h-4 shrink-0" />
-                        {useFastResponse && (
-                          <span className="ml-2 whitespace-nowrap text-sm font-medium">
-                            FAST
-                          </span>
-                        )}
+                      <div className="flex items-start gap-3 min-w-0">
+                        <Code2 className="w-4 h-4 mt-0.5 text-muted-foreground/85 group-hover:text-foreground shrink-0 transition-colors" />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-semibold">Developer mode</span>
+                          <span className="text-[10px] text-muted-foreground/70 group-hover:text-muted-foreground/80 transition-colors truncate">Detailed specs & step-by-step coding</span>
+                        </div>
                       </div>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                    <p>Mistral small</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                      {activeMode.label === 'Developer' && (
+                        <Check className="w-3.5 h-3.5 text-foreground shrink-0 ml-2" />
+                      )}
+                    </button>
 
-              <TooltipProvider delayDuration={300}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={useDiffusion ? "default" : "ghost"}
-                      size="icon"
-                      disabled={!perplexityApiKey || isLoading || useWebSearch || useDeveloperMode || useReasoning || useFastResponse}
+                    {/* DeepSeek R1 */}
+                    <button
+                      type="button"
+                      disabled={!perplexityApiKey}
+                      onClick={() => handleModelSelect('reasoning')}
                       className={cn(
-                        "transition-all duration-200 overflow-hidden shrink-0",
-                        "h-8 w-8 sm:h-9 sm:w-9",
-                        useDiffusion && "w-[90px] sm:w-[110px] bg-purple-600 text-white hover:bg-purple-700",
-                        !useDiffusion && "w-8 sm:w-9 hover:bg-primary/10",
+                        "group w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors",
+                        activeMode.label === 'DeepSeek R1' ? "bg-secondary/70 text-foreground font-medium" : "hover:bg-secondary/30 text-muted-foreground hover:text-foreground",
+                        !perplexityApiKey && "opacity-40 cursor-not-allowed"
                       )}
-                      onClick={() => {
-                        setUseDiffusion(!useDiffusion);
-                        if (useWebSearch) setUseWebSearch(false);
-                        if (useReasoning) setUseReasoning(false);
-                        if (useFastResponse) setUseFastResponse(false);
-                      }}
                     >
-                      <div className="flex items-center">
-                        <Image
-                          src="/ui/mercury.png"
-                          alt="Diffusion"
-                          width={16}
-                          height={16}
-                          className="shrink-0"
-                        />
-                        {useDiffusion && (
-                          <span className="ml-2 whitespace-nowrap text-sm font-medium">
-                            DIFFUSION
-                          </span>
-                        )}
+                      <div className="flex items-start gap-3 min-w-0">
+                        <Lightbulb className="w-4 h-4 mt-0.5 text-muted-foreground/85 group-hover:text-foreground shrink-0 transition-colors" />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-semibold">DeepSeek R1 (Reason)</span>
+                          <span className="text-[10px] text-muted-foreground/70 group-hover:text-muted-foreground/80 transition-colors truncate">Deep reasoning & step-by-step thinking</span>
+                        </div>
                       </div>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                    <p>Mercury Coder</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                      {activeMode.label === 'DeepSeek R1' && (
+                        <Check className="w-3.5 h-3.5 text-foreground shrink-0 ml-2" />
+                      )}
+                    </button>
+
+                    {/* Web Search */}
+                    <button
+                      type="button"
+                      disabled={!perplexityApiKey}
+                      onClick={() => handleModelSelect('web')}
+                      className={cn(
+                        "group w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors",
+                        activeMode.label === 'Web Search' ? "bg-secondary/70 text-foreground font-medium" : "hover:bg-secondary/30 text-muted-foreground hover:text-foreground",
+                        !perplexityApiKey && "opacity-40 cursor-not-allowed"
+                      )}
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <Globe2 className="w-4 h-4 mt-0.5 text-muted-foreground/85 group-hover:text-foreground shrink-0 transition-colors" />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-semibold">Web Search</span>
+                          <span className="text-[10px] text-muted-foreground/70 group-hover:text-muted-foreground/80 transition-colors truncate">Real-time web search grounding</span>
+                        </div>
+                      </div>
+                      {activeMode.label === 'Web Search' && (
+                        <Check className="w-3.5 h-3.5 text-foreground shrink-0 ml-2" />
+                      )}
+                    </button>
+
+                    {/* Mistral Fast */}
+                    <button
+                      type="button"
+                      disabled={!mistralApiKey}
+                      onClick={() => handleModelSelect('fast')}
+                      className={cn(
+                        "group w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors",
+                        activeMode.label === 'Mistral Fast' ? "bg-secondary/70 text-foreground font-medium" : "hover:bg-secondary/30 text-muted-foreground hover:text-foreground",
+                        !mistralApiKey && "opacity-40 cursor-not-allowed"
+                      )}
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <Zap className="w-4 h-4 mt-0.5 text-muted-foreground/85 group-hover:text-foreground shrink-0 transition-colors" />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-semibold">Mistral Fast</span>
+                          <span className="text-[10px] text-muted-foreground/70 group-hover:text-muted-foreground/80 transition-colors truncate">Lightweight, instant response model</span>
+                        </div>
+                      </div>
+                      {activeMode.label === 'Mistral Fast' && (
+                        <Check className="w-3.5 h-3.5 text-foreground shrink-0 ml-2" />
+                      )}
+                    </button>
+
+                    {/* Mercury Coder */}
+                    <button
+                      type="button"
+                      disabled={!inceptionApiKey}
+                      onClick={() => handleModelSelect('diffusion')}
+                      className={cn(
+                        "group w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors",
+                        activeMode.label === 'Mercury Coder' ? "bg-secondary/70 text-foreground font-medium" : "hover:bg-secondary/30 text-muted-foreground hover:text-foreground",
+                        !inceptionApiKey && "opacity-40 cursor-not-allowed"
+                      )}
+                    >
+                      <div className="flex items-start gap-3 min-w-0">
+                        <Cpu className="w-4 h-4 mt-0.5 text-muted-foreground/85 group-hover:text-foreground shrink-0 transition-colors" />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-semibold">Mercury Coder</span>
+                          <span className="text-[10px] text-muted-foreground/70 group-hover:text-muted-foreground/80 transition-colors truncate">Diffusion-based coding assistant</span>
+                        </div>
+                      </div>
+                      {activeMode.label === 'Mercury Coder' && (
+                        <Check className="w-3.5 h-3.5 text-foreground shrink-0 ml-2" />
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <Button
-              onClick={handleSubmit}
-              disabled={(!geminiApiKey && !perplexityApiKey) || isLoading || (!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0)}
-              size="icon"
-              className={cn(
-                "bg-primary h-8 w-8 sm:h-9 sm:w-9 shrink-0",
-                "hover:bg-primary/90 transition-colors duration-200",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
-              title="Send message"
-            >
-              {isLoading ? (
-                <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-              ) : (
+            {/* Submit or Stop Button */}
+            {isLoading ? (
+              <Button
+                onClick={onStop}
+                size="icon"
+                className={cn(
+                  "h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-primary text-primary-foreground shrink-0 animate-fade-in flex items-center justify-center",
+                  "hover:opacity-90 transition-opacity duration-200"
+                )}
+                title="Stop streaming"
+              >
+                <Square className="w-3 h-3 fill-current text-primary-foreground" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={(!geminiApiKey && !perplexityApiKey && !mistralApiKey && !inceptionApiKey) || (!message.trim() && selectedImages.length === 0 && selectedPDFs.length === 0)}
+                size="icon"
+                className={cn(
+                  "h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-primary text-primary-foreground shrink-0",
+                  "hover:opacity-90 transition-opacity duration-200 flex items-center justify-center",
+                  "disabled:opacity-40 disabled:cursor-not-allowed"
+                )}
+                title="Send message"
+              >
                 <ArrowUp className="w-4 h-4" />
-              )}
-            </Button>
+              </Button>
+            )}
           </div>
         </div>
       </div>

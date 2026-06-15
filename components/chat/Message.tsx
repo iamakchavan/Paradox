@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { ChevronDown, FileText, ArrowUp, Download } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -130,7 +130,7 @@ const getLanguageLogo = (language: string): string => {
   return logos[language.toLowerCase()] || '';
 };
 
-export const Message = ({
+const MessageComponent = ({
   message,
   index,
   isLoading,
@@ -456,13 +456,21 @@ export const Message = ({
                 {children}
               </tr>
             ),
-            th: ({ children }) => (
-              <th className="px-4 py-2 text-left text-sm font-medium text-foreground/80">
+            th: ({ children, style, ...props }) => (
+              <th 
+                className="px-6 py-3.5 text-left text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/85"
+                style={{ ...style, textAlign: 'left' }}
+                {...props}
+              >
                 {children}
               </th>
             ),
-            td: ({ children }) => (
-              <td className="px-4 py-2 text-sm text-foreground/70 [&[data-type='number']]:text-right">
+            td: ({ children, style, ...props }) => (
+              <td 
+                className="px-6 py-4 text-sm text-foreground/80"
+                style={{ ...style, textAlign: 'left' }}
+                {...props}
+              >
                 {children}
               </td>
             ),
@@ -741,4 +749,16 @@ export const Message = ({
       </div>
     </div>
   );
-}; 
+};
+
+export const Message = memo(MessageComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.message.content === nextProps.message.content &&
+    prevProps.index === nextProps.index &&
+    prevProps.isLoading === nextProps.isLoading &&
+    prevProps.currentMessageIndex === nextProps.currentMessageIndex &&
+    prevProps.isGeneratingQuestions === nextProps.isGeneratingQuestions &&
+    prevProps.expandedThinking.includes(prevProps.index) === nextProps.expandedThinking.includes(nextProps.index) &&
+    prevProps.followUpQuestions === nextProps.followUpQuestions
+  );
+}); 

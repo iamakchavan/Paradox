@@ -29,6 +29,8 @@ import { ChatInput } from '@/components/chat/ChatInput';
 import { Message } from '@/components/chat/Message';
 import { generateFollowUpQuestions } from '@/utils/followUpQuestions';
 
+const EMPTY_QUESTIONS: string[] = [];
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -68,12 +70,22 @@ export default function ChatPage() {
   const [useWebSearch, setUseWebSearch] = useState(false);
   const [useReasoning, setUseReasoning] = useState(false);
   const [useDeveloperMode, setUseDeveloperMode] = useState(false);
-  const [useFastResponse, setUseFastResponse] = useState(false);
+  const [useFastResponse, setUseFastResponse] = useState(true);
   const [useDiffusion, setUseDiffusion] = useState(false);
   const [showDeveloperModeMessage, setShowDeveloperModeMessage] = useState(false);
   const [shouldFocus, setShouldFocus] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleStop = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsLoading(false);
+  }, []);
+
   const [isInitialView, setIsInitialView] = useState(true);
   const { setTheme, theme } = useTheme();
   const [previousTheme, setPreviousTheme] = useState<string>('');
@@ -192,7 +204,7 @@ export default function ChatPage() {
     setUseWebSearch(false);
     setUseReasoning(false);
     setUseDeveloperMode(false);
-    setUseFastResponse(false);
+    setUseFastResponse(true);
     setUseDiffusion(false);
     setShowDeveloperModeMessage(false);
     setShouldFocus(true);
@@ -272,6 +284,9 @@ export default function ChatPage() {
       return;
     }
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       setIsLoading(true);
       setError(null);
@@ -329,7 +344,8 @@ export default function ChatPage() {
               };
               return newConv;
             });
-          }
+          },
+          controller.signal
         );
       } else if (useDeveloperMode && geminiApiKey) {
         await streamDeveloperContent(
@@ -367,7 +383,8 @@ export default function ChatPage() {
               }
               return newConv;
             });
-          }
+          },
+          controller.signal
         );
       } else if ((useWebSearch || useReasoning) && perplexityApiKey) {
         await streamPerplexityContent(
@@ -413,7 +430,8 @@ export default function ChatPage() {
               return newConv;
             });
           },
-          useReasoning ? 'sonar-reasoning' : 'sonar'
+          useReasoning ? 'sonar-reasoning' : 'sonar',
+          controller.signal
         );
       } else if (useFastResponse && mistralApiKey) {
         await streamMistralContent(
@@ -440,7 +458,8 @@ export default function ChatPage() {
               };
               return newConv;
             });
-          }
+          },
+          controller.signal
         );
       } else {
         await streamGenerateContent(
@@ -456,40 +475,29 @@ export default function ChatPage() {
               };
               return newConv;
             });
-          }
+          },
+          controller.signal
         );
       }
 
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.message === 'Aborted' || error?.name === 'AbortError') {
+        console.log('Stream stopped by user');
+        return;
+      }
       console.error('Error generating response:', error);
       setError(error instanceof Error ? error.message : 'Failed to generate response. Please try again.');
       setConversation(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
-  const handlePromptClick = (prompt: string) => {
-    setIsInitialView(false);
-    setTimeout(() => {
-      setConversation(prev => [...prev, { 
-        role: 'user', 
-        content: prompt,
-        images: [],
-        pdfs: []
-      }]);
-      
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 0);
-      
-      setConversation(prev => [...prev, { role: 'assistant', content: '' }]);
-      
-      handleSubmitPrompt(prompt);
-    }, 0);
-  };
+  const handleSubmitPrompt = useCallback(async (promptMessage: string) => {
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
-  const handleSubmitPrompt = async (promptMessage: string) => {
     try {
       setIsLoading(true);
       setError(null);
@@ -525,7 +533,8 @@ export default function ChatPage() {
               };
               return newConv;
             });
-          }
+          },
+          controller.signal
         );
       } else if (useDeveloperMode && geminiApiKey) {
         await streamDeveloperContent(
@@ -560,7 +569,8 @@ export default function ChatPage() {
               }
               return newConv;
             });
-          }
+          },
+          controller.signal
         );
       } else if ((useWebSearch || useReasoning) && perplexityApiKey) {
         await streamPerplexityContent(
@@ -606,7 +616,8 @@ export default function ChatPage() {
               return newConv;
             });
           },
-          useReasoning ? 'sonar-reasoning' : 'sonar'
+          useReasoning ? 'sonar-reasoning' : 'sonar',
+          controller.signal
         );
       } else if (useFastResponse && mistralApiKey) {
         await streamMistralContent(
@@ -632,7 +643,8 @@ export default function ChatPage() {
               };
               return newConv;
             });
-          }
+          },
+          controller.signal
         );
       } else {
         await streamGenerateContent(
@@ -648,17 +660,43 @@ export default function ChatPage() {
               };
               return newConv;
             });
-          }
+          },
+          controller.signal
         );
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.message === 'Aborted' || error?.name === 'AbortError') {
+        console.log('Stream stopped by user');
+        return;
+      }
       console.error('Error generating response:', error);
       setError(error instanceof Error ? error.message : 'Failed to generate response. Please try again.');
       setConversation(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
-  };
+  }, [conversation, useDiffusion, inceptionApiKey, useDeveloperMode, geminiApiKey, useWebSearch, useReasoning, perplexityApiKey, useFastResponse, mistralApiKey]);
+
+  const handlePromptClick = useCallback((prompt: string) => {
+    setIsInitialView(false);
+    setTimeout(() => {
+      setConversation(prev => [...prev, { 
+        role: 'user', 
+        content: prompt,
+        images: [],
+        pdfs: []
+      }]);
+      
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
+      
+      setConversation(prev => [...prev, { role: 'assistant', content: '' }]);
+      
+      handleSubmitPrompt(prompt);
+    }, 0);
+  }, [handleSubmitPrompt]);
 
   // Update the effect to handle loading state
   useEffect(() => {
@@ -809,9 +847,12 @@ export default function ChatPage() {
                   message={message}
                   setMessage={setMessage}
                   handleSubmit={handleSubmit}
+                  onStop={handleStop}
                   isLoading={isLoading}
                   geminiApiKey={geminiApiKey}
                   perplexityApiKey={perplexityApiKey}
+                  mistralApiKey={mistralApiKey}
+                  inceptionApiKey={inceptionApiKey}
                   useWebSearch={useWebSearch}
                   setUseWebSearch={setUseWebSearch}
                   useReasoning={useReasoning}
@@ -874,7 +915,7 @@ export default function ChatPage() {
                     currentMessageIndex={conversation.length - 1}
                     expandedThinking={expandedThinking}
                     setExpandedThinking={setExpandedThinking}
-                    followUpQuestions={index === conversation.length - 1 ? followUpQuestions : []}
+                    followUpQuestions={index === conversation.length - 1 ? followUpQuestions : EMPTY_QUESTIONS}
                     onQuestionClick={handlePromptClick}
                     isGeneratingQuestions={isGeneratingQuestions}
                                   />
@@ -914,9 +955,12 @@ export default function ChatPage() {
             message={message}
             setMessage={setMessage}
             handleSubmit={handleSubmit}
+            onStop={handleStop}
             isLoading={isLoading}
             geminiApiKey={geminiApiKey}
             perplexityApiKey={perplexityApiKey}
+            mistralApiKey={mistralApiKey}
+            inceptionApiKey={inceptionApiKey}
             useWebSearch={useWebSearch}
             setUseWebSearch={setUseWebSearch}
             useReasoning={useReasoning}

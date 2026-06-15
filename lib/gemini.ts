@@ -44,19 +44,20 @@ interface ChatMessage {
 export const streamGenerateContent = async (
   message: string,
   history: ChatMessage[],
-  onToken: (token: string) => void
+  onToken: (token: string) => void,
+  signal?: AbortSignal
 ) => {
   const api = getGeminiApi();
   if (!api) throw new Error('Gemini API not initialized');
 
-  const model = api.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = api.getGenerativeModel({ model: 'gemini-3.5-flash' });
 
   // Create chat history for context
   const chat = model.startChat({
     history: [
       { 
         role: 'user', 
-        parts: `You are a helpful AI assistant with expertise in software development. Be clear and thorough in your responses:
+        parts: [{ text: `You are a helpful AI assistant with expertise in software development. Be clear and thorough in your responses:
 
 1. Explain concepts clearly and provide context
 2. When showing code:
@@ -75,11 +76,11 @@ project/
 3. Balance explanations with code examples
 4. Be conversational and engaging
 
-Now proceed with the conversation.`
+Now proceed with the conversation.` }]
       },
       {
         role: 'model',
-        parts: 'I understand. I will be helpful and clear while providing well-structured code and explanations.'
+        parts: [{ text: 'I understand. I will be helpful and clear while providing well-structured code and explanations.' }]
       },
       ...history.map(msg => ({
         role: msg.role,
@@ -135,6 +136,7 @@ Now proceed with the conversation.`
     };
 
     for await (const chunk of result.stream) {
+      if (signal?.aborted) throw new Error('Aborted');
       const chunkText = chunk.text();
       buffer += chunkText;
       totalLength += chunkText.length;
@@ -148,6 +150,7 @@ Now proceed with the conversation.`
         const chunkSize = Math.min(words.length, Math.ceil(buffer.length / 50)); // Dynamic chunk size
         
         while (words.length >= chunkSize) {
+          if (signal?.aborted) throw new Error('Aborted');
           const chunk = words.splice(0, chunkSize).join(' ') + ' ';
           onToken(chunk);
           await new Promise(resolve => setTimeout(resolve, delay));
