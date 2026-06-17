@@ -5,27 +5,29 @@ let geminiApi: GoogleGenerativeAI | null = null;
 export const initGemini = (apiKey: string) => {
   try {
     if (!apiKey) {
-      console.error('No API key provided to initGemini');
+      console.error("No API key provided to initGemini");
       return;
     }
     geminiApi = new GoogleGenerativeAI(apiKey);
-    console.log('Gemini API initialized successfully');
+    console.log("Gemini API initialized successfully");
   } catch (error) {
-    console.error('Error initializing Gemini API:', error);
+    console.error("Error initializing Gemini API:", error);
     throw error;
   }
 };
 
 export const getGeminiApi = () => {
   if (!geminiApi) {
-    throw new Error('Gemini API not initialized. Please set your API key in settings.');
+    throw new Error(
+      "Gemini API not initialized. Please set your API key in settings.",
+    );
   }
   return geminiApi;
 };
 
 // Helper function to convert base64 to Uint8Array
 const base64ToUint8Array = (base64: string) => {
-  const base64String = base64.split(',')[1];
+  const base64String = base64.split(",")[1];
   const binaryString = window.atob(base64String);
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++) {
@@ -35,7 +37,7 @@ const base64ToUint8Array = (base64: string) => {
 };
 
 interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   images?: string[];
   pdfs?: { name: string; data: string }[];
@@ -45,19 +47,21 @@ export const streamGenerateContent = async (
   message: string,
   history: ChatMessage[],
   onToken: (token: string) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ) => {
   const api = getGeminiApi();
-  if (!api) throw new Error('Gemini API not initialized');
+  if (!api) throw new Error("Gemini API not initialized");
 
-  const model = api.getGenerativeModel({ model: 'gemini-3.5-flash' });
+  const model = api.getGenerativeModel({ model: "Gemini 3.5 Flash" });
 
   // Create chat history for context
   const chat = model.startChat({
     history: [
-      { 
-        role: 'user', 
-        parts: [{ text: `You are a helpful AI assistant with expertise in software development. Be clear and thorough in your responses:
+      {
+        role: "user",
+        parts: [
+          {
+            text: `You are a helpful AI assistant with expertise in software development. Be clear and thorough in your responses:
 
 1. Explain concepts clearly and provide context
 2. When showing code:
@@ -76,16 +80,22 @@ project/
 3. Balance explanations with code examples
 4. Be conversational and engaging
 
-Now proceed with the conversation.` }]
+Now proceed with the conversation.`,
+          },
+        ],
       },
       {
-        role: 'model',
-        parts: [{ text: 'I understand. I will be helpful and clear while providing well-structured code and explanations.' }]
+        role: "model",
+        parts: [
+          {
+            text: "I understand. I will be helpful and clear while providing well-structured code and explanations.",
+          },
+        ],
       },
-      ...history.map(msg => ({
+      ...history.map((msg) => ({
         role: msg.role,
-        parts: [{ text: msg.content }]
-      }))
+        parts: [{ text: msg.content }],
+      })),
     ],
     generationConfig: {
       temperature: 0.7,
@@ -99,34 +109,34 @@ Now proceed with the conversation.` }]
 
   // Add images if present
   if (lastMessage.images && lastMessage.images.length > 0) {
-    lastMessage.images.forEach(image => {
+    lastMessage.images.forEach((image) => {
       parts.push({
         inlineData: {
-          mimeType: 'image/jpeg',
-          data: image.split(',')[1] // Remove the data URL prefix
-        }
+          mimeType: "image/jpeg",
+          data: image.split(",")[1], // Remove the data URL prefix
+        },
       });
     });
   }
 
   // Add PDFs if present
   if (lastMessage.pdfs && lastMessage.pdfs.length > 0) {
-    lastMessage.pdfs.forEach(pdf => {
+    lastMessage.pdfs.forEach((pdf) => {
       parts.push({
         inlineData: {
-          mimeType: 'application/pdf',
-          data: pdf.data.split(',')[1] // Remove the data URL prefix
-        }
+          mimeType: "application/pdf",
+          data: pdf.data.split(",")[1], // Remove the data URL prefix
+        },
       });
     });
   }
 
   try {
     const result = await chat.sendMessageStream(parts);
-    let buffer = '';
+    let buffer = "";
     let lastUpdateTime = Date.now();
     let totalLength = 0;
-    
+
     // Dynamic chunk sizing and delay calculation
     const getChunkConfig = (length: number) => {
       if (length > 5000) return { words: 25, delay: 10 };
@@ -136,7 +146,7 @@ Now proceed with the conversation.` }]
     };
 
     for await (const chunk of result.stream) {
-      if (signal?.aborted) throw new Error('Aborted');
+      if (signal?.aborted) throw new Error("Aborted");
       const chunkText = chunk.text();
       buffer += chunkText;
       totalLength += chunkText.length;
@@ -146,17 +156,17 @@ Now proceed with the conversation.` }]
 
       // Process buffer if we have enough words or enough time has passed
       if (timeSinceLastUpdate >= delay * 2) {
-        const words = buffer.split(' ');
+        const words = buffer.split(" ");
         const chunkSize = Math.min(words.length, Math.ceil(buffer.length / 50)); // Dynamic chunk size
-        
+
         while (words.length >= chunkSize) {
-          if (signal?.aborted) throw new Error('Aborted');
-          const chunk = words.splice(0, chunkSize).join(' ') + ' ';
+          if (signal?.aborted) throw new Error("Aborted");
+          const chunk = words.splice(0, chunkSize).join(" ") + " ";
           onToken(chunk);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
-        
-        buffer = words.join(' ');
+
+        buffer = words.join(" ");
         lastUpdateTime = Date.now();
       }
     }
@@ -166,7 +176,7 @@ Now proceed with the conversation.` }]
       onToken(buffer);
     }
   } catch (error) {
-    console.error('Error in Gemini stream:', error);
+    console.error("Error in Gemini stream:", error);
     throw error;
   }
 };

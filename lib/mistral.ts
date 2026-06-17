@@ -63,7 +63,7 @@ export const streamMistralContent = async (
         messages: formattedMessages,
         stream: true,
         temperature: 0.7,
-        max_tokens: 1000
+        max_tokens: 4096
       }),
       signal
     });
