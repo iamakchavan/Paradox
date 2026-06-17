@@ -13,7 +13,6 @@ const nextConfig: NextConfig = {
     },
   },
   // Production optimizations
-  swcMinify: true,
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
@@ -26,13 +25,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Improved error handling
-  onError: (err: Error) => {
-    console.error('Next.js build error:', err);
-  },
   // Enable experimental features safely
   experimental: {
-    optimizeCss: true,
     scrollRestoration: true,
   },
 };
