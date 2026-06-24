@@ -957,7 +957,16 @@ export default function ChatPage() {
                   opacity: { duration: 0.35, delay: 0.4 },
                   layout: { type: "spring", stiffness: 350, damping: 32 }
                 }}
-                className="w-full max-w-2xl"
+                className={cn(
+                  keyboardOffset > 0
+                    ? "fixed z-20 bottom-6 left-0 right-0 max-w-2xl mx-auto px-6"
+                    : "w-full max-w-2xl"
+                )}
+                style={
+                  keyboardOffset > 0
+                    ? { bottom: `${keyboardOffset + 8}px` }
+                    : undefined
+                }
               >
                 <ChatInput
                   handleSubmit={handleSubmit}
