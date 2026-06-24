@@ -33,7 +33,7 @@ const AI_FIELDS: KeyField[] = [
   { key: 'perplexityApiKey', storageKey: 'perplexity-api-key', label: 'Perplexity Sonar API Key', placeholder: 'Enter Perplexity API key', href: 'https://www.perplexity.ai/settings/api' },
   { key: 'mistralApiKey', storageKey: 'mistral-api-key', label: 'Mistral API Key', placeholder: 'Enter Mistral API key', href: 'https://console.mistral.ai/api-keys/' },
   { key: 'inceptionApiKey', storageKey: 'inception-api-key', label: 'Inception Labs API Key', placeholder: 'Enter Inception Labs API key', href: 'https://platform.inceptionlabs.ai/' },
-  { key: 'zenmuxApiKey', storageKey: 'zenmux-api-key', label: 'ZenMux API Key', placeholder: 'Enter ZenMux API key', href: 'https://zenmux.app/' },
+  { key: 'zenmuxApiKey', storageKey: 'zenmux-api-key', label: 'ZenMux API Key', placeholder: 'Enter ZenMux API key', href: 'https://zenmux.ai/' },
   { key: 'nvidiaApiKey', storageKey: 'nvidia-api-key', label: 'NVIDIA Build API Key', placeholder: 'Enter NVIDIA Build API key', href: 'https://build.nvidia.com/' },
 ];
 
