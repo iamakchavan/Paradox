@@ -442,6 +442,7 @@ export default function ChatPage() {
     setError(null);
 
     let accumulatedContent = '';
+    let visibilityChangeHandler: (() => void) | null = null;
 
     try {
       const historyPruned = pruneChatHistory(history, 20, 4);
@@ -465,26 +466,56 @@ export default function ChatPage() {
       // we accumulate into accumulatedContent and flush to React state via rAF.
       // This caps re-renders to ~60fps regardless of token rate, eliminating the
       // "Maximum update depth exceeded" cascade that killed deep research on mobile/desktop.
+      //
+      // Fallback: if the tab is backgrounded (RAF stops firing on mobile), a
+      // 250ms setTimeout ensures the flush still happens when the tab is visible
+      // again, and a visibilitychange listener force-flushes immediately on resume.
       let flushRafId: number | null = null;
+      let flushTimerId: ReturnType<typeof setTimeout> | null = null;
       let pendingFlush = false;
 
-      const scheduleFlush = () => {
-        if (flushRafId !== null) return; // already scheduled
-        flushRafId = requestAnimationFrame(() => {
-          flushRafId = null;
-          if (!pendingFlush) return;
-          pendingFlush = false;
-          const content = accumulatedContent;
-          setConversation(prev => {
-            const newConv = [...prev];
-            if (newConv.length === 0) return prev;
-            const lastMessage = newConv[newConv.length - 1];
-            if (lastMessage.content === content) return prev; // no change, bail
-            newConv[newConv.length - 1] = { ...lastMessage, content };
-            return newConv;
-          });
+      const doFlush = () => {
+        flushRafId = null;
+        flushTimerId = null;
+        if (!pendingFlush) return;
+        pendingFlush = false;
+        const content = accumulatedContent;
+        setConversation(prev => {
+          const newConv = [...prev];
+          if (newConv.length === 0) return prev;
+          const lastMessage = newConv[newConv.length - 1];
+          if (lastMessage.content === content) return prev; // no change, bail
+          newConv[newConv.length - 1] = { ...lastMessage, content };
+          return newConv;
         });
       };
+
+      const scheduleFlush = () => {
+        if (flushRafId !== null || flushTimerId !== null) return; // already scheduled
+        flushRafId = requestAnimationFrame(() => {
+          flushRafId = null;
+          if (flushTimerId !== null) { clearTimeout(flushTimerId); flushTimerId = null; }
+          doFlush();
+        });
+        // Fallback timer: fires if rAF is throttled (background tab on mobile)
+        flushTimerId = setTimeout(() => {
+          flushTimerId = null;
+          if (flushRafId !== null) { cancelAnimationFrame(flushRafId); flushRafId = null; }
+          doFlush();
+        }, 250);
+      };
+
+      // When the user returns to the tab after backgrounding, immediately flush
+      // whatever accumulated while rAF was throttled.
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible' && pendingFlush) {
+          if (flushRafId !== null) { cancelAnimationFrame(flushRafId); flushRafId = null; }
+          if (flushTimerId !== null) { clearTimeout(flushTimerId); flushTimerId = null; }
+          doFlush();
+        }
+      };
+      visibilityChangeHandler = handleVisibilityChange;
+      document.addEventListener('visibilitychange', handleVisibilityChange);
 
       await streamChatContent(
         payload,
@@ -515,11 +546,10 @@ export default function ChatPage() {
         controller.signal
       );
 
-      // Cancel any pending rAF flush and do a final synchronous state update
-      if (flushRafId !== null) {
-        cancelAnimationFrame(flushRafId);
-        flushRafId = null;
-      }
+      // Cancel any pending rAF/timer flush and do a final synchronous state update
+      if (visibilityChangeHandler) { document.removeEventListener('visibilitychange', visibilityChangeHandler); visibilityChangeHandler = null; }
+      if (flushRafId !== null) { cancelAnimationFrame(flushRafId); flushRafId = null; }
+      if (flushTimerId !== null) { clearTimeout(flushTimerId); flushTimerId = null; }
 
       // Save the completed response to IndexedDB
       let finalContent = accumulatedContent;
@@ -583,6 +613,7 @@ export default function ChatPage() {
       }
     } finally {
       setIsLoading(false);
+      if (visibilityChangeHandler) { document.removeEventListener('visibilitychange', visibilityChangeHandler); visibilityChangeHandler = null; }
       if (abortControllerRef.current === controller) {
         abortControllerRef.current = null;
       }
