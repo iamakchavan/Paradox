@@ -87,22 +87,30 @@ export default function ChatPage() {
   const [searchEnabled, setSearchEnabled] = useState(false);
   const [researchEnabled, setResearchEnabled] = useState(false);
   const [isInputExpanded, setIsInputExpanded] = useState(false);
+
+  // Refs to latest search/research flags so runStreaming doesn't need them as deps
+  const searchEnabledRef = useRef(false);
+  const researchEnabledRef = useRef(false);
   const { bottomOffset: keyboardOffset } = useVisualViewport();
 
   const handleToggleSearch = (enabled: boolean) => {
     setSearchEnabled(enabled);
+    searchEnabledRef.current = enabled;
     localStorage.setItem('search-enabled', enabled ? 'true' : 'false');
     if (enabled) {
       setResearchEnabled(false);
+      researchEnabledRef.current = false;
       localStorage.setItem('research-enabled', 'false');
     }
   };
 
   const handleToggleResearch = (enabled: boolean) => {
     setResearchEnabled(enabled);
+    researchEnabledRef.current = enabled;
     localStorage.setItem('research-enabled', enabled ? 'true' : 'false');
     if (enabled) {
       setSearchEnabled(false);
+      searchEnabledRef.current = false;
       localStorage.setItem('search-enabled', 'false');
     }
   };
@@ -126,6 +134,11 @@ export default function ChatPage() {
   const isLoadingRef = useRef(false);
   const initialMessageCountRef = useRef(0);
 
+  // Ref to latest apiKeys so runStreaming / triggerTitleGeneration don't
+  // need apiKeys in their useCallback deps (apiKeys object changes every render)
+  const apiKeysRef = useRef(apiKeys);
+  useEffect(() => { apiKeysRef.current = apiKeys; }, [apiKeys]);
+
   // Keep isLoadingRef in sync with isLoading so closures always have latest value without causing re-renders
   useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
 
@@ -144,8 +157,12 @@ export default function ChatPage() {
   const [showScrollButton, setShowScrollButton] = useState(false);
 
   useEffect(() => {
-    setSearchEnabled(localStorage.getItem('search-enabled') === 'true');
-    setResearchEnabled(localStorage.getItem('research-enabled') === 'true');
+    const search = localStorage.getItem('search-enabled') === 'true';
+    const research = localStorage.getItem('research-enabled') === 'true';
+    setSearchEnabled(search);
+    setResearchEnabled(research);
+    searchEnabledRef.current = search;
+    researchEnabledRef.current = research;
   }, []);
 
   // Reset limit on session change
@@ -341,16 +358,17 @@ export default function ChatPage() {
     modelMode: string
   ) => {
     try {
+      const keys = apiKeysRef.current;
       const response = await fetch('/api/chat/title', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key-gemini': apiKeys.geminiApiKey || localStorage.getItem('gemini-api-key') || '',
-          'x-api-key-mistral': apiKeys.mistralApiKey || localStorage.getItem('mistral-api-key') || '',
-          'x-api-key-perplexity': apiKeys.perplexityApiKey || localStorage.getItem('perplexity-api-key') || '',
-           'x-api-key-zenmux': apiKeys.zenmuxApiKey || localStorage.getItem('zenmux-api-key') || '',
-           'x-api-key-inception': apiKeys.inceptionApiKey || localStorage.getItem('inception-api-key') || '',
-           'x-api-key-nvidia': apiKeys.nvidiaApiKey || localStorage.getItem('nvidia-api-key') || '',
+          'x-api-key-gemini': keys.geminiApiKey || localStorage.getItem('gemini-api-key') || '',
+          'x-api-key-mistral': keys.mistralApiKey || localStorage.getItem('mistral-api-key') || '',
+          'x-api-key-perplexity': keys.perplexityApiKey || localStorage.getItem('perplexity-api-key') || '',
+           'x-api-key-zenmux': keys.zenmuxApiKey || localStorage.getItem('zenmux-api-key') || '',
+           'x-api-key-inception': keys.inceptionApiKey || localStorage.getItem('inception-api-key') || '',
+           'x-api-key-nvidia': keys.nvidiaApiKey || localStorage.getItem('nvidia-api-key') || '',
         },
         body: JSON.stringify({
           firstQuery,
@@ -368,7 +386,8 @@ export default function ChatPage() {
     } catch (err) {
       console.error('Failed to auto-generate chat title:', err);
     }
-  }, [apiKeys.geminiApiKey, apiKeys.mistralApiKey, apiKeys.perplexityApiKey, apiKeys.zenmuxApiKey, apiKeys.nvidiaApiKey, apiKeys.inceptionApiKey]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Main streaming runner helper callback
   const runStreaming = useCallback(async (
@@ -378,20 +397,21 @@ export default function ChatPage() {
     userMsg: Message,
     assistantMessageId: number
   ) => {
+    // Read from refs so the callback stays stable and doesn't re-create on every render
     const keys = {
-      geminiApiKey: apiKeys.geminiApiKey || localStorage.getItem('gemini-api-key'),
-      mistralApiKey: apiKeys.mistralApiKey || localStorage.getItem('mistral-api-key'),
-      perplexityApiKey: apiKeys.perplexityApiKey || localStorage.getItem('perplexity-api-key'),
-      zenmuxApiKey: apiKeys.zenmuxApiKey || localStorage.getItem('zenmux-api-key'),
-      nvidiaApiKey: apiKeys.nvidiaApiKey || localStorage.getItem('nvidia-api-key'),
-      inceptionApiKey: apiKeys.inceptionApiKey || localStorage.getItem('inception-api-key'),
-      tavilyApiKey: apiKeys.tavilyApiKey || localStorage.getItem('tavily-api-key'),
-      exaApiKey: apiKeys.exaApiKey || localStorage.getItem('exa-api-key'),
-      firecrawlApiKey: apiKeys.firecrawlApiKey || localStorage.getItem('firecrawl-api-key'),
+      geminiApiKey: apiKeysRef.current.geminiApiKey || localStorage.getItem('gemini-api-key'),
+      mistralApiKey: apiKeysRef.current.mistralApiKey || localStorage.getItem('mistral-api-key'),
+      perplexityApiKey: apiKeysRef.current.perplexityApiKey || localStorage.getItem('perplexity-api-key'),
+      zenmuxApiKey: apiKeysRef.current.zenmuxApiKey || localStorage.getItem('zenmux-api-key'),
+      nvidiaApiKey: apiKeysRef.current.nvidiaApiKey || localStorage.getItem('nvidia-api-key'),
+      inceptionApiKey: apiKeysRef.current.inceptionApiKey || localStorage.getItem('inception-api-key'),
+      tavilyApiKey: apiKeysRef.current.tavilyApiKey || localStorage.getItem('tavily-api-key'),
+      exaApiKey: apiKeysRef.current.exaApiKey || localStorage.getItem('exa-api-key'),
+      firecrawlApiKey: apiKeysRef.current.firecrawlApiKey || localStorage.getItem('firecrawl-api-key'),
     };
 
-    const isSearch = searchEnabled || localStorage.getItem('search-enabled') === 'true';
-    const isResearch = researchEnabled || localStorage.getItem('research-enabled') === 'true';
+    const isSearch = searchEnabledRef.current || localStorage.getItem('search-enabled') === 'true';
+    const isResearch = researchEnabledRef.current || localStorage.getItem('research-enabled') === 'true';
 
     const activeModel = MODELS_REGISTRY.find(m => m.id === modelId) || MODELS_REGISTRY[0];
     const key = activeModel.provider === 'google'
@@ -539,7 +559,7 @@ export default function ChatPage() {
         abortControllerRef.current = null;
       }
     }
-  }, [apiKeys.geminiApiKey, apiKeys.mistralApiKey, apiKeys.perplexityApiKey, apiKeys.zenmuxApiKey, apiKeys.nvidiaApiKey, apiKeys.inceptionApiKey, apiKeys.tavilyApiKey, apiKeys.exaApiKey, apiKeys.firecrawlApiKey, searchEnabled, researchEnabled, triggerTitleGeneration]);
+  }, [triggerTitleGeneration]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
