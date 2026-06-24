@@ -890,7 +890,12 @@ export default function ChatPage() {
         isSearchActive
           ? "flex flex-col h-[calc(100vh-80px)] overflow-hidden pt-20"
           : isInitialView
-            ? "flex flex-col items-center justify-center overflow-y-auto chat-scrollbar -mt-16 sm:-mt-24"
+            ? cn(
+                "flex flex-col items-center overflow-y-auto chat-scrollbar",
+                keyboardOffset > 0
+                  ? "justify-start pt-16 mt-0"
+                  : "justify-center -mt-16 sm:-mt-24"
+              )
             : "overflow-y-auto chat-scrollbar pt-16 sm:pt-20 pb-24 sm:pb-32"
       )}>
         <div className={cn(
