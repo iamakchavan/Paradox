@@ -786,3 +786,21 @@ html, body {
   scroll-behavior: auto !important;
   overflow-anchor: auto !important;
 }
+
+/* Dynamic viewport height utilities — accounts for mobile keyboard/address bar */
+.h-dvh {
+  height: 100vh; /* fallback for older browsers */
+  height: 100dvh;
+}
+
+.min-h-dvh {
+  min-height: 100vh; /* fallback */
+  min-height: 100dvh;
+}
+
+/* Mobile keyboard-aware fixed input positioning.
+   The --visual-viewport-offset-bottom custom property is set by JS
+   via the Visual Viewport API when the keyboard is open. */
+:root {
+  --visual-viewport-offset-bottom: 0px;
+}

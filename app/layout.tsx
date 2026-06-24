@@ -1,10 +1,17 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { CustomToastProvider } from '@/components/ui/custom-toast';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  interactiveWidget: 'resizes-content',
+};
 
 export const metadata: Metadata = {
   title: 'Paradox',

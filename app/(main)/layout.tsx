@@ -84,7 +84,7 @@ export default function MainLayout({
         setIsSettingsActive,
       }}
     >
-      <div className="flex h-screen w-screen overflow-hidden bg-background">
+      <div className="flex h-dvh w-screen overflow-hidden bg-background">
         <Sidebar
           activeChatId={activeChatId}
           onSelectChat={(id) => {
@@ -121,7 +121,7 @@ export default function MainLayout({
             setIsSearchActive(false);
           }}
           className={cn(
-            "fixed top-0 bottom-0 left-0 z-50 h-screen hidden md:flex",
+            "fixed top-0 bottom-0 left-0 z-50 h-dvh hidden md:flex",
             mounted && "transition-[transform,box-shadow] duration-300 ease-in-out",
             isSidebarCollapsed ? "-translate-x-full shadow-none" : "translate-x-0 shadow-2xl shadow-black/5 dark:shadow-black/20"
           )}
@@ -134,7 +134,7 @@ export default function MainLayout({
             isSidebarCollapsed ? "md:pl-0" : "md:pl-64"
           )}
         >
-          <main className="flex flex-col min-h-screen bg-background">
+          <main className="flex flex-col min-h-dvh bg-background">
             <LayoutGroup id="chat-layout-group">
               {children}
             </LayoutGroup>

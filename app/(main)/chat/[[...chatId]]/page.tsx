@@ -35,6 +35,7 @@ import { pruneChatHistory } from '@/utils/chat-context';
 import { MessageAnimator } from '@/components/chat/MessageAnimator';
 import { motion } from 'framer-motion';
 import { useCustomToast } from '@/components/ui/custom-toast';
+import { useVisualViewport } from '@/hooks/use-visual-viewport';
 
 interface Message {
   id?: number;
@@ -86,6 +87,7 @@ export default function ChatPage() {
   const [searchEnabled, setSearchEnabled] = useState(false);
   const [researchEnabled, setResearchEnabled] = useState(false);
   const [isInputExpanded, setIsInputExpanded] = useState(false);
+  const { bottomOffset: keyboardOffset } = useVisualViewport();
 
   const handleToggleSearch = (enabled: boolean) => {
     setSearchEnabled(enabled);
@@ -871,9 +873,14 @@ export default function ChatPage() {
         <div
           className={cn(
             "fixed bottom-0 right-0 z-10 h-32 sm:h-40 pointer-events-none progressive-blur",
-            mounted && "transition-[left] duration-300",
+            mounted && "transition-[left,bottom] duration-300",
             isSidebarCollapsed ? "left-0" : "left-0 md:left-64"
           )}
+          style={
+            keyboardOffset > 0
+              ? { bottom: `${keyboardOffset}px` }
+              : undefined
+          }
         />
       )}
 
@@ -883,12 +890,16 @@ export default function ChatPage() {
           layoutId="chat-input-container"
           transition={{ type: "spring", stiffness: 350, damping: 32 }}
           className={cn(
-            "fixed z-20",
-            mounted && "transition-[left] duration-300",
+            "fixed z-20 bottom-6 sm:bottom-12",
+            mounted && "transition-[left,bottom] duration-300",
             "max-w-2xl right-0 mx-auto px-6 sm:px-4",
             isSidebarCollapsed ? "left-0" : "left-0 md:left-64",
-            "bottom-6 sm:bottom-12"
           )}
+          style={
+            keyboardOffset > 0
+              ? { bottom: `${keyboardOffset + 8}px` }
+              : undefined
+          }
         >
           <div className="absolute right-4 -top-14 z-20">
             <Button
