@@ -702,20 +702,15 @@
 
 /* Liquid Glass Dock Styling */
 .liquid-glass-dock {
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(20px) saturate(190%);
-  -webkit-backdrop-filter: blur(20px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  @apply bg-white/45 backdrop-blur-md border border-white/20 transition-all duration-300;
   box-shadow: 
     0 4px 30px rgba(0, 0, 0, 0.03),
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
     inset 0 -1px 1px 0 rgba(0, 0, 0, 0.01);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dark .liquid-glass-dock {
-  background: rgba(18, 20, 28, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  @apply bg-zinc-900/60 border-white/10;
   box-shadow: 
     0 4px 30px rgba(0, 0, 0, 0.2),
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
@@ -723,16 +718,14 @@
 }
 
 .liquid-glass-dock:hover {
-  background: rgba(255, 255, 255, 0.55);
-  border-color: rgba(255, 255, 255, 0.55);
+  @apply bg-white/55 border-white/35;
   box-shadow: 
     0 10px 40px rgba(0, 0, 0, 0.06),
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .dark .liquid-glass-dock:hover {
-  background: rgba(18, 20, 28, 0.65);
-  border-color: rgba(255, 255, 255, 0.12);
+  @apply bg-zinc-900/70 border-white/15;
   box-shadow: 
     0 10px 40px rgba(0, 0, 0, 0.35),
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
