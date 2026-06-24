@@ -393,7 +393,14 @@ export const ModelSelector = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-transparent border-0 outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none py-1.5 pl-8 pr-3 text-xs text-foreground placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-sans"
-                autoFocus
+                autoFocus={!isMobile}
+                readOnly={isMobile}
+                onFocus={(e) => {
+                  // On mobile, remove readOnly when user explicitly taps the input
+                  if (isMobile) {
+                    e.currentTarget.readOnly = false;
+                  }
+                }}
               />
             </div>
           </div>

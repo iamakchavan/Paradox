@@ -166,7 +166,7 @@ export function Sidebar({
 
   return (
     <aside className={cn(
-      "sidebar-parent w-64 bg-background flex flex-col h-screen flex-shrink-0 relative overflow-hidden",
+      "sidebar-parent w-64 bg-background flex flex-col h-dvh flex-shrink-0 relative overflow-hidden",
       className
     )}>
       {/* Header — minimal, just brand + collapse */}
