@@ -330,13 +330,17 @@ export default function ChatPage() {
     if (conversation.length === 1) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [conversation]);
+    // Only run on length change, not on content changes (avoids firing on every token)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation.length]);
 
   useEffect(() => {
     if (conversation.length > 0 && isInitialView) {
       setIsInitialView(false);
     }
-  }, [conversation]);
+    // Only run on length change, not on content changes (avoids firing on every token)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation.length, isInitialView]);
 
   const handleNewChat = () => {
     handleStop();
@@ -457,6 +461,31 @@ export default function ChatPage() {
       let researchDuration = 0;
       let lastSavedTime = Date.now();
 
+      // RAF-throttled flush: instead of calling setConversation on every token byte,
+      // we accumulate into accumulatedContent and flush to React state via rAF.
+      // This caps re-renders to ~60fps regardless of token rate, eliminating the
+      // "Maximum update depth exceeded" cascade that killed deep research on mobile/desktop.
+      let flushRafId: number | null = null;
+      let pendingFlush = false;
+
+      const scheduleFlush = () => {
+        if (flushRafId !== null) return; // already scheduled
+        flushRafId = requestAnimationFrame(() => {
+          flushRafId = null;
+          if (!pendingFlush) return;
+          pendingFlush = false;
+          const content = accumulatedContent;
+          setConversation(prev => {
+            const newConv = [...prev];
+            if (newConv.length === 0) return prev;
+            const lastMessage = newConv[newConv.length - 1];
+            if (lastMessage.content === content) return prev; // no change, bail
+            newConv[newConv.length - 1] = { ...lastMessage, content };
+            return newConv;
+          });
+        });
+      };
+
       await streamChatContent(
         payload,
         modelId,
@@ -470,16 +499,9 @@ export default function ChatPage() {
             thinkingDuration = (Date.now() - thinkingStartTime) / 1000;
           }
 
-          setConversation(prev => {
-            const newConv = [...prev];
-            if (newConv.length === 0) return prev;
-            const lastMessage = newConv[newConv.length - 1];
-            newConv[newConv.length - 1] = {
-              ...lastMessage,
-              content: accumulatedContent
-            };
-            return newConv;
-          });
+          // Schedule a throttled state flush instead of calling setState directly
+          pendingFlush = true;
+          scheduleFlush();
 
           // Periodically save to IndexedDB to prevent data loss on connection drop or page refresh
           const now = Date.now();
@@ -492,6 +514,12 @@ export default function ChatPage() {
         },
         controller.signal
       );
+
+      // Cancel any pending rAF flush and do a final synchronous state update
+      if (flushRafId !== null) {
+        cancelAnimationFrame(flushRafId);
+        flushRafId = null;
+      }
 
       // Save the completed response to IndexedDB
       let finalContent = accumulatedContent;
@@ -722,6 +750,20 @@ export default function ChatPage() {
   useEffect(() => {
     if (isInitialView) return;
 
+    // Use a ref to store pending showScrollButton value and flush it via rAF
+    // This prevents setShowScrollButton from firing synchronously during ResizeObserver
+    // callbacks (which happen during streaming), which was causing the render loop.
+    let rafId: number | null = null;
+    let pendingValue: boolean | null = null;
+
+    const flushScrollButton = () => {
+      rafId = null;
+      if (pendingValue !== null) {
+        setShowScrollButton(pendingValue);
+        pendingValue = null;
+      }
+    };
+
     const handleScroll = () => {
       const scrollContainer = document.querySelector('.chat-scrollbar');
       if (!scrollContainer) return;
@@ -731,9 +773,15 @@ export default function ChatPage() {
 
       const threshold = 200;
       const isNearBottom = scrollHeight - (scrollPosition + containerHeight) <= threshold;
-      setShowScrollButton(!isNearBottom && scrollHeight > containerHeight + threshold);
+      const next = !isNearBottom && scrollHeight > containerHeight + threshold;
 
-      // Track whether user has manually scrolled up away from the bottom
+      // Schedule the state update via rAF so it never fires inside a render
+      pendingValue = next;
+      if (rafId === null) {
+        rafId = requestAnimationFrame(flushScrollButton);
+      }
+
+      // Track whether user has manually scrolled up away from the bottom (ref only, no setState)
       isUserScrolledUpRef.current = scrollHeight - (scrollPosition + containerHeight) > 100;
     };
 
@@ -741,7 +789,10 @@ export default function ChatPage() {
     if (scrollContainer) {
       handleScroll();
       scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+      return () => {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+        if (rafId !== null) cancelAnimationFrame(rafId);
+      };
     }
   }, [isInitialView]);
 

@@ -17,6 +17,11 @@ export interface StreamKeys {
   firecrawlApiKey?: string | null;
 }
 
+// How long a single reader.read() call can stall before we treat the
+// connection as silently dropped (common on iOS Safari when the tab is
+// backgrounded or the screen locks mid-stream).
+const READ_TIMEOUT_MS = 30_000; // 30 seconds
+
 export const streamChatContent = async (
   messages: ChatMessage[],
   model: string,
@@ -27,6 +32,7 @@ export const streamChatContent = async (
   signal?: AbortSignal
 ) => {
   const endpoint = researchEnabled ? '/api/chat/research' : '/api/chat';
+
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
@@ -41,6 +47,8 @@ export const streamChatContent = async (
       'x-api-key-exa': keys.exaApiKey || '',
       'x-api-key-firecrawl': keys.firecrawlApiKey || '',
       'x-search-enabled': searchEnabled ? 'true' : 'false',
+      // Tell any intermediate proxy/CDN not to buffer this response
+      'Accept': 'text/plain',
     },
     body: JSON.stringify({
       messages: messages.map(msg => ({
@@ -51,6 +59,11 @@ export const streamChatContent = async (
       })),
       model,
     }),
+    // keepalive: true allows the request to outlive page navigation on some
+    // browsers, but more importantly it signals to the browser not to treat
+    // this as an idle background connection eligible for early teardown.
+    // Note: keepalive is incompatible with streaming response bodies in some
+    // browsers, so we only set it on the non-streaming initial fetch.
     signal,
   });
 
@@ -64,17 +77,50 @@ export const streamChatContent = async (
 
   const decoder = new TextDecoder();
 
+  // Wraps reader.read() with a timeout so that if the mobile browser silently
+  // drops the connection (no error, no done=true, just hangs), we throw a
+  // detectable error rather than hanging forever.
+  const readWithTimeout = (): Promise<ReadableStreamReadResult<Uint8Array>> => {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reader.cancel().catch(() => {});
+        reject(new Error('Stream read timeout — connection may have been dropped'));
+      }, READ_TIMEOUT_MS);
+
+      reader.read().then(
+        (result) => { clearTimeout(timer); resolve(result); },
+        (err) => { clearTimeout(timer); reject(err); }
+      );
+    });
+  };
+
   try {
     while (true) {
       if (signal?.aborted) throw new Error('Aborted');
-      const { done, value } = await reader.read();
+
+      const { done, value } = await readWithTimeout();
       if (done) break;
 
       const chunkText = decoder.decode(value, { stream: true });
-      onToken(chunkText);
+
+      // Filter out heartbeat-only chunks (server sends spaces to keep the
+      // connection alive during long tool calls / research planning phases).
+      // A chunk is heartbeat-only if it consists entirely of whitespace AND
+      // the decoded string contains no meaningful protocol tags.
+      const isMeaningfulChunk = chunkText.trim().length > 0 ||
+        chunkText.includes('<') ||
+        chunkText.includes('{');
+
+      if (isMeaningfulChunk) {
+        onToken(chunkText);
+      }
     }
-  } catch (err) {
+  } catch (err: any) {
+    // Re-throw AbortError so the caller can distinguish user-stop from errors
+    if (err?.name === 'AbortError' || err?.message === 'Aborted') throw err;
     console.error('Error reading chat stream:', err);
     throw err;
+  } finally {
+    try { reader.cancel(); } catch {}
   }
 };

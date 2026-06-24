@@ -266,8 +266,26 @@ IMPORTANT RULES:
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
-        // Force immediate header flush to prevent serverless/proxy/middleware buffering or timeouts
-        controller.enqueue(encoder.encode(' '));
+        let isControllerClosed = false;
+        const safeEnqueue = (data: Uint8Array) => {
+          if (!isControllerClosed) {
+            try {
+              controller.enqueue(data);
+            } catch {
+              isControllerClosed = true;
+            }
+          }
+        };
+
+        // Force immediate header flush — prevents proxy/middleware buffering
+        safeEnqueue(encoder.encode(' '.repeat(2048)));
+
+        // Heartbeat: keeps the mobile connection alive during tool calls
+        // (web search + browsePage can take 5–15s each, enough for iOS Safari
+        // to consider the connection idle and kill it)
+        const heartbeatInterval = setInterval(() => {
+          safeEnqueue(encoder.encode(' '));
+        }, 500);
 
         let hasThinkingStarted = false;
         let isReasoningDeltaActive = false;
@@ -284,21 +302,20 @@ IMPORTANT RULES:
             if (part.type === 'reasoning-delta') {
               console.log(`[CHAT reasoning-delta] text: "${part.text}"`);
               if (!hasThinkingStarted) {
-                controller.enqueue(encoder.encode('<think>'));
+                safeEnqueue(encoder.encode('<think>'));
                 hasThinkingStarted = true;
                 isReasoningDeltaActive = true;
               }
-              controller.enqueue(encoder.encode(part.text));
+              safeEnqueue(encoder.encode(part.text));
 
             } else if (part.type === 'text-delta') {
               console.log(`[CHAT text-delta] text: "${part.text}"`);
               if (hasThinkingStarted && isReasoningDeltaActive) {
-                controller.enqueue(encoder.encode('</think>'));
+                safeEnqueue(encoder.encode('</think>'));
                 hasThinkingStarted = false;
                 isReasoningDeltaActive = false;
               }
 
-              // Repetition detection: catch models stuck in ".com).com)" loops
               const text = part.text;
               
               if (text.includes('<think>')) {
@@ -320,7 +337,7 @@ IMPORTANT RULES:
                 repetitionCount = 0;
               }
 
-              controller.enqueue(encoder.encode(text));
+              safeEnqueue(encoder.encode(text));
 
               if (gotSearchResults && text.trim().length > 0) {
                 gotTextAfterSearch = true;
@@ -333,7 +350,7 @@ IMPORTANT RULES:
               console.log(`[CHAT] Tool call part object JSON:`, JSON.stringify(part));
               console.log(`[CHAT] Tool call: name=${part.toolName}, input=`, JSON.stringify((part as any).input));
               if (hasThinkingStarted) {
-                controller.enqueue(encoder.encode('</think>'));
+                safeEnqueue(encoder.encode('</think>'));
                 hasThinkingStarted = false;
                 isReasoningDeltaActive = false;
               }
@@ -343,7 +360,7 @@ IMPORTANT RULES:
                 if (query) {
                   const escapedQuery = query.replace(/"/g, '&quot;');
                   console.log(`[CHAT] Enqueuing search-loading for query: "${query}"`);
-                  controller.enqueue(encoder.encode(`<search-loading query="${escapedQuery}" />`));
+                  safeEnqueue(encoder.encode(`<search-loading query="${escapedQuery}" />`));
                 } else {
                   console.warn('[CHAT] Tool call query is empty!', JSON.stringify(toolInput));
                 }
@@ -353,7 +370,7 @@ IMPORTANT RULES:
                 if (url) {
                   const escapedUrl = url.replace(/"/g, '&quot;');
                   console.log(`[CHAT] Enqueuing search-loading for browsePage: "${url}"`);
-                  controller.enqueue(encoder.encode(`<search-loading query="Reading ${escapedUrl}" />`));
+                  safeEnqueue(encoder.encode(`<search-loading query="Reading ${escapedUrl}" />`));
                 }
               } else if (part.toolName === 'mapWebsite') {
                 const toolInput = (part as any).input || {};
@@ -361,7 +378,7 @@ IMPORTANT RULES:
                 if (url) {
                   const escapedUrl = url.replace(/"/g, '&quot;');
                   console.log(`[CHAT] Enqueuing search-loading for mapWebsite: "${url}"`);
-                  controller.enqueue(encoder.encode(`<search-loading query="Mapping ${escapedUrl}" />`));
+                  safeEnqueue(encoder.encode(`<search-loading query="Mapping ${escapedUrl}" />`));
                 }
               }
 
@@ -369,7 +386,7 @@ IMPORTANT RULES:
               console.log(`[CHAT] Tool result part object JSON:`, JSON.stringify(part));
               console.log(`[CHAT] Tool result: name=${part.toolName}`);
               if (hasThinkingStarted) {
-                controller.enqueue(encoder.encode('</think>'));
+                safeEnqueue(encoder.encode('</think>'));
                 hasThinkingStarted = false;
                 isReasoningDeltaActive = false;
               }
@@ -378,17 +395,13 @@ IMPORTANT RULES:
                 console.log(`[CHAT] Tool result data results count: ${toolResult.results?.length || 0}`);
                 if (toolResult.results && toolResult.results.length > 0) {
                   const resultData = JSON.stringify(toolResult);
-                  controller.enqueue(encoder.encode(`<search-results>${resultData}</search-results>`));
+                  safeEnqueue(encoder.encode(`<search-results>${resultData}</search-results>`));
                   gotSearchResults = true;
                   lastSearchResultData = toolResult;
                 }
               } else if (part.toolName === 'browsePage') {
                 const toolResult = (part as any).output || (part as any).result || { url: '', content: '' };
                 if (toolResult.url) {
-                  let hostname = 'Page';
-                  try {
-                    hostname = new URL(toolResult.url).hostname.replace('www.', '');
-                  } catch {}
                   const title = extractTitleFromMarkdown(toolResult.content, getFriendlyTitleFromUrl(toolResult.url));
                   const mockResult = {
                     query: toolResult.url,
@@ -399,7 +412,7 @@ IMPORTANT RULES:
                     }]
                   };
                   const resultData = JSON.stringify(mockResult);
-                  controller.enqueue(encoder.encode(`<search-results>${resultData}</search-results>`));
+                  safeEnqueue(encoder.encode(`<search-results>${resultData}</search-results>`));
                   gotSearchResults = true;
                   lastSearchResultData = mockResult;
                 }
@@ -407,18 +420,13 @@ IMPORTANT RULES:
                 const toolResult = (part as any).output || (part as any).result || { url: '', links: [] };
                 if (toolResult.url) {
                   let hostname = 'Website';
-                  try {
-                    hostname = new URL(toolResult.url).hostname.replace('www.', '');
-                  } catch {}
+                  try { hostname = new URL(toolResult.url).hostname.replace('www.', ''); } catch {}
                   
-                  const mockResultsList = (toolResult.links || []).map((linkUrl: string) => {
-                    const title = getFriendlyTitleFromUrl(linkUrl);
-                    return {
-                      title: title,
-                      url: linkUrl,
-                      content: `Discovered subpage of ${new URL(linkUrl).hostname} via website mapping: ${linkUrl}`
-                    };
-                  });
+                  const mockResultsList = (toolResult.links || []).map((linkUrl: string) => ({
+                    title: getFriendlyTitleFromUrl(linkUrl),
+                    url: linkUrl,
+                    content: `Discovered subpage of ${new URL(linkUrl).hostname} via website mapping: ${linkUrl}`
+                  }));
                   
                   if (mockResultsList.length === 0) {
                     mockResultsList.push({
@@ -428,25 +436,17 @@ IMPORTANT RULES:
                     });
                   }
 
-                  const mockResult = {
-                    query: toolResult.url,
-                    results: mockResultsList.slice(0, 10), // cap at 10 results for standard search widget
-                  };
-                  
-                  const resultData = JSON.stringify(mockResult);
-                  controller.enqueue(encoder.encode(`<search-results>${resultData}</search-results>`));
+                  const mockResult = { query: toolResult.url, results: mockResultsList.slice(0, 10) };
+                  safeEnqueue(encoder.encode(`<search-results>${JSON.stringify(mockResult)}</search-results>`));
                   gotSearchResults = true;
                   lastSearchResultData = mockResult;
                 }
               }
 
             } else if (part.type === 'raw') {
-              console.log(`[CHAT raw part] keys:`, Object.keys(part));
               let rawData = (part as any).rawValue || (part as any).value || (part as any).chunk;
               if (typeof rawData === 'string') {
-                try {
-                  rawData = JSON.parse(rawData);
-                } catch {}
+                try { rawData = JSON.parse(rawData); } catch {}
               }
               if (rawData && typeof rawData === 'object') {
                 const findCitations = (obj: any): string[] | null => {
@@ -463,57 +463,42 @@ IMPORTANT RULES:
                   }
                   return null;
                 };
-
                 const citations = findCitations(rawData);
                 if (citations) {
                   citations.forEach((url: string) => {
-                    if (url && typeof url === 'string') {
-                      accumulatedCitations.add(url);
-                    }
+                    if (url && typeof url === 'string') accumulatedCitations.add(url);
                   });
                 }
               }
             } else if (part.type === 'error') {
               if (hasThinkingStarted) {
-                controller.enqueue(encoder.encode('</think>'));
+                safeEnqueue(encoder.encode('</think>'));
                 hasThinkingStarted = false;
                 isReasoningDeltaActive = false;
               }
               console.error('[Stream Error Part]:', part.error);
-              // Write the error as text so the user can see it
               const errorMsg = `\n\n⚠️ An error occurred: ${part.error instanceof Error ? part.error.message : String(part.error)}`;
-              controller.enqueue(encoder.encode(errorMsg));
+              safeEnqueue(encoder.encode(errorMsg));
             }
           }
 
           if (hasThinkingStarted) {
-            controller.enqueue(encoder.encode('</think>'));
+            safeEnqueue(encoder.encode('</think>'));
           }
 
-          // If we accumulated citations from Perplexity (raw chunks), emit them as search-results
           if (accumulatedCitations.size > 0) {
             const citationsList = Array.from(accumulatedCitations);
             console.log(`[CHAT] Emitting ${citationsList.length} Perplexity citations to client`);
-            const mockResults = citationsList.map((url, i) => {
+            const mockResults = citationsList.map((url) => {
               let title = 'Source';
-              try {
-                title = new URL(url).hostname.replace('www.', '');
-              } catch {}
-              return {
-                title: title,
-                url: url,
-                content: `Grounded search source cited by Perplexity.`
-              };
+              try { title = new URL(url).hostname.replace('www.', ''); } catch {}
+              return { title, url, content: `Grounded search source cited by Perplexity.` };
             });
-            const resultData = JSON.stringify({ query: 'Perplexity Search', results: mockResults });
-            controller.enqueue(encoder.encode(`<search-results>${resultData}</search-results>`));
+            safeEnqueue(encoder.encode(`<search-results>${JSON.stringify({ query: 'Perplexity Search', results: mockResults })}</search-results>`));
           }
 
-          // SAFETY NET: If the model returned search results but produced NO text answer,
-          // make a second LLM call with the search results injected as context.
           if (gotSearchResults && !gotTextAfterSearch && lastSearchResultData) {
             console.log('[Safety Net] Model finished after search without text. Making follow-up call...');
-
             try {
               const searchContext = lastSearchResultData.results
                 .map((r: any, i: number) => `[${i + 1}] ${r.title} (${r.url})\n${r.content}`)
@@ -521,38 +506,23 @@ IMPORTANT RULES:
 
               const followUpMessages = [
                 ...formattedMessages,
-                {
-                  role: 'assistant' as const,
-                  content: `I searched the web for "${lastSearchResultData.query}" and found these results:\n\n${searchContext}`
-                },
-                {
-                  role: 'user' as const,
-                  content: 'Now synthesize the search results above into a comprehensive, well-structured answer with inline citations formatted as Markdown links (e.g., [domain.com](url)). Be thorough and informative.'
-                }
+                { role: 'assistant' as const, content: `I searched the web for "${lastSearchResultData.query}" and found these results:\n\n${searchContext}` },
+                { role: 'user' as const, content: 'Now synthesize the search results above into a comprehensive, well-structured answer with inline citations formatted as Markdown links (e.g., [domain.com](url)). Be thorough and informative.' }
               ];
 
-              const followUp = streamText({
-                model: aiModel,
-                messages: followUpMessages,
-                system: finalSystemPrompt || undefined,
-                maxRetries: 1,
-              });
-
+              const followUp = streamText({ model: aiModel, messages: followUpMessages, system: finalSystemPrompt || undefined, maxRetries: 1 });
               for await (const part of followUp.fullStream) {
-                if (part.type === 'text-delta') {
-                  controller.enqueue(encoder.encode(part.text));
-                }
+                if (part.type === 'text-delta') safeEnqueue(encoder.encode(part.text));
               }
             } catch (followUpErr) {
               console.error('[Safety Net] Follow-up call failed:', followUpErr);
-              // Last resort: emit a basic summary from the search results
               try {
                 const fallbackText = `\n\nHere's what I found:\n\n${lastSearchResultData.results
                   .map((r: any) => `- **${r.title}**: ${r.content.substring(0, 200)}... [${new URL(r.url).hostname.replace('www.', '')}](${r.url})`)
                   .join('\n')}`;
-                controller.enqueue(encoder.encode(fallbackText));
+                safeEnqueue(encoder.encode(fallbackText));
               } catch {
-                controller.enqueue(encoder.encode('\n\nSearch completed but I encountered an error generating a summary.'));
+                safeEnqueue(encoder.encode('\n\nSearch completed but I encountered an error generating a summary.'));
               }
             }
           }
@@ -561,20 +531,14 @@ IMPORTANT RULES:
 
         } catch (err) {
           console.error('[Stream Exception]:', err);
-          // Instead of erroring the controller (which breaks the stream),
-          // write the error as text so the client can display it
           try {
             const errorMessage = err instanceof Error ? err.message : 'Unknown streaming error';
-            controller.enqueue(encoder.encode(`\n\n⚠️ Error: ${errorMessage}`));
-          } catch {
-            // Controller might already be in error state, nothing we can do
-          }
+            safeEnqueue(encoder.encode(`\n\n⚠️ Error: ${errorMessage}`));
+          } catch {}
         } finally {
-          try {
-            controller.close();
-          } catch {
-            // Controller might already be closed
-          }
+          clearInterval(heartbeatInterval);
+          isControllerClosed = true;
+          try { controller.close(); } catch {}
         }
       }
     });
@@ -585,6 +549,7 @@ IMPORTANT RULES:
         'Transfer-Encoding': 'chunked',
         'Cache-Control': 'no-cache, no-transform',
         'X-Accel-Buffering': 'no',
+        'X-No-Compression': 'true',
       },
     });
   } catch (error: any) {
