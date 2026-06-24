@@ -95,7 +95,7 @@ export function ChatHeader({
                   </svg>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-64 border-r-0">
+              <SheetContent side="left" className="p-0 w-64 border-r-0 bg-background/90 backdrop-blur-lg">
               <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
               <SheetDescription className="sr-only">
                 Allows user to switch chats and select options
@@ -127,7 +127,7 @@ export function ChatHeader({
                   setIsSearchActive(false);
                   setIsMobileSidebarOpen(false);
                 }}
-                className="w-full h-full border-r-0"
+                className="w-full h-full border-r-0 bg-transparent backdrop-blur-none"
               />
             </SheetContent>
           </Sheet>
