@@ -122,7 +122,12 @@ export default function ChatPage() {
   const isNewChatCreatedRef = useRef(false);
   const isInitialScrollSnapRef = useRef(false);
   const isUserScrolledUpRef = useRef(false);
+  // Mirror of isLoading as a ref so ResizeObserver can read it without dep-array re-registration
+  const isLoadingRef = useRef(false);
   const initialMessageCountRef = useRef(0);
+
+  // Keep isLoadingRef in sync with isLoading so closures always have latest value without causing re-renders
+  useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
 
   const handleStop = useCallback(() => {
     if (abortControllerRef.current) {
@@ -693,6 +698,7 @@ export default function ChatPage() {
   }, [chatIdParam, selectedModelId, conversation, triggerTitleGeneration, router]);
 
   // Handle scroll button visibility and manual scroll tracking
+  // NOTE: deliberately NOT in conversation deps — that caused setState loop on every token
   useEffect(() => {
     if (isInitialView) return;
 
@@ -707,19 +713,20 @@ export default function ChatPage() {
       const isNearBottom = scrollHeight - (scrollPosition + containerHeight) <= threshold;
       setShowScrollButton(!isNearBottom && scrollHeight > containerHeight + threshold);
 
-      // If user is more than 100px away from the bottom, mark them as scrolled up
+      // Track whether user has manually scrolled up away from the bottom
       isUserScrolledUpRef.current = scrollHeight - (scrollPosition + containerHeight) > 100;
     };
 
     const scrollContainer = document.querySelector('.chat-scrollbar');
     if (scrollContainer) {
       handleScroll();
-      scrollContainer.addEventListener('scroll', handleScroll);
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
       return () => scrollContainer.removeEventListener('scroll', handleScroll);
     }
-  }, [isInitialView, conversation]);
+  }, [isInitialView]);
 
-  // Keep scroll pinned to bottom on layout resizing during initial load and active streaming/deep research
+  // ResizeObserver: auto-scroll to bottom during active streaming/deep research.
+  // Registered once per chat session — reads isLoadingRef so no re-registration is needed.
   useEffect(() => {
     if (!chatIdParam || isInitialView) return;
 
@@ -727,13 +734,16 @@ export default function ChatPage() {
     const contentEl = contentRef.current;
     if (!scrollContainer || !contentEl) return;
 
-    // Immediately snap to bottom on render
+    // Snap to bottom on initial chat load
     scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    isUserScrolledUpRef.current = false;
 
     const observer = new ResizeObserver(() => {
       if (isInitialScrollSnapRef.current) {
+        // During initial page mount – always snap
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      } else if (isLoading && !isUserScrolledUpRef.current) {
+      } else if (isLoadingRef.current && !isUserScrolledUpRef.current) {
+        // During active streaming/deep research and user hasn't scrolled up
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
     });
@@ -742,7 +752,7 @@ export default function ChatPage() {
     return () => {
       observer.disconnect();
     };
-  }, [chatIdParam, isInitialView, isLoading]);
+  }, [chatIdParam, isInitialView]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
