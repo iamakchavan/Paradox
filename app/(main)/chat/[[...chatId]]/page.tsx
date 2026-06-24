@@ -958,9 +958,8 @@ export default function ChatPage() {
                   layout: { type: "spring", stiffness: 350, damping: 32 }
                 }}
                 className={cn(
-                  keyboardOffset > 0
-                    ? "fixed z-20 bottom-6 left-0 right-0 max-w-2xl mx-auto px-6"
-                    : "w-full max-w-2xl"
+                  "w-full max-w-2xl mx-auto",
+                  "fixed bottom-6 left-0 right-0 z-20 px-6 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0"
                 )}
                 style={
                   keyboardOffset > 0
