@@ -20,7 +20,7 @@ export interface StreamKeys {
 // How long a single reader.read() call can stall before we treat the
 // connection as silently dropped (common on iOS Safari when the tab is
 // backgrounded or the screen locks mid-stream).
-const READ_TIMEOUT_MS = 30_000; // 30 seconds
+const READ_TIMEOUT_MS = 90_000; // 90 seconds
 
 export const streamChatContent = async (
   messages: ChatMessage[],
@@ -48,7 +48,7 @@ export const streamChatContent = async (
       'x-api-key-firecrawl': keys.firecrawlApiKey || '',
       'x-search-enabled': searchEnabled ? 'true' : 'false',
       // Tell any intermediate proxy/CDN not to buffer this response
-      'Accept': 'text/plain',
+      'Accept': 'text/event-stream, text/plain',
     },
     body: JSON.stringify({
       messages: messages.map(msg => ({
@@ -103,16 +103,20 @@ export const streamChatContent = async (
 
       const chunkText = decoder.decode(value, { stream: true });
 
-      // Filter out heartbeat-only chunks (server sends spaces to keep the
+      // Split the chunk by lines to remove SSE comments (lines starting with ':')
+      // while preserving other content and structure.
+      const lines = chunkText.split('\n');
+      const filteredLines = lines.filter(line => !line.trim().startsWith(':'));
+      const cleanChunk = filteredLines.join('\n');
+
+      // Filter out heartbeat-only chunks (server sends whitespace or comments to keep the
       // connection alive during long tool calls / research planning phases).
-      // A chunk is heartbeat-only if it consists entirely of whitespace AND
-      // the decoded string contains no meaningful protocol tags.
-      const isMeaningfulChunk = chunkText.trim().length > 0 ||
-        chunkText.includes('<') ||
-        chunkText.includes('{');
+      const isMeaningfulChunk = cleanChunk.trim().length > 0 ||
+        cleanChunk.includes('<') ||
+        cleanChunk.includes('{');
 
       if (isMeaningfulChunk) {
-        onToken(chunkText);
+        onToken(cleanChunk);
       }
     }
   } catch (err: any) {

@@ -22,14 +22,17 @@ const createTimeoutSignal = (ms: number): AbortSignal => {
 };
 
 // Defensive request dispatcher with exponential backoff + jitter to combat 429 rate limiting
+// Creates a fresh AbortSignal on each try to avoid pre-aborted signal reuse.
 async function fetchWithRetry(
   url: string,
-  options: RequestInit,
+  options: Omit<RequestInit, 'signal'>,
+  timeoutMs: number,
   retries = 3,
   delayMs = 1000
 ): Promise<Response> {
+  const signal = createTimeoutSignal(timeoutMs);
   try {
-    const response = await fetch(url, options);
+    const response = await fetch(url, { ...options, signal });
 
     if (response.status === 429 && retries > 0) {
       const retryAfter = response.headers.get('retry-after');
@@ -37,7 +40,7 @@ async function fetchWithRetry(
       const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : delayMs + Math.random() * 500;
       console.warn(`[Deep Research API] Rate limited (429). Retrying in ${waitTime}ms...`);
       await new Promise((resolve) => setTimeout(resolve, waitTime));
-      return fetchWithRetry(url, options, retries - 1, delayMs * 2);
+      return fetchWithRetry(url, options, timeoutMs, retries - 1, delayMs * 2);
     }
 
     return response;
@@ -46,7 +49,7 @@ async function fetchWithRetry(
       const waitTime = delayMs + Math.random() * 500;
       console.warn(`[Deep Research API] Request failed. Retrying in ${waitTime}ms...`, error);
       await new Promise((resolve) => setTimeout(resolve, waitTime));
-      return fetchWithRetry(url, options, retries - 1, delayMs * 2);
+      return fetchWithRetry(url, options, timeoutMs, retries - 1, delayMs * 2);
     }
     throw error;
   }
@@ -77,8 +80,7 @@ async function getTavilyResults(query: string, apiKey: string, maxResults = 5, i
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-    signal: createTimeoutSignal(RESEARCH_LIMITS.API_TIMEOUT_MS),
-  });
+  }, RESEARCH_LIMITS.API_TIMEOUT_MS);
 
   if (!response.ok) {
     throw new Error(`Tavily API returned status ${response.status}`);
@@ -115,8 +117,7 @@ async function getExaResults(query: string, apiKey: string, maxResults = 8, isSo
       'accept': 'application/json',
     },
     body: JSON.stringify(body),
-    signal: createTimeoutSignal(RESEARCH_LIMITS.API_TIMEOUT_MS),
-  });
+  }, RESEARCH_LIMITS.API_TIMEOUT_MS);
 
   if (!response.ok) {
     throw new Error(`Exa API returned status ${response.status}`);
@@ -148,8 +149,7 @@ async function getFirecrawlResults(query: string, apiKey: string, maxResults = 5
       limit: maxResults,
       scrapeOptions: { formats: ['markdown'] },
     }),
-    signal: createTimeoutSignal(RESEARCH_LIMITS.API_TIMEOUT_MS + 5000),
-  });
+  }, RESEARCH_LIMITS.API_TIMEOUT_MS + 5000);
 
   if (!response.ok) {
     throw new Error(`Firecrawl Search API returned status ${response.status}`);
@@ -232,8 +232,7 @@ export async function executeScrapePage(
           formats: ['markdown'],
           onlyMainContent: true,
         }),
-        signal: createTimeoutSignal(RESEARCH_LIMITS.SCRAPE_TIMEOUT_MS),
-      });
+      }, RESEARCH_LIMITS.SCRAPE_TIMEOUT_MS);
 
       if (response.ok) {
         const data = await response.json();
@@ -263,8 +262,7 @@ export async function executeScrapePage(
           urls: [url],
           text: true,
         }),
-        signal: createTimeoutSignal(RESEARCH_LIMITS.SCRAPE_TIMEOUT_MS),
-      });
+      }, RESEARCH_LIMITS.SCRAPE_TIMEOUT_MS);
 
       if (response.ok) {
         const data = await response.json();
@@ -336,8 +334,7 @@ export async function executeMapPage(
           url,
           limit,
         }),
-        signal: createTimeoutSignal(RESEARCH_LIMITS.API_TIMEOUT_MS + 10000),
-      });
+      }, RESEARCH_LIMITS.API_TIMEOUT_MS + 10000);
 
       if (response.ok) {
         const data = await response.json();
@@ -375,8 +372,7 @@ export async function executeMapPage(
           query: `site:${domain}`,
           numResults: limit,
         }),
-        signal: createTimeoutSignal(RESEARCH_LIMITS.API_TIMEOUT_MS),
-      });
+      }, RESEARCH_LIMITS.API_TIMEOUT_MS);
 
       if (response.ok) {
         const data = await response.json();

@@ -34,7 +34,11 @@ export default function MainLayout({
     // Register service worker for installable web app (PWA) support
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
-        .then((reg) => console.log('Service Worker registered:', reg.scope))
+        .then((reg) => {
+          console.log('Service Worker registered:', reg.scope);
+          // Force update service worker to verify client-side streaming bypass immediately
+          reg.update().catch(() => {});
+        })
         .catch((err) => console.error('Service Worker registration failed:', err));
     }
 

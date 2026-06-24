@@ -280,12 +280,12 @@ IMPORTANT RULES:
         // Force immediate header flush — prevents proxy/middleware buffering
         safeEnqueue(encoder.encode(' '.repeat(2048)));
 
-        // Heartbeat: keeps the mobile connection alive during tool calls
-        // (web search + browsePage can take 5–15s each, enough for iOS Safari
+        // Heartbeat: keeps the mobile/desktop connection alive during tool calls
+        // (web search + browsePage can take 5–15s each, enough for browsers/proxies
         // to consider the connection idle and kill it)
         const heartbeatInterval = setInterval(() => {
-          safeEnqueue(encoder.encode(' '));
-        }, 500);
+          safeEnqueue(encoder.encode(': heartbeat\n\n'));
+        }, 2000);
 
         let hasThinkingStarted = false;
         let isReasoningDeltaActive = false;
@@ -545,11 +545,12 @@ IMPORTANT RULES:
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
+        'Content-Type': 'text/event-stream; charset=utf-8',
         'Transfer-Encoding': 'chunked',
         'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
         'X-Accel-Buffering': 'no',
-        'X-No-Compression': 'true',
+        'Content-Encoding': 'none',
       },
     });
   } catch (error: any) {

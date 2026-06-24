@@ -295,11 +295,11 @@ export async function POST(req: Request) {
         // Start a heartbeat interval to keep the stream alive and force proxy/dev-server flushes
         const heartbeatInterval = setInterval(() => {
           try {
-            safeEnqueue(encoder.encode(' '));
+            safeEnqueue(encoder.encode(': heartbeat\n\n'));
           } catch (e) {
             clearInterval(heartbeatInterval);
           }
-        }, 500);
+        }, 2000);
 
         let hasThinkingStarted = false;
         let isReasoningDeltaActive = false;
@@ -927,11 +927,12 @@ ${systemPrompt ? `\nCustom instructions from user:\n${systemPrompt}` : ''}
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
+        'Content-Type': 'text/event-stream; charset=utf-8',
         'Transfer-Encoding': 'chunked',
         'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
         'X-Accel-Buffering': 'no',
-        'X-No-Compression': 'true',
+        'Content-Encoding': 'none',
       },
     });
   } catch (error: any) {
