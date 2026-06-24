@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Sidebar } from '@/components/chat/sidebar';
 import { ModelSelector } from '@/components/chat/ModelSelector';
-import { Settings } from 'lucide-react';
+import { Settings, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ApiKeys } from '@/hooks/use-api-keys';
 import { useSidebarContext } from '@/components/chat/SidebarContext';
@@ -47,31 +47,55 @@ export function ChatHeader({
       <div className="w-full flex items-center justify-between gap-4 relative">
         {/* Left Pill: Sidebar trigger + New Chat */}
         <div className="pointer-events-auto flex items-center gap-1.5 p-1 rounded-full liquid-glass-dock h-11 md:h-12 shrink-0">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="hidden md:inline-flex h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground"
-            onClick={() => {
-              setIsSidebarCollapsed(false);
-              localStorage.setItem('sidebar-collapsed', 'false');
-            }}
-            title="Open sidebar"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" style={{ color: 'currentColor' }}>
-              <rect y="4.5" width="16" height="2" rx="1" fill="currentColor" />
-              <rect y="9.5" width="11" height="2" rx="1" fill="currentColor" />
-            </svg>
-          </Button>
-          <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="inline-flex md:hidden h-9 w-9 rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" style={{ color: 'currentColor' }}>
-                  <rect y="4.5" width="16" height="2" rx="1" fill="currentColor" />
-                  <rect y="9.5" width="11" height="2" rx="1" fill="currentColor" />
-                </svg>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64 border-r-0">
+          {isSettingsActive ? (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hidden md:inline-flex h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground"
+              onClick={() => setIsSettingsActive(false)}
+              title="Back to chat"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="hidden md:inline-flex h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground"
+              onClick={() => {
+                setIsSidebarCollapsed(false);
+                localStorage.setItem('sidebar-collapsed', 'false');
+              }}
+              title="Open sidebar"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" style={{ color: 'currentColor' }}>
+                <rect y="4.5" width="16" height="2" rx="1" fill="currentColor" />
+                <rect y="9.5" width="11" height="2" rx="1" fill="currentColor" />
+              </svg>
+            </Button>
+          )}
+
+          {isSettingsActive ? (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="inline-flex md:hidden h-9 w-9 rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground"
+              onClick={() => setIsSettingsActive(false)}
+              title="Back to chat"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="inline-flex md:hidden h-9 w-9 rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" style={{ color: 'currentColor' }}>
+                    <rect y="4.5" width="16" height="2" rx="1" fill="currentColor" />
+                    <rect y="9.5" width="11" height="2" rx="1" fill="currentColor" />
+                  </svg>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-64 border-r-0">
               <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
               <SheetDescription className="sr-only">
                 Allows user to switch chats and select options
@@ -107,6 +131,7 @@ export function ChatHeader({
               />
             </SheetContent>
           </Sheet>
+          )}
           <Button
             onClick={onNewChat}
             variant="ghost"

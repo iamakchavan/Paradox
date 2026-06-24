@@ -30,10 +30,9 @@ import { processThinkingContent } from '@/utils/chat';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { Message } from '@/components/chat/Message';
 import { SearchPageContent } from '@/components/chat/SearchPageContent';
-
 import { pruneChatHistory } from '@/utils/chat-context';
 import { MessageAnimator } from '@/components/chat/MessageAnimator';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { useVisualViewport } from '@/hooks/use-visual-viewport';
 
@@ -888,15 +887,15 @@ export default function ChatPage() {
       {/* Main Content */}
       <div className={cn(
         "flex-1 w-full transition-[padding-left] duration-300 ease-in-out h-full min-h-0",
-        (isSearchActive || isSettingsActive)
+        isSearchActive
           ? "flex flex-col h-[calc(100vh-80px)] overflow-hidden pt-20"
           : isInitialView
             ? "flex flex-col items-center justify-center overflow-y-auto chat-scrollbar -mt-16 sm:-mt-24"
             : "overflow-y-auto chat-scrollbar pt-16 sm:pt-20 pb-24 sm:pb-32"
       )}>
         <div className={cn(
-          "w-full mx-auto px-2 sm:px-4",
-          (isSearchActive || isSettingsActive) ? "max-w-4xl h-full overflow-hidden" : "max-w-4xl"
+          "w-full mx-auto px-2 sm:px-4 relative",
+          isSearchActive ? "max-w-4xl h-full overflow-hidden" : "max-w-4xl"
         )}>
           {isSearchActive ? (
             <SearchPageContent
@@ -906,13 +905,32 @@ export default function ChatPage() {
                 router.push(`/chat/${id}`);
               }}
             />
-          ) : isSettingsActive ? (
-            <SettingsPageContent
-              apiKeys={apiKeys}
-              updateKey={updateKey}
-              onClose={() => setIsSettingsActive(false)}
-            />
-          ) : isInitialView ? (
+          ) : (
+            <>
+              {/* Settings Page Slide-Over */}
+              <AnimatePresence>
+                {isSettingsActive && (
+                  <motion.div
+                    key="settings-panel"
+                    initial={{ x: "100%", opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: "100%", opacity: 0 }}
+                    transition={{ type: "spring", damping: 28, stiffness: 240 }}
+                    className={cn(
+                      "fixed top-16 sm:top-20 bottom-0 right-0 bg-background z-20 flex flex-col overflow-hidden transition-[left] duration-300",
+                      isSidebarCollapsed ? "left-0" : "left-0 md:left-64"
+                    )}
+                  >
+                    <SettingsPageContent
+                      apiKeys={apiKeys}
+                      updateKey={updateKey}
+                      onClose={() => setIsSettingsActive(false)}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {isInitialView ? (
             <div className="flex flex-col items-center gap-8 sm:gap-10 px-4 sm:px-0">
               <div className="text-center animate-fade-in-up [animation-delay:200ms] flex flex-col items-center gap-4 sm:gap-5">
                 <img
@@ -987,6 +1005,8 @@ export default function ChatPage() {
               ))}
               <div ref={messagesEndRef} className="h-px" />
             </div>
+          )}
+          </>
           )}
         </div>
       </div>

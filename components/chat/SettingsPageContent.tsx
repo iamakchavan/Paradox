@@ -141,7 +141,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
   };
 
   const renderKeyInputList = (fields: KeyField[]) => (
-    <div className="bg-zinc-50/50 dark:bg-zinc-900/20 border border-zinc-200/40 dark:border-zinc-800/40 rounded-2xl p-5 space-y-4 shadow-sm">
+    <div className="bg-zinc-100/40 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-zinc-800/40 rounded-2xl p-5 space-y-4 shadow-sm">
       {fields.map((field) => (
         <div key={field.key} className="space-y-1.5">
           <div className="flex justify-between items-center">
@@ -168,7 +168,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
               value={inputKeys[field.key]}
               onChange={(e) => setInputKeys(prev => ({ ...prev, [field.key]: e.target.value }))}
               placeholder={field.placeholder}
-              className="h-10 rounded-xl border-zinc-200/80 dark:border-zinc-800/80 text-xs bg-background/50 pr-10 focus-visible:ring-zinc-300 dark:focus-visible:ring-zinc-700"
+              className="h-10 rounded-xl border-zinc-200/70 dark:border-zinc-800/70 text-xs bg-background/50 pr-10 focus-visible:ring-zinc-300 dark:focus-visible:ring-zinc-700"
             />
             <button
               type="button"
@@ -185,17 +185,6 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-3 flex flex-col h-full select-none">
-      {/* Back button */}
-      <div className="flex-shrink-0 mb-4">
-        <button
-          onClick={onClose}
-          className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-all group py-1.5 px-3 rounded-full hover:bg-secondary/40 border border-transparent hover:border-zinc-200/40 dark:hover:border-zinc-800/40"
-        >
-          <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
-          <span>Back to Chat</span>
-        </button>
-      </div>
-
       {/* Title Header */}
       <div className="flex-shrink-0 mb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
         <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Settings</h1>
@@ -205,8 +194,8 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
       {/* Main double pane container */}
       <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 pb-6 overflow-hidden">
 
-        {/* Desktop Sidebar Navigation / Mobile Tab bar */}
-        <div className="flex-shrink-0 md:w-56 flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 scrollbar-none border-b md:border-b-0 border-zinc-200/40 dark:border-zinc-800/40">
+        {/* Desktop Sidebar Navigation / Mobile Apple Segmented Control */}
+        <div className="flex-shrink-0 md:w-56 flex flex-row md:flex-col p-[3px] md:p-0 bg-zinc-200/60 dark:bg-zinc-900 md:bg-transparent md:dark:bg-transparent rounded-xl md:rounded-none md:border-r border-zinc-200/40 dark:border-zinc-800/40 md:pr-4 md:gap-1.5 gap-0">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -215,13 +204,13 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={cn(
-                  "flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-left transition-all duration-200 flex-shrink-0 text-xs sm:text-sm font-medium",
+                  "flex items-center justify-center md:justify-start gap-2 px-3 py-1.5 md:px-3.5 md:py-2.5 rounded-lg md:rounded-xl text-center md:text-left transition-all duration-200 flex-1 md:flex-none text-xs md:text-sm font-medium",
                   isActive
-                    ? "bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 text-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-zinc-100/50 dark:hover:bg-zinc-900/40"
+                    ? "bg-white dark:bg-zinc-800 md:bg-zinc-100 md:dark:bg-zinc-900 shadow-[0_1px_3px_rgba(0,0,0,0.12)] md:shadow-none border border-transparent md:border-zinc-200/50 md:dark:border-zinc-800/50 text-foreground font-semibold"
+                    : "text-zinc-550 dark:text-zinc-400 hover:text-foreground hover:bg-white/20 dark:hover:bg-zinc-800/20 md:hover:bg-zinc-100/50 md:dark:hover:bg-zinc-900/40"
                 )}
               >
-                <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-cyan-600 dark:text-cyan-400" : "text-muted-foreground/75")} />
+                <Icon className={cn("w-4 h-4 flex-shrink-0 hidden md:block", isActive ? "text-cyan-600 dark:text-cyan-400" : "text-muted-foreground/75")} />
                 <span>{item.label}</span>
               </button>
             );
@@ -258,50 +247,51 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
                   <span>Choose Theme Preference</span>
                 </div>
 
-                <div className="bg-zinc-50/50 dark:bg-zinc-900/20 border border-zinc-200/40 dark:border-zinc-800/40 rounded-2xl p-3 flex flex-col sm:flex-row gap-3 shadow-sm">
-                  {/* Light theme card */}
+                {/* Minimal Segmented Theme Switcher */}
+                <div className="bg-zinc-200/55 dark:bg-zinc-900/70 p-[3px] rounded-xl flex w-full h-11 gap-0 max-w-md border border-zinc-200/30 dark:border-zinc-800/40">
+                  {/* Light Mode */}
                   <button
                     type="button"
                     onClick={() => setTheme('light')}
                     className={cn(
-                      "flex-1 p-4 rounded-xl flex flex-col items-center justify-center gap-2.5 border transition-all duration-200",
+                      "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
                       theme === 'light'
-                        ? "bg-background border-zinc-400/50 dark:border-zinc-700/50 shadow-[0_4px_12px_rgba(0,0,0,0.03)] text-foreground font-semibold"
-                        : "border-zinc-200/40 dark:border-zinc-800/40 text-muted-foreground hover:text-foreground hover:bg-zinc-100/50 dark:hover:bg-zinc-900/40"
+                        ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
+                        : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
                     )}
                   >
-                    <Sun className={cn("h-5 w-5", theme === 'light' ? "text-amber-500 animate-pulse" : "text-muted-foreground/80")} />
-                    <span className="text-xs">Light Mode</span>
+                    <Sun className="h-4 w-4 text-amber-500" />
+                    <span>Light</span>
                   </button>
 
-                  {/* Dark theme card */}
+                  {/* Dark Mode */}
                   <button
                     type="button"
                     onClick={() => setTheme('dark')}
                     className={cn(
-                      "flex-1 p-4 rounded-xl flex flex-col items-center justify-center gap-2.5 border transition-all duration-200",
+                      "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
                       theme === 'dark'
-                        ? "bg-background border-zinc-400/50 dark:border-zinc-700/50 shadow-[0_4px_12px_rgba(0,0,0,0.03)] text-foreground font-semibold"
-                        : "border-zinc-200/40 dark:border-zinc-800/40 text-muted-foreground hover:text-foreground hover:bg-zinc-100/50 dark:hover:bg-zinc-900/40"
+                        ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
+                        : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
                     )}
                   >
-                    <Moon className={cn("h-5 w-5", theme === 'dark' ? "text-violet-400 animate-pulse" : "text-muted-foreground/80")} />
-                    <span className="text-xs">Dark Mode</span>
+                    <Moon className="h-4 w-4 text-violet-400" />
+                    <span>Dark</span>
                   </button>
 
-                  {/* System theme card */}
+                  {/* System Default */}
                   <button
                     type="button"
                     onClick={() => setTheme('system')}
                     className={cn(
-                      "flex-1 p-4 rounded-xl flex flex-col items-center justify-center gap-2.5 border transition-all duration-200",
+                      "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
                       theme === 'system'
-                        ? "bg-background border-zinc-400/50 dark:border-zinc-700/50 shadow-[0_4px_12px_rgba(0,0,0,0.03)] text-foreground font-semibold"
-                        : "border-zinc-200/40 dark:border-zinc-800/40 text-muted-foreground hover:text-foreground hover:bg-zinc-100/50 dark:hover:bg-zinc-900/40"
+                        ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
+                        : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
                     )}
                   >
-                    <Monitor className={cn("h-5 w-5", theme === 'system' ? "text-cyan-500 animate-pulse" : "text-muted-foreground/80")} />
-                    <span className="text-xs">System Default</span>
+                    <Monitor className="h-4 w-4 text-cyan-500" />
+                    <span>System</span>
                   </button>
                 </div>
               </div>
