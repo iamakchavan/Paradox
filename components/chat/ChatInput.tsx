@@ -196,13 +196,23 @@ export const ChatInput = ({
   }, [showAttachDropdown]);
 
   useEffect(() => {
-    if (!isLoading && textareaRef.current) {
+    // Avoid autofocus on mobile devices to prevent keyboard popups
+    if (typeof window === 'undefined') return;
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      (window.innerWidth <= 768 && 'ontouchstart' in window);
+
+    if (!isLoading && textareaRef.current && !isMobileDevice) {
       textareaRef.current.focus();
     }
   }, [isLoading]);
 
   useEffect(() => {
-    if ((shouldFocus || isInitialView) && textareaRef.current) {
+    // Avoid autofocus on mobile devices to prevent keyboard popups
+    if (typeof window === 'undefined') return;
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      (window.innerWidth <= 768 && 'ontouchstart' in window);
+
+    if ((shouldFocus || isInitialView) && textareaRef.current && !isMobileDevice) {
       textareaRef.current.focus();
     }
   }, [shouldFocus, isInitialView]);
