@@ -913,8 +913,13 @@ export default function ChatPage() {
               onClose={() => setIsSettingsActive(false)}
             />
           ) : isInitialView ? (
-            <div className="flex flex-col items-center gap-10 sm:gap-14 px-4 sm:px-0">
-              <div className="text-center animate-fade-in-up [animation-delay:200ms]">
+            <div className="flex flex-col items-center gap-8 sm:gap-10 px-4 sm:px-0">
+              <div className="text-center animate-fade-in-up [animation-delay:200ms] flex flex-col items-center gap-4 sm:gap-5">
+                <img 
+                  src="/chaticons/logo_chat.png" 
+                  alt="Paradox Logo" 
+                  className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                />
                 <p className="text-2xl sm:text-3xl font-normal tracking-tight text-foreground">
                   Where knowledge begins!
                 </p>
