@@ -337,7 +337,7 @@ export const ChatInput = ({
           "w-full flex flex-col bg-background/95 backdrop-blur-md border rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.15)] group transition-[border-color,background-color,box-shadow] duration-300 relative",
           isDragging
             ? "border-2 border-dashed border-blue-500/50 dark:border-blue-400/50 bg-blue-500/[0.03] dark:bg-blue-500/[0.05] overflow-hidden py-5"
-            : "border-border/70 overflow-visible hover:border-cyan-500/25 dark:hover:border-cyan-400/25 focus-within:border-cyan-500/35 dark:focus-within:border-cyan-400/35 focus-within:ring-2 focus-within:ring-cyan-500/10 dark:focus-within:ring-cyan-400/10"
+            : "border-border/80 overflow-visible hover:border-zinc-300 dark:hover:border-zinc-700 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 focus-within:ring-4 focus-within:ring-zinc-500/[0.04] dark:focus-within:ring-zinc-400/[0.04] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25)]"
         )}
       >
         {isDragging ? (
@@ -573,7 +573,7 @@ export const ChatInput = ({
                     onMouseEnter={() => setIsCapsuleHovered(true)}
                     onMouseLeave={() => setIsCapsuleHovered(false)}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold transition-all duration-200 select-none border shadow-[0_1px_2px_rgba(0,0,0,0.02)] shrink-0",
+                      "flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out select-none border shadow-[0_1px_2px_rgba(0,0,0,0.02)] shrink-0 active:scale-[0.93] active:duration-75",
                       isCapsuleHovered
                         ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/35 dark:border-blue-500/35"
                         : "bg-blue-500/5 text-blue-600 dark:text-blue-400 border-blue-500/20 dark:border-blue-500/20 hover:bg-blue-500/10"
@@ -599,7 +599,7 @@ export const ChatInput = ({
                     onMouseEnter={() => setIsResearchCapsuleHovered(true)}
                     onMouseLeave={() => setIsResearchCapsuleHovered(false)}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold transition-all duration-200 select-none border shadow-[0_1px_2px_rgba(0,0,0,0.02)] shrink-0",
+                      "flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out select-none border shadow-[0_1px_2px_rgba(0,0,0,0.02)] shrink-0 active:scale-[0.93] active:duration-75",
                       isResearchCapsuleHovered
                         ? "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/35 dark:border-purple-500/35"
                         : "bg-purple-500/5 text-purple-600 dark:text-purple-400 border-purple-500/20 dark:border-purple-500/20 hover:bg-purple-500/10"
@@ -693,7 +693,7 @@ export const ChatInput = ({
                   <Button
                     onClick={onStop}
                     size="icon"
-                    className="h-9 w-9 rounded-full bg-foreground text-background hover:bg-foreground/95 hover:scale-105 shrink-0 flex items-center justify-center transition-all duration-200"
+                    className="h-9 w-9 rounded-full bg-foreground text-background hover:bg-foreground/95 hover:scale-105 active:scale-[0.93] active:duration-75 shrink-0 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out"
                     title="Stop streaming"
                   >
                     <Square className="w-3.5 h-3.5 fill-current" />
@@ -704,10 +704,10 @@ export const ChatInput = ({
                     disabled={isSendDisabled}
                     size="icon"
                     className={cn(
-                      "h-9 w-9 rounded-full shrink-0 flex items-center justify-center transition-all duration-200",
+                      "h-9 w-9 rounded-full shrink-0 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out",
                       isSendDisabled
                         ? "bg-zinc-200/50 dark:bg-zinc-800/40 text-muted-foreground/35 cursor-not-allowed"
-                        : "bg-cyan-600 text-white hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 hover:scale-105 shadow-sm shadow-cyan-500/10"
+                        : "bg-cyan-600 text-white hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 hover:scale-105 active:scale-[0.93] active:duration-75 shadow-sm shadow-cyan-500/10"
                     )}
                     title="Send message"
                   >

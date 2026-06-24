@@ -597,16 +597,16 @@ export const ModelSelector = ({
         onClick={toggleDropdown}
         className={cn(
           minimal 
-            ? "h-8 sm:h-9 rounded-full px-2.5 flex items-center gap-1 hover:bg-zinc-100 dark:hover:bg-zinc-900/60 text-xs font-medium bg-transparent transition-all duration-200 shadow-none border-0 shrink-0 select-none text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-zinc-100"
+            ? "h-9 md:h-10 rounded-full px-3 flex items-center gap-1.5 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 text-xs font-semibold bg-transparent transition-all duration-200 shadow-none border-0 shrink-0 select-none text-zinc-800 hover:text-zinc-950 dark:text-zinc-200 dark:hover:text-zinc-50 hover:scale-105 active:scale-95"
             : "h-8 sm:h-9 rounded-full px-3.5 py-2 flex items-center gap-1.5 border border-zinc-200 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900 text-xs font-medium bg-background/50 backdrop-blur-xs transition-all duration-200 shadow-2xs",
-          isOpen && "bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-50"
+          isOpen && "bg-zinc-200/55 dark:bg-zinc-800/80 text-zinc-950 dark:text-zinc-50"
         )}
         disabled={isLoading}
       >
         <ModelLogo 
           provider={activeModel.provider} 
           modelId={activeModel.id} 
-          className="size-3.5 sm:size-4 rounded-xs shrink-0" 
+          className="size-4 rounded-xs shrink-0" 
           size={16} 
         />
         <span className={cn(
@@ -615,7 +615,7 @@ export const ModelSelector = ({
           {activeModel.name}
         </span>
         <ChevronDown 
-          className="w-3 h-3 text-zinc-400 transition-transform duration-200 ease-out" 
+          className="w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ease-out" 
           style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }} 
         />
       </Button>

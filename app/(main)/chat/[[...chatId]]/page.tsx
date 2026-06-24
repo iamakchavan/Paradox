@@ -370,9 +370,9 @@ export default function ChatPage() {
           'x-api-key-gemini': keys.geminiApiKey || localStorage.getItem('gemini-api-key') || '',
           'x-api-key-mistral': keys.mistralApiKey || localStorage.getItem('mistral-api-key') || '',
           'x-api-key-perplexity': keys.perplexityApiKey || localStorage.getItem('perplexity-api-key') || '',
-           'x-api-key-zenmux': keys.zenmuxApiKey || localStorage.getItem('zenmux-api-key') || '',
-           'x-api-key-inception': keys.inceptionApiKey || localStorage.getItem('inception-api-key') || '',
-           'x-api-key-nvidia': keys.nvidiaApiKey || localStorage.getItem('nvidia-api-key') || '',
+          'x-api-key-zenmux': keys.zenmuxApiKey || localStorage.getItem('zenmux-api-key') || '',
+          'x-api-key-inception': keys.inceptionApiKey || localStorage.getItem('inception-api-key') || '',
+          'x-api-key-nvidia': keys.nvidiaApiKey || localStorage.getItem('nvidia-api-key') || '',
         },
         body: JSON.stringify({
           firstQuery,
@@ -390,7 +390,7 @@ export default function ChatPage() {
     } catch (err) {
       console.error('Failed to auto-generate chat title:', err);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Main streaming runner helper callback
@@ -915,13 +915,13 @@ export default function ChatPage() {
           ) : isInitialView ? (
             <div className="flex flex-col items-center gap-8 sm:gap-10 px-4 sm:px-0">
               <div className="text-center animate-fade-in-up [animation-delay:200ms] flex flex-col items-center gap-4 sm:gap-5">
-                <img 
-                  src="/chaticons/logo_chat.png" 
-                  alt="Paradox Logo" 
+                <img
+                  src="/chaticons/logo_chat.png"
+                  alt="Paradox Logo"
                   className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
                 />
                 <p className="text-2xl sm:text-3xl font-normal tracking-tight text-foreground">
-                  Where knowledge begins!
+                  What doesn't make sense yet?
                 </p>
               </div>
 
