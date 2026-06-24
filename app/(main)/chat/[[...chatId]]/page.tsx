@@ -112,11 +112,13 @@ export default function ChatPage() {
   const [selectedModelId, setSelectedModelId] = useState('sonar');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Ref to bypass database loading during active new session creation
   const isNewChatCreatedRef = useRef(false);
+  const isInitialScrollSnapRef = useRef(false);
   const initialMessageCountRef = useRef(0);
 
   const handleStop = useCallback(() => {
@@ -141,6 +143,11 @@ export default function ChatPage() {
   // Reset limit on session change
   useEffect(() => {
     setLoadedLimit(20);
+    isInitialScrollSnapRef.current = true;
+    const timer = setTimeout(() => {
+      isInitialScrollSnapRef.current = false;
+    }, 800);
+    return () => clearTimeout(timer);
   }, [chatIdParam]);
 
   // Check if there are more messages in the database
@@ -282,16 +289,6 @@ export default function ChatPage() {
           })));
           setIsInitialView(false);
 
-          // If this is the first load of this chatId, jump to bottom instantly
-          if (hasScrolledToBottomRef.current !== chatIdParam) {
-            hasScrolledToBottomRef.current = chatIdParam;
-            setTimeout(() => {
-              const scrollContainer = document.querySelector('.chat-scrollbar');
-              if (scrollContainer) {
-                scrollContainer.scrollTop = scrollContainer.scrollHeight;
-              }
-            }, 50);
-          }
         });
     } else {
       handleStop();
@@ -716,6 +713,29 @@ export default function ChatPage() {
     }
   }, [isInitialView, conversation]);
 
+  // Keep scroll pinned to bottom on layout resizing during initial load
+  useEffect(() => {
+    if (!chatIdParam || isInitialView) return;
+
+    const scrollContainer = document.querySelector('.chat-scrollbar');
+    const contentEl = contentRef.current;
+    if (!scrollContainer || !contentEl) return;
+
+    // Immediately snap to bottom on render
+    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+
+    const observer = new ResizeObserver(() => {
+      if (isInitialScrollSnapRef.current) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    });
+
+    observer.observe(contentEl);
+    return () => {
+      observer.disconnect();
+    };
+  }, [chatIdParam, isInitialView, conversation]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -820,7 +840,7 @@ export default function ChatPage() {
               </motion.div>
             </div>
           ) : (
-            <div className="space-y-6 pb-64 sm:pb-72">
+            <div ref={contentRef} className="space-y-6 pb-64 sm:pb-72">
               <div ref={sentinelRef} className="h-4 w-full" />
               {conversation.map((msg: Message, index: number) => (
                 <div key={`message-${index}-${msg.role}`} className="group">
