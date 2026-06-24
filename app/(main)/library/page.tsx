@@ -47,7 +47,7 @@ export default function LibraryPage() {
         mounted={mounted}
       />
 
-      <div className="flex-1 w-full pt-24 pb-24 flex flex-col items-center justify-start">
+      <div className="flex-1 w-full pt-24 pb-24 flex flex-col items-center justify-start h-full min-h-0 overflow-y-auto chat-scrollbar">
         <LibraryPageContent
           onSelectChat={(id) => {
             router.push(`/chat/${id}`);

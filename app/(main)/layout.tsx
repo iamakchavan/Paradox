@@ -30,6 +30,14 @@ export default function MainLayout({
     const frame = requestAnimationFrame(() => {
       setMounted(true);
     });
+
+    // Register service worker for installable web app (PWA) support
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((reg) => console.log('Service Worker registered:', reg.scope))
+        .catch((err) => console.error('Service Worker registration failed:', err));
+    }
+
     return () => cancelAnimationFrame(frame);
   }, []);
 
@@ -128,13 +136,12 @@ export default function MainLayout({
         />
         <div
           className={cn(
-            "flex-1 flex flex-col h-full relative chat-scrollbar",
-            (isSearchActive || isSettingsActive) ? "overflow-hidden" : "overflow-y-auto",
+            "flex-1 flex flex-col h-full relative overflow-hidden",
             mounted && "transition-[padding-left] duration-300 ease-in-out",
             isSidebarCollapsed ? "md:pl-0" : "md:pl-64"
           )}
         >
-          <main className="flex flex-col min-h-dvh bg-background">
+          <main className="flex flex-col h-full bg-background relative overflow-hidden">
             <LayoutGroup id="chat-layout-group">
               {children}
             </LayoutGroup>

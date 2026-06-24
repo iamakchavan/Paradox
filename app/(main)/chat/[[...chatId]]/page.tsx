@@ -769,12 +769,12 @@ export default function ChatPage() {
 
       {/* Main Content */}
       <div className={cn(
-        "flex-1 w-full transition-[padding-left] duration-300 ease-in-out",
+        "flex-1 w-full transition-[padding-left] duration-300 ease-in-out h-full min-h-0",
         (isSearchActive || isSettingsActive)
           ? "flex flex-col h-[calc(100vh-80px)] overflow-hidden pt-20"
           : isInitialView
-            ? "flex flex-col items-center justify-center -mt-16 sm:-mt-24"
-            : "pt-16 sm:pt-20 pb-24 sm:pb-32"
+            ? "flex flex-col items-center justify-center overflow-y-auto chat-scrollbar -mt-16 sm:-mt-24"
+            : "overflow-y-auto chat-scrollbar pt-16 sm:pt-20 pb-24 sm:pb-32"
       )}>
         <div className={cn(
           "w-full mx-auto px-2 sm:px-4",
