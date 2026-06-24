@@ -94,6 +94,18 @@ export const streamChatContent = async (
     });
   };
 
+  let streamBuffer = '';
+  const prefixTarget = ': heartbeat';
+
+  const getMatchingPrefixLength = (str: string, target: string): number => {
+    for (let len = Math.min(str.length, target.length); len > 0; len--) {
+      if (target.startsWith(str.slice(-len))) {
+        return len;
+      }
+    }
+    return 0;
+  };
+
   try {
     while (true) {
       if (signal?.aborted) throw new Error('Aborted');
@@ -102,21 +114,49 @@ export const streamChatContent = async (
       if (done) break;
 
       const chunkText = decoder.decode(value, { stream: true });
+      streamBuffer += chunkText;
 
-      // Split the chunk by lines to remove SSE comments (lines starting with ':')
-      // while preserving other content and structure.
-      const lines = chunkText.split('\n');
-      const filteredLines = lines.filter(line => !line.trim().startsWith(':'));
-      const cleanChunk = filteredLines.join('\n');
+      // Remove any complete heartbeats (handle both Unix and Windows newlines)
+      const heartbeatPatterns = [
+        ': heartbeat\n\n',
+        ': heartbeat\r\n\r\n',
+        ': heartbeat\n',
+        ': heartbeat\r\n',
+        ': heartbeat'
+      ];
+      
+      let replaced = true;
+      while (replaced) {
+        replaced = false;
+        for (const pattern of heartbeatPatterns) {
+          if (streamBuffer.includes(pattern)) {
+            streamBuffer = streamBuffer.replace(pattern, '');
+            replaced = true;
+            break;
+          }
+        }
+      }
 
-      // Filter out heartbeat-only chunks (server sends whitespace or comments to keep the
-      // connection alive during long tool calls / research planning phases).
-      const isMeaningfulChunk = cleanChunk.trim().length > 0 ||
-        cleanChunk.includes('<') ||
-        cleanChunk.includes('{');
+      // Check if the end of the buffer matches a partial heartbeat
+      const prefixLen = getMatchingPrefixLength(streamBuffer, prefixTarget);
+      
+      let flushText = streamBuffer;
+      if (prefixLen > 0) {
+        flushText = streamBuffer.slice(0, -prefixLen);
+        streamBuffer = streamBuffer.slice(-prefixLen);
+      } else {
+        streamBuffer = '';
+      }
 
-      if (isMeaningfulChunk) {
-        onToken(cleanChunk);
+      if (flushText.length > 0) {
+        // Filter out heartbeat-only chunks (like the initial 2048 spaces)
+        const isMeaningful = flushText.trim().length > 0 ||
+          flushText.includes('<') ||
+          flushText.includes('{');
+          
+        if (isMeaningful) {
+          onToken(flushText);
+        }
       }
     }
   } catch (err: any) {
