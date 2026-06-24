@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { CustomToastProvider } from '@/components/ui/custom-toast';
 
 export const metadata: Metadata = {
   title: 'Paradox',
@@ -71,9 +73,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Analytics />
-          <SpeedInsights />
+          <TooltipProvider>
+            <CustomToastProvider>
+              {children}
+              <Analytics />
+              <SpeedInsights />
+            </CustomToastProvider>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

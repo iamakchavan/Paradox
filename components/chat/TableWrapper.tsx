@@ -5,13 +5,11 @@ import { processThinkingContent } from '@/utils/chat';
 
 interface TableWrapperProps {
   children: React.ReactNode;
-  isLoading: boolean;
+  isStreaming: boolean;
   messageContent: string;
-  messageIndex: number;
-  currentMessageIndex: number;
 }
 
-export const TableWrapper = ({ children, isLoading, messageContent, messageIndex, currentMessageIndex }: TableWrapperProps) => {
+export const TableWrapper = ({ children, isStreaming, messageContent }: TableWrapperProps) => {
   const tableRef = useRef<HTMLTableElement>(null);
   const [tableData, setTableData] = useState<string>('');
   
@@ -40,29 +38,26 @@ export const TableWrapper = ({ children, isLoading, messageContent, messageIndex
   const DownloadButton = useMemo(() => {
     if (!tableData || 
         !processThinkingContent(messageContent).mainContent || 
-        (messageIndex === currentMessageIndex && isLoading)) {
+        isStreaming) {
       return null;
     }
     return (
       <button
         onClick={handleDownload}
-        className="download-csv-button"
+        className="absolute top-2 right-2 opacity-0 group-hover/table:opacity-100 transition-opacity duration-200 p-1.5 bg-background/90 hover:bg-secondary border border-border/50 rounded-lg shadow-sm text-muted-foreground hover:text-foreground z-10"
         title="Download as CSV"
       >
-        <Download className="w-4 h-4" />
-        <span>Download CSV</span>
+        <Download className="w-3.5 h-3.5" />
       </button>
     );
-  }, [tableData, messageContent, messageIndex, currentMessageIndex, isLoading, handleDownload]);
+  }, [tableData, messageContent, isStreaming, handleDownload]);
 
   return (
-    <div className="my-6 mx-2 sm:mx-4">
-      <div className="table-container">
-        <div className="overflow-x-auto">
-          <table ref={tableRef} className="min-w-full">
-            {children}
-          </table>
-        </div>
+    <div className="my-6 mx-1 sm:mx-2 relative group/table">
+      <div className="overflow-x-auto custom-scrollbar border-b border-border/20 pb-2">
+        <table ref={tableRef} className="w-full text-left border-collapse">
+          {children}
+        </table>
       </div>
       {DownloadButton}
     </div>

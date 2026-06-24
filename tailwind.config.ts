@@ -16,6 +16,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Switzer', 'sans-serif'],
+        serif: ['Sentient', 'serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',

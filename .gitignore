@@ -15,6 +15,9 @@
 .next
 next-env.d.ts
 .swc/
+/.next-build/
+.next-build/
+.next-build
 
 # production
 /build
