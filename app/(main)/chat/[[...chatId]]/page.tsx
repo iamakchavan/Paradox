@@ -121,6 +121,7 @@ export default function ChatPage() {
   // Ref to bypass database loading during active new session creation
   const isNewChatCreatedRef = useRef(false);
   const isInitialScrollSnapRef = useRef(false);
+  const isUserScrolledUpRef = useRef(false);
   const initialMessageCountRef = useRef(0);
 
   const handleStop = useCallback(() => {
@@ -691,7 +692,7 @@ export default function ChatPage() {
     }
   }, [chatIdParam, selectedModelId, conversation, triggerTitleGeneration, router]);
 
-  // Handle scroll button visibility
+  // Handle scroll button visibility and manual scroll tracking
   useEffect(() => {
     if (isInitialView) return;
 
@@ -705,6 +706,9 @@ export default function ChatPage() {
       const threshold = 200;
       const isNearBottom = scrollHeight - (scrollPosition + containerHeight) <= threshold;
       setShowScrollButton(!isNearBottom && scrollHeight > containerHeight + threshold);
+
+      // If user is more than 100px away from the bottom, mark them as scrolled up
+      isUserScrolledUpRef.current = scrollHeight - (scrollPosition + containerHeight) > 100;
     };
 
     const scrollContainer = document.querySelector('.chat-scrollbar');
@@ -715,7 +719,7 @@ export default function ChatPage() {
     }
   }, [isInitialView, conversation]);
 
-  // Keep scroll pinned to bottom on layout resizing during initial load
+  // Keep scroll pinned to bottom on layout resizing during initial load and active streaming/deep research
   useEffect(() => {
     if (!chatIdParam || isInitialView) return;
 
@@ -729,6 +733,8 @@ export default function ChatPage() {
     const observer = new ResizeObserver(() => {
       if (isInitialScrollSnapRef.current) {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      } else if (isLoading && !isUserScrolledUpRef.current) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
     });
 
@@ -736,7 +742,7 @@ export default function ChatPage() {
     return () => {
       observer.disconnect();
     };
-  }, [chatIdParam, isInitialView, conversation]);
+  }, [chatIdParam, isInitialView, isLoading]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
