@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import {
   Key, Eye, EyeOff, ArrowLeft,
-  Sun, Moon, Monitor, ExternalLink, Database, Cpu
+  Sun, Moon, ExternalLink, Database, Cpu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -280,21 +280,6 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
                     >
                       <Moon className="h-4 w-4 text-violet-400" />
                       <span>Dark</span>
-                    </button>
-
-                    {/* System Default */}
-                    <button
-                      type="button"
-                      onClick={() => setTheme('system')}
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
-                        theme === 'system'
-                          ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
-                          : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
-                      )}
-                    >
-                      <Monitor className="h-4 w-4 text-cyan-500" />
-                      <span>System</span>
                     </button>
                   </div>
                 </div>
