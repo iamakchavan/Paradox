@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type ChatSession } from '@/lib/db';
 import { deleteChatSession, renameChatSession } from '@/hooks/use-chat-history';
-import { Trash2, Edit3, Settings, Search, Folder, MoreVertical, ChevronDown, X } from 'lucide-react';
+import { Trash2, Edit3, Settings, Search, Folder, MoreVertical, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { RenameConfirmModal } from './RenameConfirmModal';
@@ -286,24 +286,8 @@ export function Sidebar({
           </button>
         )}
 
-        {/* Mobile inline search */}
-        {hasChats && (
-          <div className="block md:hidden relative mt-1">
-            <input
-              type="text"
-              placeholder="Search chats…"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full h-9 bg-foreground/[0.05] rounded-[10px] py-1.5 pl-9 pr-8 text-[13px] text-foreground placeholder:text-foreground/40 border-none outline-none focus:outline-none focus:ring-0 focus-visible:ring-0"
-            />
-            <Search className="absolute left-3 top-[11px] w-3.5 h-3.5 text-foreground/40" />
-            {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-[11px] text-foreground/40 hover:text-foreground/70">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        )}
+
+
       </div>
 
       {/* ── Divider ── */}
