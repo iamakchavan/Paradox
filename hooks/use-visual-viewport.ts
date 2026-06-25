@@ -23,15 +23,9 @@ export function useVisualViewport() {
     const vv = window.visualViewport;
     if (!vv) return;
 
-    // The keyboard height is the difference between the layout viewport
-    // and the visual viewport, minus any scroll offset of the visual viewport.
-    // When the keyboard is open on iOS/Android, visualViewport.height shrinks
-    // but window.innerHeight stays the same (or changes only partially).
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const keyboardHeight = window.innerHeight - vv.height;
-
-    // Only apply offset if the keyboard appears to be open (> 100px difference
-    // to avoid false positives from address bar changes)
-    const offset = keyboardHeight > 100 ? keyboardHeight : 0;
+    const offset = (isMobileDevice && keyboardHeight > 100) ? keyboardHeight : 0;
 
     setBottomOffset(offset);
 
