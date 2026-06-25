@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { ApiKeys } from '@/hooks/use-api-keys';
+import { APP_VERSION_DISPLAY, APP_CHANNEL } from '@/lib/version';
 
 interface SettingsPageContentProps {
   apiKeys: ApiKeys;
@@ -296,6 +297,23 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
                       <Monitor className="h-4 w-4 text-cyan-500" />
                       <span>System</span>
                     </button>
+                  </div>
+
+                  {/* Version badge */}
+                  <div className="flex items-center justify-between pt-2">
+                    <span className="text-[10px] text-muted-foreground/40 font-mono tracking-wide select-none">
+                      Paradox {APP_VERSION_DISPLAY}
+                    </span>
+                    <span className={cn(
+                      "text-[9px] font-semibold tracking-widest uppercase px-1.5 py-0.5 rounded-full select-none",
+                      APP_CHANNEL === 'stable'
+                        ? 'bg-emerald-500/10 text-emerald-500/70'
+                        : APP_CHANNEL === 'beta'
+                        ? 'bg-amber-500/10 text-amber-500/70'
+                        : 'bg-violet-500/10 text-violet-500/70'
+                    )}>
+                      {APP_CHANNEL}
+                    </span>
                   </div>
                 </div>
               )}
