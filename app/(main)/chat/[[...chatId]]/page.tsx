@@ -1059,22 +1059,20 @@ export default function ChatPage() {
               : undefined
           }
         >
-          <div className="absolute right-4 -top-14 z-20">
-            <Button
+          <div className="absolute left-1/2 -translate-x-1/2 -top-11 z-20">
+            <button
               onClick={scrollToBottom}
-              size="icon"
+              aria-label="Scroll to bottom"
               className={cn(
-                "h-10 w-10 rounded-full shadow-md border-none",
-                "bg-cyan-600 text-white hover:bg-cyan-700",
-                "dark:bg-cyan-800/80 dark:hover:bg-cyan-700/90",
+                "h-9 w-9 rounded-full liquid-glass-dock flex items-center justify-center",
+                "text-foreground/70 hover:text-foreground",
                 "transform transition-all duration-300 ease-in-out",
-                "flex items-center justify-center",
+                "active:scale-[0.93] active:duration-75",
                 showScrollButton ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
               )}
-              aria-label="Scroll to bottom"
             >
-              <ArrowUp className="h-5 w-5 rotate-180" />
-            </Button>
+              <ArrowUp className="h-4 w-4 rotate-180" />
+            </button>
           </div>
           <ChatInput
             handleSubmit={handleSubmit}
