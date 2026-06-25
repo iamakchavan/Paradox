@@ -43,14 +43,14 @@ export function ChatHeader({
   const { isSearchActive, setIsSearchActive, isSettingsActive, setIsSettingsActive } = useSidebarContext();
 
   return (
-    <header className="fixed top-[calc(1.25rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 transition-all duration-300 pointer-events-none px-6">
+    <header className="fixed top-[calc(1.25rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 transition-all duration-300 pointer-events-none px-4">
       <div className="w-full flex items-center justify-between gap-4 relative">
         {/* Left Pill: Sidebar trigger + New Chat */}
         <div className="pointer-events-auto flex items-center gap-1.5 p-1 rounded-full liquid-glass-dock h-11 md:h-12 shrink-0">
           {isSettingsActive ? (
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="hidden md:inline-flex h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground"
               onClick={() => setIsSettingsActive(false)}
               title="Back to chat"
@@ -58,9 +58,9 @@ export function ChatHeader({
               <ChevronLeft className="h-4 w-4" />
             </Button>
           ) : (
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="hidden md:inline-flex h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground"
               onClick={() => {
                 setIsSidebarCollapsed(false);
@@ -76,9 +76,9 @@ export function ChatHeader({
           )}
 
           {isSettingsActive ? (
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="inline-flex md:hidden h-9 w-9 rounded-full hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground"
               onClick={() => setIsSettingsActive(false)}
               title="Back to chat"
@@ -96,42 +96,42 @@ export function ChatHeader({
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-64 border-r-0 bg-background/90 backdrop-blur-lg [&>button]:hidden">
-              <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
-              <SheetDescription className="sr-only">
-                Allows user to switch chats and select options
-              </SheetDescription>
-              <Sidebar 
-                activeChatId={activeChatId}
-                onSelectChat={(id) => {
-                  onSelectChat(id);
-                  setIsMobileSidebarOpen(false);
-                }}
-                onNewChat={() => {
-                  onNewChat();
-                  setIsMobileSidebarOpen(false);
-                }}
-                onCollapse={() => setIsMobileSidebarOpen(false)}
-                isSearchActive={isSearchActive}
-                onSearchClick={() => {
-                  setIsSearchActive(!isSearchActive);
-                  setIsMobileSidebarOpen(false);
-                }}
-                isLibraryActive={isLibraryPageActive}
-                onLibraryClick={() => {
-                  setIsLibraryPageActive(!isLibraryPageActive);
-                  setIsSearchActive(false);
-                  setIsMobileSidebarOpen(false);
-                }}
-                isSettingsActive={isSettingsActive}
-                onSettingsClick={() => {
-                  setIsSettingsActive(!isSettingsActive);
-                  setIsSearchActive(false);
-                  setIsMobileSidebarOpen(false);
-                }}
-                className="w-full h-full border-r-0 bg-transparent backdrop-blur-none"
-              />
-            </SheetContent>
-          </Sheet>
+                <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Allows user to switch chats and select options
+                </SheetDescription>
+                <Sidebar
+                  activeChatId={activeChatId}
+                  onSelectChat={(id) => {
+                    onSelectChat(id);
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  onNewChat={() => {
+                    onNewChat();
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  onCollapse={() => setIsMobileSidebarOpen(false)}
+                  isSearchActive={isSearchActive}
+                  onSearchClick={() => {
+                    setIsSearchActive(!isSearchActive);
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  isLibraryActive={isLibraryPageActive}
+                  onLibraryClick={() => {
+                    setIsLibraryPageActive(!isLibraryPageActive);
+                    setIsSearchActive(false);
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  isSettingsActive={isSettingsActive}
+                  onSettingsClick={() => {
+                    setIsSettingsActive(!isSettingsActive);
+                    setIsSearchActive(false);
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  className="w-full h-full border-r-0 bg-transparent backdrop-blur-none"
+                />
+              </SheetContent>
+            </Sheet>
           )}
           <Button
             onClick={onNewChat}
@@ -171,8 +171,8 @@ export function ChatHeader({
               size="icon"
               className={cn(
                 "h-9 w-9 md:h-10 md:w-10 rounded-full flex items-center justify-center hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out",
-                isSettingsActive 
-                  ? "bg-zinc-200/60 dark:bg-zinc-800 text-foreground" 
+                isSettingsActive
+                  ? "bg-zinc-200/60 dark:bg-zinc-800 text-foreground"
                   : "hover:bg-zinc-200/50 dark:hover:bg-zinc-800/60 text-foreground/80 hover:text-foreground"
               )}
               onClick={() => {
