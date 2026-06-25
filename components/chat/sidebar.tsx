@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type ChatSession } from '@/lib/db';
 import { deleteChatSession, renameChatSession } from '@/hooks/use-chat-history';
-import { Trash2, Edit3, Settings, Search, Folder, MoreVertical, ChevronDown } from 'lucide-react';
+import { Trash2, Edit3, Settings, Search, Folder, MoreVertical, ChevronDown, ChevronsLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { RenameConfirmModal } from './RenameConfirmModal';
@@ -229,14 +229,10 @@ export function Sidebar({
         {onCollapse && (
           <button
             onClick={onCollapse}
-            className="hidden md:flex h-7 w-7 items-center justify-center rounded-lg text-foreground/40 hover:text-foreground/80 hover:bg-foreground/[0.05] active:scale-[0.93] active:duration-75 transition-all duration-200 cursor-pointer"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-foreground/40 hover:text-foreground/80 hover:bg-foreground/[0.05] active:scale-[0.93] active:duration-75 transition-all duration-200 cursor-pointer"
             title="Collapse sidebar"
           >
-            {/* Double chevron left */}
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8.5 10.5L5 7L8.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 10.5L8.5 7L12 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <ChevronsLeft className="w-[18px] h-[18px]" strokeWidth={2} />
           </button>
         )}
       </div>

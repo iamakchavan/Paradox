@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Sidebar } from '@/components/chat/sidebar';
 import { ModelSelector } from '@/components/chat/ModelSelector';
-import { Settings, ChevronLeft } from 'lucide-react';
+import { Settings, ChevronLeft, ChevronsLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ApiKeys } from '@/hooks/use-api-keys';
 import { useSidebarContext } from '@/components/chat/SidebarContext';
@@ -95,7 +95,7 @@ export function ChatHeader({
                   </svg>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-64 border-r-0 bg-background/90 backdrop-blur-lg">
+              <SheetContent side="left" className="p-0 w-64 border-r-0 bg-background/90 backdrop-blur-lg [&>button]:hidden">
               <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
               <SheetDescription className="sr-only">
                 Allows user to switch chats and select options
@@ -110,6 +110,7 @@ export function ChatHeader({
                   onNewChat();
                   setIsMobileSidebarOpen(false);
                 }}
+                onCollapse={() => setIsMobileSidebarOpen(false)}
                 isSearchActive={isSearchActive}
                 onSearchClick={() => {
                   setIsSearchActive(!isSearchActive);
@@ -180,7 +181,7 @@ export function ChatHeader({
               }}
               title={isSettingsActive ? "Close settings" : "Open settings"}
             >
-              <Settings className="h-4.5 w-4.5" />
+              <Settings className="h-4 w-4" />
             </Button>
           </div>
         )}
