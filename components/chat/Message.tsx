@@ -316,11 +316,10 @@ const SingleCitationPill = memo(({ item, searchMap }: {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 text-[11px] font-medium rounded-full bg-secondary/80 hover:bg-secondary border border-border/50 transition-all duration-200 hover:scale-[1.03] select-none shadow-sm cursor-pointer no-underline align-middle"
+      className="inline-flex items-center px-2.5 py-0.5 mx-0.5 text-[11px] font-medium rounded-full bg-secondary/80 hover:bg-secondary border border-border/50 transition-all duration-200 hover:scale-[1.03] select-none shadow-sm cursor-pointer no-underline align-middle"
       style={{ color: 'unset', textDecoration: 'none' }}
     >
-      <FaviconImage domain={domain} className="w-3 h-3 rounded-sm shrink-0" />
-      <span className="truncate max-w-[100px] font-medium text-foreground/75">{displayLabel}</span>
+      <span className="truncate max-w-[120px] font-medium text-foreground/75">{displayLabel}</span>
     </a>
   );
 
@@ -408,10 +407,9 @@ const GroupedCitationPill = memo(({ items, searchMap }: {
   const triggerPill = (
     <button
       type="button"
-      className="inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 text-[11px] font-medium rounded-full bg-secondary/80 hover:bg-secondary border border-border/50 text-foreground/75 hover:text-foreground transition-all duration-200 hover:scale-[1.03] select-none shadow-sm cursor-pointer align-middle"
+      className="inline-flex items-center gap-1 px-2.5 py-0.5 mx-0.5 text-[11px] font-medium rounded-full bg-secondary/80 hover:bg-secondary border border-border/50 text-foreground/75 hover:text-foreground transition-all duration-200 hover:scale-[1.03] select-none shadow-sm cursor-pointer align-middle"
     >
-      <FaviconImage domain={first.domain} className="w-3 h-3 rounded-sm shrink-0" />
-      <span className="truncate max-w-[80px] font-medium">{firstSiteName}</span>
+      <span className="truncate max-w-[100px] font-medium">{firstSiteName}</span>
       <span className="text-foreground/50 font-medium leading-none">+{extraCount}</span>
     </button>
   );
