@@ -11,9 +11,9 @@ export function SearchPageContent({ onSelectChat }: SearchPageContentProps) {
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus input on mount
   useEffect(() => {
-    inputRef.current?.focus();
+    const t = window.matchMedia('(hover: none)').matches ? 0 : setTimeout(() => inputRef.current?.focus(), 300);
+    return () => clearTimeout(t as number);
   }, []);
 
   const results = useLiveQuery(
