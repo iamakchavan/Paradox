@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 
-export default function manifest(): any {
+export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Paradox',
     short_name: 'Paradox',
@@ -8,11 +8,7 @@ export default function manifest(): any {
     start_url: '/chat',
     display: 'standalone',
     background_color: '#f7f5ef',
-    theme_color: '#f7f5ef',
-    color_scheme_dark: {
-      theme_color: '#09090b',
-      background_color: '#09090b',
-    },
+    theme_color: '#22d3ee',
     icons: [
       {
         src: '/chaticons/paradox-192.png',
