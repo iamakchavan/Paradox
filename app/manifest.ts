@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/chat',
     display: 'standalone',
     background_color: '#f7f5ef',
-    theme_color: '#22d3ee',
+    theme_color: '#f7f5ef',
     icons: [
       {
         src: '/chaticons/paradox-192.png',
