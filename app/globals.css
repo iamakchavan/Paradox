@@ -810,7 +810,24 @@ html, body {
 
 /* GPU acceleration layers for performance-heavy backdrop blurs */
 .liquid-glass-dock,
-.progressive-blur {
+.progressive-blur,
+.progressive-blur-top {
   will-change: backdrop-filter, transform;
   isolation: isolate;
+}
+
+/* Progressive Blur Scrim at the top of the chat (behind the nav bar pills) */
+.progressive-blur-top {
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--background)) 0%,
+    hsl(var(--background) / 0.95) 15%,
+    hsl(var(--background) / 0.8) 35%,
+    hsl(var(--background) / 0.2) 65%,
+    transparent 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.85) 25%, rgba(0, 0, 0, 0.25) 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.85) 25%, rgba(0, 0, 0, 0.25) 55%, transparent 100%);
 }

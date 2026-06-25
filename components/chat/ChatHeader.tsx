@@ -43,7 +43,15 @@ export function ChatHeader({
   const { isSearchActive, setIsSearchActive, isSettingsActive, setIsSettingsActive } = useSidebarContext();
 
   return (
-    <header className="fixed top-[calc(1.25rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 transition-all duration-300 pointer-events-none px-4">
+    <>
+      <div
+        className={cn(
+          "fixed top-0 right-0 z-30 h-24 sm:h-28 pointer-events-none progressive-blur-top",
+          mounted && "transition-[left] duration-300",
+          isSidebarCollapsed ? "left-0" : "left-0 md:left-64"
+        )}
+      />
+      <header className="fixed top-[calc(1.25rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 transition-all duration-300 pointer-events-none px-4">
       <div className="w-full flex items-center justify-between gap-4 relative">
         {/* Left Pill: Sidebar trigger + New Chat */}
         <div className="pointer-events-auto flex items-center gap-1.5 p-1 rounded-full liquid-glass-dock h-11 md:h-12 shrink-0">
@@ -187,5 +195,6 @@ export function ChatHeader({
         )}
       </div>
     </header>
+    </>
   );
 }
