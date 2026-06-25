@@ -1007,7 +1007,7 @@ export default function ChatPage() {
                     exit={{ x: "100%", opacity: 0 }}
                     transition={{ type: "spring", damping: 28, stiffness: 240 }}
                     className={cn(
-                      "fixed top-16 sm:top-20 bottom-0 right-0 bg-background z-20 flex flex-col overflow-hidden transition-[left] duration-300",
+                      "fixed top-0 bottom-0 right-0 bg-background z-20 flex flex-col overflow-hidden transition-[left] duration-300",
                       isSidebarCollapsed ? "left-0" : "left-0 md:left-64"
                     )}
                   >

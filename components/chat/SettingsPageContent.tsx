@@ -185,7 +185,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
   );
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-3 flex flex-col h-full select-none">
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 flex flex-col h-full select-none">
       {/* Title Header */}
       <div className="flex-shrink-0 mb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
         <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Settings</h1>
