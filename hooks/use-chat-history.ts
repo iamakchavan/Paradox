@@ -143,7 +143,6 @@ export const branchOffChat = async (
   const lastIndex = Math.min(branchAtIndex, sourceMessages.length - 1);
 
   // 2. Create the branched session
-  const sourceChat = await db.chats.get(sourceChatId);
   const now = Date.now();
   const session: ChatSession = {
     id: newChatId,

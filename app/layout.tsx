@@ -1,7 +1,6 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { ThemeProvider } from '@/components/theme-provider';
-import { ThemeColorSync } from '@/components/theme-color-sync';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -25,33 +24,60 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   interactiveWidget: 'resizes-content',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f7f5ef' },
-    { media: '(prefers-color-scheme: dark)', color: '#0b0c10' },
-  ],
 };
 
 export const metadata: Metadata = {
   title: 'Paradox',
   description: 'Minimilastic AI chat interface',
   icons: {
-    icon: [{ url: '/chaticons/favicon-32.png', sizes: '32x32', type: 'image/png' }],
-    shortcut: [{ url: '/chaticons/favicon-32.png', type: 'image/png' }],
-    apple: [{ url: '/chaticons/apple-icon-180.png', sizes: '180x180', type: 'image/png' }],
+    icon: [
+      {
+        url: '/chaticons/favicon-32.png',
+        sizes: '32x32',
+        type: 'image/png'
+      }
+    ],
+    shortcut: [
+      {
+        url: '/chaticons/favicon-32.png',
+        type: 'image/png'
+      }
+    ],
+    apple: [
+      {
+        url: '/chaticons/apple-icon-180.png',
+        sizes: '180x180',
+        type: 'image/png'
+      }
+    ]
   }
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href="https://api.fontshare.com/css?f[]=sentient@500,600,700&display=swap" />
-        <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap" />
+        <link
+          rel="stylesheet"
+          href="https://api.fontshare.com/css?f[]=sentient@500,600,700&display=swap"
+        />
+        <link
+          rel="stylesheet"
+          href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap"
+        />
       </head>
       <body className={`${spaceMono.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="paradox-theme">
-          <ThemeColorSync />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <TooltipProvider>
             <CustomToastProvider>
               {children}
