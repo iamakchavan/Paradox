@@ -147,7 +147,7 @@ export default function MainLayout({
           className={cn(
             "flex-1 flex flex-col h-full relative overflow-hidden",
             mounted && "transition-[padding-left] duration-300 ease-in-out",
-            isSidebarCollapsed ? "md:pl-0" : "md:pl-64"
+            isSidebarCollapsed ? "md:pl-0" : "md:pl-[270px]"
           )}
         >
           <main className="flex flex-col h-full bg-background relative overflow-hidden">

@@ -1008,7 +1008,7 @@ export default function ChatPage() {
                     transition={{ type: "spring", damping: 28, stiffness: 240 }}
                     className={cn(
                       "fixed top-0 bottom-0 right-0 bg-background z-20 flex flex-col overflow-hidden transition-[left] duration-300",
-                      isSidebarCollapsed ? "left-0" : "left-0 md:left-64"
+                      isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]"
                     )}
                   >
                     <SettingsPageContent
@@ -1125,7 +1125,7 @@ export default function ChatPage() {
           className={cn(
             "fixed bottom-0 right-0 z-10 h-32 sm:h-40 pointer-events-none progressive-blur",
             mounted && "transition-[left,bottom] duration-300",
-            isSidebarCollapsed ? "left-0" : "left-0 md:left-64"
+            isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]"
           )}
           style={
             keyboardOffset > 0
@@ -1144,7 +1144,7 @@ export default function ChatPage() {
             "fixed z-20 bottom-6 sm:bottom-12",
             mounted && "transition-[left,bottom] duration-300",
             "max-w-2xl right-0 mx-auto px-6 sm:px-4",
-            isSidebarCollapsed ? "left-0" : "left-0 md:left-64",
+            isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]",
           )}
           style={
             keyboardOffset > 0

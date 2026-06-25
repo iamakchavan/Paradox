@@ -48,7 +48,7 @@ export function ChatHeader({
         className={cn(
           "fixed top-0 right-0 z-30 h-24 sm:h-28 pointer-events-none progressive-blur-top",
           mounted && "transition-[left] duration-300",
-          isSidebarCollapsed ? "left-0" : "left-0 md:left-64"
+          isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]"
         )}
       />
       <header className="fixed top-[calc(1.25rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 transition-all duration-300 pointer-events-none px-4">
@@ -103,7 +103,7 @@ export function ChatHeader({
                   </svg>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-64 border-r-0 bg-background/90 backdrop-blur-lg [&>button]:hidden">
+              <SheetContent side="left" className="p-0 w-[270px] border-r-0 bg-background/90 backdrop-blur-lg [&>button]:hidden">
                 <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
                 <SheetDescription className="sr-only">
                   Allows user to switch chats and select options
