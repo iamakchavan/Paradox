@@ -20,6 +20,7 @@ const config: Config = {
       fontFamily: {
         sans: ['Switzer', 'sans-serif'],
         serif: ['Sentient', 'serif'],
+        mono: ['var(--font-space-mono)', 'monospace'],
       },
       borderRadius: {
         lg: 'var(--radius)',

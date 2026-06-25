@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 
 interface MessageAnimatorProps {
   children: ReactNode;
@@ -7,7 +7,7 @@ interface MessageAnimatorProps {
   isNew: boolean;
 }
 
-export function MessageAnimator({ children, role, isNew }: MessageAnimatorProps) {
+function MessageAnimatorComponent({ children, role, isNew }: MessageAnimatorProps) {
   if (!isNew) {
     return <div className="w-full">{children}</div>;
   }
@@ -22,7 +22,6 @@ export function MessageAnimator({ children, role, isNew }: MessageAnimatorProps)
 
   return (
     <motion.div
-      layout="position"
       initial={{ 
         opacity: 0, 
         y: 28, 
@@ -44,3 +43,5 @@ export function MessageAnimator({ children, role, isNew }: MessageAnimatorProps)
     </motion.div>
   );
 }
+
+export const MessageAnimator = memo(MessageAnimatorComponent);

@@ -81,21 +81,26 @@ export default function MainLayout({
     router.push('/chat');
   };
 
+  const sidebarContextValue = useMemo(() => ({
+    isSidebarCollapsed,
+    setIsSidebarCollapsed,
+    isMobileSidebarOpen,
+    setIsMobileSidebarOpen,
+    isSearchActive,
+    setIsSearchActive,
+    isSettingsActive,
+    setIsSettingsActive,
+  }), [
+    isSidebarCollapsed,
+    isMobileSidebarOpen,
+    isSearchActive,
+    isSettingsActive,
+  ]);
+
   const isLibraryActive = pathname === '/library';
 
   return (
-    <SidebarContext.Provider
-      value={{
-        isSidebarCollapsed,
-        setIsSidebarCollapsed,
-        isMobileSidebarOpen,
-        setIsMobileSidebarOpen,
-        isSearchActive,
-        setIsSearchActive,
-        isSettingsActive,
-        setIsSettingsActive,
-      }}
-    >
+    <SidebarContext.Provider value={sidebarContextValue}>
       <div className="flex h-dvh w-screen overflow-hidden bg-background">
         <Sidebar
           activeChatId={activeChatId}

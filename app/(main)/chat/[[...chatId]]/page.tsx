@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
 import { ArrowUp, X } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { SettingsPageContent } from '@/components/chat/SettingsPageContent';
+import dynamic from 'next/dynamic';
 import { streamChatContent } from '@/lib/chat-client';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useSidebarContext } from '@/components/chat/SidebarContext';
@@ -28,13 +27,29 @@ import { useTheme } from 'next-themes';
 import { TableWrapper } from '@/components/chat/TableWrapper';
 import { processThinkingContent } from '@/utils/chat';
 import { ChatInput } from '@/components/chat/ChatInput';
-import { Message } from '@/components/chat/Message';
-import { SearchPageContent } from '@/components/chat/SearchPageContent';
+
+
 import { pruneChatHistory } from '@/utils/chat-context';
 import { MessageAnimator } from '@/components/chat/MessageAnimator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { useVisualViewport } from '@/hooks/use-visual-viewport';
+import { AppleSpinner } from '@/components/ui/AppleSpinner';
+
+const SettingsPageContent = dynamic(
+  () => import('@/components/chat/SettingsPageContent').then(mod => mod.SettingsPageContent),
+  { ssr: false }
+);
+
+const SearchPageContent = dynamic(
+  () => import('@/components/chat/SearchPageContent').then(mod => mod.SearchPageContent),
+  { ssr: false }
+);
+
+const MessageComponent = dynamic(
+  () => import('@/components/chat/Message').then(mod => mod.Message),
+  { ssr: false }
+);
 
 interface Message {
   id?: number;
@@ -81,6 +96,12 @@ export default function ChatPage() {
   const { keys: apiKeys, updateKey } = useApiKeys();
   const [loadedLimit, setLoadedLimit] = useState(20);
   const [hasMore, setHasMore] = useState(true);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const isLoadingHistoryRef = useRef(false);
+  const setIsLoadingHistoryState = (val: boolean) => {
+    setIsLoadingHistory(val);
+    isLoadingHistoryRef.current = val;
+  };
   const hasScrolledToBottomRef = useRef<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [searchEnabled, setSearchEnabled] = useState(false);
@@ -115,12 +136,25 @@ export default function ChatPage() {
   };
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [conversation, setConversation] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [streamingMessage, setStreamingMessage] = useState<Message | null>(null);
+  const conversationRef = useRef<Message[]>([]);
+  conversationRef.current = messages;
+
+  const displayMessages = streamingMessage
+    ? [...messages.filter(m => m.id !== streamingMessage.id), streamingMessage]
+    : messages;
+
+  const scrollHeightRef = useRef<number | null>(null);
+  const scrollTopRef = useRef<number | null>(null);
+  const scrollAnchorRef = useRef<{ id: number | string; relativeTop: number } | null>(null);
+
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [selectedPDFs, setSelectedPDFs] = useState<{ name: string; data: string }[]>([]);
   const [selectedModelId, setSelectedModelId] = useState('sonar');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -154,6 +188,7 @@ export default function ChatPage() {
   const [expandedThinking, setExpandedThinking] = useState<number[]>([]);
   const [processingPDF, setProcessingPDF] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const showScrollButtonRef = useRef(false);
 
   useEffect(() => {
     const search = localStorage.getItem('search-enabled') === 'true';
@@ -167,6 +202,9 @@ export default function ChatPage() {
   // Reset limit on session change
   useEffect(() => {
     setLoadedLimit(20);
+    setIsLoadingHistoryState(false);
+    showScrollButtonRef.current = false;
+    setShowScrollButton(false);
     isInitialScrollSnapRef.current = true;
     const timer = setTimeout(() => {
       isInitialScrollSnapRef.current = false;
@@ -182,28 +220,37 @@ export default function ChatPage() {
         .equals(chatIdParam)
         .count()
         .then(count => {
-          setHasMore(count > conversation.length);
+          setHasMore(count > (messages.length + (streamingMessage ? 1 : 0)));
         });
     }
-  }, [chatIdParam, conversation.length]);
+  }, [chatIdParam, messages.length, streamingMessage]);
 
   // Infinite Scroll IntersectionObserver for loading older messages
   useEffect(() => {
-    if (isInitialView || conversation.length === 0 || !hasMore) return;
+    if (isInitialView || messages.length === 0 || !hasMore || isLoadingHistory) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          const prevScrollHeight = document.body.scrollHeight;
-          const prevScrollTop = window.scrollY;
-
+          const currentMsgs = conversationRef.current;
+          if (currentMsgs && currentMsgs.length > 0) {
+            const firstMsg = currentMsgs[0];
+            const firstMsgId = firstMsg.id ?? 0;
+            const scrollContainer = scrollContainerRef.current;
+            if (scrollContainer) {
+              const anchorEl = scrollContainer.querySelector(`#msg-${firstMsgId}`);
+              if (anchorEl) {
+                const containerRect = scrollContainer.getBoundingClientRect();
+                const anchorRect = anchorEl.getBoundingClientRect();
+                scrollAnchorRef.current = {
+                  id: firstMsgId,
+                  relativeTop: anchorRect.top - containerRect.top
+                };
+              }
+            }
+          }
+          setIsLoadingHistoryState(true);
           setLoadedLimit(prev => prev + 20);
-
-          requestAnimationFrame(() => {
-            const newScrollHeight = document.body.scrollHeight;
-            const heightDifference = newScrollHeight - prevScrollHeight;
-            window.scrollTo(0, prevScrollTop + heightDifference);
-          });
         }
       },
       { threshold: 0.1 }
@@ -218,7 +265,25 @@ export default function ChatPage() {
         observer.unobserve(currentSentinel);
       }
     };
-  }, [conversation.length, isInitialView, hasMore]);
+  }, [messages.length, isInitialView, hasMore, isLoadingHistory]);
+
+  // Sync scroll height correction before repaint when new history items are loaded
+  useLayoutEffect(() => {
+    if (scrollAnchorRef.current !== null) {
+      const scrollContainer = scrollContainerRef.current;
+      if (scrollContainer) {
+        const anchorEl = scrollContainer.querySelector(`#msg-${scrollAnchorRef.current.id}`);
+        if (anchorEl) {
+          const containerRect = scrollContainer.getBoundingClientRect();
+          const anchorRect = anchorEl.getBoundingClientRect();
+          const newRelativeTop = anchorRect.top - containerRect.top;
+          const diff = newRelativeTop - scrollAnchorRef.current.relativeTop;
+          scrollContainer.scrollTop += diff;
+        }
+      }
+      scrollAnchorRef.current = null;
+    }
+  }, [messages.length, isLoadingHistory]);
 
   // Hydrate chat message and configuration settings when chatIdParam or loadedLimit changes
   useEffect(() => {
@@ -247,20 +312,20 @@ export default function ChatPage() {
                 const userMsgWithId = msgs[0];
                 const assistantMsgWithId = msgs[1];
                 if (userMsgWithId.id !== undefined && assistantMsgWithId.id !== undefined) {
-                  setConversation([
+                  setMessages([
                     {
                       id: userMsgWithId.id,
                       role: userMsgWithId.role,
                       content: userMsgWithId.content,
                       images: userMsgWithId.images,
                       pdfs: userMsgWithId.pdfs
-                    },
-                    {
-                      id: assistantMsgWithId.id,
-                      role: assistantMsgWithId.role,
-                      content: ''
                     }
                   ]);
+                  setStreamingMessage({
+                    id: assistantMsgWithId.id,
+                    role: assistantMsgWithId.role,
+                    content: ''
+                  });
                   setIsInitialView(false);
                   initialMessageCountRef.current = 2;
 
@@ -304,49 +369,72 @@ export default function ChatPage() {
         .then(msgs => {
           const orderedMsgs = msgs.reverse();
           initialMessageCountRef.current = orderedMsgs.length;
-          setConversation(orderedMsgs.map(m => ({
+          
+          if (isLoadingHistoryRef.current && messages.length > 0) {
+            const firstMsg = messages[0];
+            const firstMsgId = firstMsg.id ?? 0;
+            const scrollContainer = scrollContainerRef.current;
+            if (scrollContainer) {
+              const anchorEl = scrollContainer.querySelector(`#msg-${firstMsgId}`);
+              if (anchorEl) {
+                const containerRect = scrollContainer.getBoundingClientRect();
+                const anchorRect = anchorEl.getBoundingClientRect();
+                scrollAnchorRef.current = {
+                  id: firstMsgId,
+                  relativeTop: anchorRect.top - containerRect.top
+                };
+              }
+            }
+          }
+
+          setMessages(orderedMsgs.map(m => ({
             id: m.id,
             role: m.role,
             content: m.content,
             images: m.images,
             pdfs: m.pdfs
           })));
+          setStreamingMessage(null);
           setIsInitialView(false);
-
+          setIsLoadingHistoryState(false);
         });
     } else {
       handleStop();
-      setConversation([]);
+      setMessages([]);
+      setStreamingMessage(null);
       setIsInitialView(true);
       setError(null);
       setSelectedImages([]);
       setSelectedPDFs([]);
       initialMessageCountRef.current = 0;
+      setIsLoadingHistoryState(false);
     }
   }, [chatIdParam, loadedLimit, handleStop]);
 
   useEffect(() => {
-    if (conversation.length === 1) {
+    const totalCount = messages.length + (streamingMessage ? 1 : 0);
+    if (totalCount === 1) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
     // Only run on length change, not on content changes (avoids firing on every token)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversation.length]);
+  }, [messages.length, !!streamingMessage]);
 
   useEffect(() => {
-    if (conversation.length > 0 && isInitialView) {
+    const totalCount = messages.length + (streamingMessage ? 1 : 0);
+    if (totalCount > 0 && isInitialView) {
       setIsInitialView(false);
     }
     // Only run on length change, not on content changes (avoids firing on every token)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversation.length, isInitialView]);
+  }, [messages.length, !!streamingMessage, isInitialView]);
 
   const handleNewChat = () => {
     handleStop();
     setIsSearchActive(false);
     setIsSettingsActive(false);
     router.push('/chat');
-    setConversation([]);
+    setMessages([]);
     setError(null);
     setIsInitialView(true);
     setSelectedImages([]);
@@ -479,13 +567,10 @@ export default function ChatPage() {
         if (!pendingFlush) return;
         pendingFlush = false;
         const content = accumulatedContent;
-        setConversation(prev => {
-          const newConv = [...prev];
-          if (newConv.length === 0) return prev;
-          const lastMessage = newConv[newConv.length - 1];
-          if (lastMessage.content === content) return prev; // no change, bail
-          newConv[newConv.length - 1] = { ...lastMessage, content };
-          return newConv;
+        setStreamingMessage(prev => {
+          if (!prev) return { id: assistantMessageId, role: 'assistant', content };
+          if (prev.content === content) return prev;
+          return { ...prev, content };
         });
       };
 
@@ -562,17 +647,14 @@ export default function ChatPage() {
 
       await updateMessageContentById(assistantMessageId, finalContent);
 
-      // Also update the conversation state with the finalContent (including thinkingTime & researchTime)
-      setConversation(prev => {
-        const newConv = [...prev];
-        if (newConv.length === 0) return prev;
-        const lastMessage = newConv[newConv.length - 1];
-        newConv[newConv.length - 1] = {
-          ...lastMessage,
-          content: finalContent
-        };
-        return newConv;
-      });
+      // Append completed message to messages state and clear streamingMessage
+      const finalAssistantMsg: Message = {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: finalContent
+      };
+      setMessages(prev => [...prev, finalAssistantMsg]);
+      setStreamingMessage(null);
 
       // Defer title generation to run AFTER the assistant finishes response generation successfully
       if (history.length === 0) {
@@ -592,22 +674,18 @@ export default function ChatPage() {
         const errorSuffix = `\n\n⚠️ Connection Error: ${errMsg}`;
         accumulatedContent += errorSuffix;
 
-        setConversation(prev => {
-          const newConv = [...prev];
-          if (newConv.length > 0) {
-            const lastMessage = newConv[newConv.length - 1];
-            newConv[newConv.length - 1] = {
-              ...lastMessage,
-              content: accumulatedContent
-            };
-          }
-          return newConv;
-        });
+        const finalAssistantMsg: Message = {
+          id: assistantMessageId,
+          role: 'assistant',
+          content: accumulatedContent
+        };
+        setMessages(prev => [...prev, finalAssistantMsg]);
+        setStreamingMessage(null);
 
         await updateMessageContentById(assistantMessageId, accumulatedContent);
       } else {
         // If no content was accumulated, clean up the assistant placeholder
-        setConversation(prev => prev.slice(0, -1));
+        setStreamingMessage(null);
         await db.messages.delete(assistantMessageId);
       }
     } finally {
@@ -676,7 +754,7 @@ export default function ChatPage() {
     if ((!text.trim() && selectedImages.length === 0 && selectedPDFs.length === 0) || (!apiKeys.geminiApiKey && !apiKeys.mistralApiKey && !apiKeys.perplexityApiKey && !apiKeys.zenmuxApiKey && !apiKeys.nvidiaApiKey && !apiKeys.inceptionApiKey)) return;
 
     let chatId = chatIdParam;
-    const isNewChat = !chatId || conversation.length === 0;
+    const isNewChat = !chatId || (messages.length === 0 && !streamingMessage);
 
     // Capture inputs synchronously to bypass database write latency in UI clearing
     const promptMessage = text;
@@ -714,8 +792,8 @@ export default function ChatPage() {
       // Save user message to IndexedDB
       const userMessageId = await addMessageToSession(chatId!, 'user', promptMessage, promptImages, promptPDFs);
 
-      // Add user message to conversation list
-      setConversation(prev => [...prev, {
+      // Add user message to messages list
+      setMessages(prev => [...prev, {
         id: userMessageId,
         role: 'user',
         content: promptMessage,
@@ -726,7 +804,8 @@ export default function ChatPage() {
       // Save assistant placeholder message to IndexedDB
       const assistantMessageId = await addMessageToSession(chatId!, 'assistant', '');
 
-      setConversation(prev => [...prev, { id: assistantMessageId, role: 'assistant', content: '' }]);
+      // Set active streaming message
+      setStreamingMessage({ id: assistantMessageId, role: 'assistant', content: '' });
 
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -740,8 +819,8 @@ export default function ChatPage() {
         pdfs: promptPDFs
       };
 
-      // Call streaming helper
-      await runStreaming(chatId!, selectedModelId, conversation, userMsg, assistantMessageId);
+      // Call streaming helper with current completed messages as history
+      await runStreaming(chatId!, selectedModelId, messages, userMsg, assistantMessageId);
     }
   };
 
@@ -753,7 +832,7 @@ export default function ChatPage() {
       const newChatId = await branchOffChat(chatIdParam, messageIndex, selectedModelId);
 
       // Find the first user message from the branched conversation for title generation
-      const firstUserMsg = conversation.find(m => m.role === 'user');
+      const firstUserMsg = conversationRef.current.find(m => m.role === 'user');
       if (firstUserMsg) {
         triggerTitleGeneration(newChatId, firstUserMsg.content, selectedModelId);
       }
@@ -773,7 +852,7 @@ export default function ChatPage() {
         type: 'error',
       });
     }
-  }, [chatIdParam, selectedModelId, conversation, triggerTitleGeneration, router]);
+  }, [chatIdParam, selectedModelId, triggerTitleGeneration, router, showToast]);
 
   // Handle scroll button visibility and manual scroll tracking
   // NOTE: deliberately NOT in conversation deps — that caused setState loop on every token
@@ -795,7 +874,7 @@ export default function ChatPage() {
     };
 
     const handleScroll = () => {
-      const scrollContainer = document.querySelector('.chat-scrollbar');
+      const scrollContainer = scrollContainerRef.current;
       if (!scrollContainer) return;
       const scrollPosition = scrollContainer.scrollTop;
       const scrollHeight = scrollContainer.scrollHeight;
@@ -805,17 +884,20 @@ export default function ChatPage() {
       const isNearBottom = scrollHeight - (scrollPosition + containerHeight) <= threshold;
       const next = !isNearBottom && scrollHeight > containerHeight + threshold;
 
-      // Schedule the state update via rAF so it never fires inside a render
-      pendingValue = next;
-      if (rafId === null) {
-        rafId = requestAnimationFrame(flushScrollButton);
+      // Gate state updates using showScrollButtonRef to prevent render cascades
+      if (next !== showScrollButtonRef.current) {
+        showScrollButtonRef.current = next;
+        pendingValue = next;
+        if (rafId === null) {
+          rafId = requestAnimationFrame(flushScrollButton);
+        }
       }
 
       // Track whether user has manually scrolled up away from the bottom (ref only, no setState)
       isUserScrolledUpRef.current = scrollHeight - (scrollPosition + containerHeight) > 100;
     };
 
-    const scrollContainer = document.querySelector('.chat-scrollbar');
+    const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
       handleScroll();
       scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
@@ -831,7 +913,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (!chatIdParam || isInitialView) return;
 
-    const scrollContainer = document.querySelector('.chat-scrollbar');
+    const scrollContainer = scrollContainerRef.current;
     const contentEl = contentRef.current;
     if (!scrollContainer || !contentEl) return;
 
@@ -885,19 +967,22 @@ export default function ChatPage() {
       />
 
       {/* Main Content */}
-      <div className={cn(
-        "flex-1 w-full transition-[padding-left] duration-300 ease-in-out h-full min-h-0",
-        isSearchActive
-          ? "flex flex-col h-[calc(100vh-80px)] overflow-hidden pt-20"
-          : isInitialView
-            ? cn(
-                "flex flex-col items-center overflow-y-auto chat-scrollbar",
-                keyboardOffset > 0
-                  ? "justify-start pt-16 mt-0"
-                  : "justify-center -mt-16 sm:-mt-24"
-              )
-            : "overflow-y-auto chat-scrollbar pt-16 sm:pt-20 pb-24 sm:pb-32"
-      )}>
+      <div 
+        ref={scrollContainerRef}
+        className={cn(
+          "flex-1 w-full transition-[padding-left] duration-300 ease-in-out h-full min-h-0",
+          isSearchActive
+            ? "flex flex-col h-[calc(100vh-80px)] overflow-hidden pt-20"
+            : isInitialView
+              ? cn(
+                  "flex flex-col items-center overflow-y-auto chat-scrollbar",
+                  keyboardOffset > 0
+                    ? "justify-start pt-16 mt-0"
+                    : "justify-center -mt-16 sm:-mt-24"
+                )
+              : "overflow-y-auto chat-scrollbar pt-16 sm:pt-20 pb-24 sm:pb-32"
+        )}
+      >
         <div className={cn(
           "w-full mx-auto px-2 sm:px-4 relative",
           isSearchActive ? "max-w-4xl h-full overflow-hidden" : "max-w-4xl"
@@ -999,27 +1084,35 @@ export default function ChatPage() {
             </div>
           ) : (
             <div ref={contentRef} className="space-y-6 pb-64 sm:pb-72">
-              <div ref={sentinelRef} className="h-4 w-full" />
-              {conversation.map((msg: Message, index: number) => (
-                <div key={`message-${index}-${msg.role}`} className="group">
-                  <MessageAnimator
-                    role={msg.role}
-                    isNew={index >= initialMessageCountRef.current}
-                  >
-                    <Message
-                      message={msg}
-                      index={index}
-                      isStreaming={index === conversation.length - 1 && isLoading}
-                      expandedThinking={expandedThinking}
-                      setExpandedThinking={setExpandedThinking}
-                      modelMode={selectedModelId}
-                      onBranchOff={msg.role === 'assistant' && chatIdParam ? handleBranchOff : undefined}
-                    />
-                  </MessageAnimator>
-                </div>
-              ))}
-              <div ref={messagesEndRef} className="h-px" />
-            </div>
+               {isLoadingHistory && (
+                 <div className="w-full flex justify-center py-2" id="history-loading-spinner">
+                   <AppleSpinner />
+                 </div>
+               )}
+               <div ref={sentinelRef} className="h-4 w-full" />
+               {displayMessages.map((msg: Message, index: number) => {
+                 const isStreamItem = index === displayMessages.length - 1 && !!streamingMessage;
+                 return (
+                   <div key={msg.id ?? `msg-${index}`} id={`msg-${msg.id ?? index}`} className="group">
+                     <MessageAnimator
+                       role={msg.role}
+                       isNew={index >= initialMessageCountRef.current}
+                     >
+                       <MessageComponent
+                          message={msg}
+                          index={index}
+                          isStreaming={isStreamItem}
+                          expandedThinking={expandedThinking}
+                          setExpandedThinking={setExpandedThinking}
+                          modelMode={selectedModelId}
+                          onBranchOff={msg.role === 'assistant' && chatIdParam && !isStreamItem ? handleBranchOff : undefined}
+                        />
+                     </MessageAnimator>
+                   </div>
+                 );
+               })}
+               <div ref={messagesEndRef} className="h-px" />
+             </div>
           )}
           </>
           )}

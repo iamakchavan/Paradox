@@ -792,14 +792,12 @@ const WebSearchWidget = memo(({ searchData }: { searchData: { query: string; res
           } catch {}
 
           return (
-            <motion.a
-              whileHover={{ scale: 1.01, translateY: -0.5 }}
-              transition={{ type: "spring", stiffness: 450, damping: 15 }}
+            <a
               key={idx}
               href={src.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-50/30 dark:bg-zinc-950/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-2xs transition-all duration-200 no-underline group cursor-pointer"
+              className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-50/30 dark:bg-zinc-950/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-2xs hover:scale-[1.01] hover:-translate-y-0.5 transition-all duration-200 no-underline group cursor-pointer"
             >
               {/* Title (Top) */}
               <h4 className="font-semibold text-zinc-800 dark:text-zinc-200 text-[11px] leading-snug line-clamp-2 group-hover:text-primary transition-colors flex-1">
@@ -813,17 +811,15 @@ const WebSearchWidget = memo(({ searchData }: { searchData: { query: string; res
                 <span className="text-zinc-300 dark:text-zinc-700/60 font-medium shrink-0">·</span>
                 <span className="text-[9.5px] font-bold text-zinc-400 dark:text-zinc-500 shrink-0 font-mono">{idx + 1}</span>
               </div>
-            </motion.a>
+            </a>
           );
         })}
 
         {/* Expand Button Card */}
         {hasMoreThanFour && !showAll && (
-          <motion.button
-            whileHover={{ scale: 1.01, translateY: -0.5 }}
-            transition={{ type: "spring", stiffness: 450, damping: 15 }}
+          <button
             onClick={() => setShowAll(true)}
-            className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-100/50 dark:bg-zinc-900/40 hover:bg-zinc-200/50 dark:hover:bg-zinc-850/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 cursor-pointer group shadow-3xs text-left"
+            className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-100/50 dark:bg-zinc-900/40 hover:bg-zinc-200/50 dark:hover:bg-zinc-850/50 hover:border-zinc-300 dark:hover:border-zinc-700 hover:scale-[1.01] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group shadow-3xs text-left"
           >
             {/* Top: Favicons row */}
             <div className="flex items-center gap-1 select-none">
@@ -852,7 +848,7 @@ const WebSearchWidget = memo(({ searchData }: { searchData: { query: string; res
             <span className="text-[11px] font-semibold text-zinc-650 dark:text-zinc-350 group-hover:text-zinc-800 dark:group-hover:text-zinc-100 transition-colors">
               View {results.length - 3} more
             </span>
-          </motion.button>
+          </button>
         )}
       </div>
 
@@ -874,14 +870,12 @@ const WebSearchWidget = memo(({ searchData }: { searchData: { query: string; res
                 } catch {}
 
                 return (
-                  <motion.a
-                    whileHover={{ scale: 1.01, translateY: -0.5 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 15 }}
+                  <a
                     key={idx + 4}
                     href={src.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-50/30 dark:bg-zinc-950/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-2xs transition-all duration-200 no-underline group cursor-pointer"
+                    className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-50/30 dark:bg-zinc-950/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-2xs hover:scale-[1.01] hover:-translate-y-0.5 transition-all duration-200 no-underline group cursor-pointer"
                   >
                     {/* Title (Top) */}
                     <h4 className="font-semibold text-zinc-800 dark:text-zinc-200 text-[11px] leading-snug line-clamp-2 group-hover:text-primary transition-colors flex-1">
@@ -895,22 +889,20 @@ const WebSearchWidget = memo(({ searchData }: { searchData: { query: string; res
                       <span className="text-zinc-300 dark:text-zinc-700/60 font-medium shrink-0">·</span>
                       <span className="text-[9.5px] font-bold text-zinc-400 dark:text-zinc-500 shrink-0 font-mono">{idx + 5}</span>
                     </div>
-                  </motion.a>
+                  </a>
                 );
               })}
 
               {/* Collapse Button Card */}
-              <motion.button
-                whileHover={{ scale: 1.01, translateY: -0.5 }}
-                transition={{ type: "spring", stiffness: 450, damping: 15 }}
+              <button
                 onClick={() => setShowAll(false)}
-                className="flex flex-col justify-center items-center h-[80px] p-2.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800/50 bg-zinc-50/10 dark:bg-zinc-950/5 hover:bg-zinc-100/50 dark:hover:bg-zinc-900/40 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-200 cursor-pointer group shadow-3xs"
+                className="flex flex-col justify-center items-center h-[80px] p-2.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800/50 bg-zinc-50/10 dark:bg-zinc-950/5 hover:bg-zinc-100/50 dark:hover:bg-zinc-900/40 hover:border-zinc-400 dark:hover:border-zinc-700 hover:scale-[1.01] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group shadow-3xs"
               >
                 <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-200 transition-colors rotate-180 mb-1" />
                 <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors">
                   Show less
                 </span>
-              </motion.button>
+              </button>
             </div>
           </motion.div>
         )}
@@ -999,7 +991,7 @@ const MessageComponent = ({
   const [branchedId, setBranchedId] = useState<string | null>(null);
   const [thinkingTime, setThinkingTime] = useState(0);
   const [hasFinishedThinking, setHasFinishedThinking] = useState(false);
-  const thinkingTimerRef = useRef<NodeJS.Timeout>();
+  const thinkingTimerRef = useRef<number>();
 
   const [isManuallyCollapsed, setIsManuallyCollapsed] = useState(false);
 
@@ -1081,25 +1073,30 @@ const MessageComponent = ({
     }
   }, [message.content]);
 
-  // Optimize timer effect to run/stop based on isThinkingActive
+  // Optimize timer effect to run/stop based on isThinkingActive using requestAnimationFrame
   useEffect(() => {
     if (!isThinkingActive) {
-      if (thinkingTimerRef.current) {
-        clearInterval(thinkingTimerRef.current);
+      if (thinkingTimerRef.current !== undefined) {
+        cancelAnimationFrame(thinkingTimerRef.current);
         thinkingTimerRef.current = undefined;
       }
       return;
     }
 
-    if (!thinkingTimerRef.current) {
-      thinkingTimerRef.current = setInterval(() => {
+    let lastUpdate = performance.now();
+    const updateTimer = (now: number) => {
+      if (now - lastUpdate >= 100) {
         setThinkingTime(prev => prev + 0.1);
-      }, 100);
-    }
+        lastUpdate = now;
+      }
+      thinkingTimerRef.current = requestAnimationFrame(updateTimer);
+    };
+
+    thinkingTimerRef.current = requestAnimationFrame(updateTimer);
 
     return () => {
-      if (thinkingTimerRef.current) {
-        clearInterval(thinkingTimerRef.current);
+      if (thinkingTimerRef.current !== undefined) {
+        cancelAnimationFrame(thinkingTimerRef.current);
         thinkingTimerRef.current = undefined;
       }
     };
@@ -1225,6 +1222,8 @@ const MessageComponent = ({
     const latPreprocessed = preprocessLaTeX(closedLinks);
     return linkifyCitations(latPreprocessed, allSearchResults);
   }, [mainContent, allSearchResults]);
+
+
 
   if (message.role === 'user') {
     return (
@@ -1508,6 +1507,7 @@ export const Message = memo(MessageComponent, (prevProps, nextProps) => {
     prevProps.index === nextProps.index &&
     prevProps.isStreaming === nextProps.isStreaming &&
     prevProps.expandedThinking.includes(prevProps.index) === nextProps.expandedThinking.includes(nextProps.index) &&
-    prevProps.onBranchOff === nextProps.onBranchOff
+    prevProps.onBranchOff === nextProps.onBranchOff &&
+    prevProps.modelMode === nextProps.modelMode
   );
 }); 

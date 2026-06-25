@@ -180,7 +180,7 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
             </div>
           </div>
         </div>
-        <pre className="p-3 sm:p-4 overflow-x-auto custom-scrollbar text-xs sm:text-[13px] font-mono whitespace-pre bg-zinc-50 dark:bg-zinc-950/20" style={{ margin: 0, fontFamily: "'Space Mono', monospace" }}>
+        <pre className="p-3 sm:p-4 overflow-x-auto custom-scrollbar text-xs sm:text-[13px] font-mono whitespace-pre bg-zinc-50 dark:bg-zinc-950/20" style={{ margin: 0, fontFamily: "var(--font-space-mono), monospace" }}>
           <code>{codeString}</code>
         </pre>
       </div>
@@ -191,7 +191,7 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
     <div className="relative group rounded-xl sm:rounded-2xl overflow-hidden mb-6 border border-zinc-200/90 dark:border-zinc-800/90 shadow-sm bg-background">
       <div className="h-9 sm:h-10 flex items-center justify-between px-3 sm:px-4 bg-zinc-100/90 dark:bg-zinc-900/90 border-b border-zinc-200/65 dark:border-zinc-800/65">
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="h-full flex items-center gap-1.5 text-xs text-muted-foreground font-['Space_Mono'] lowercase font-semibold">
+          <div className="h-full flex items-center gap-1.5 text-xs text-muted-foreground font-mono lowercase font-semibold">
             {languageLogo && (
               <img 
                 src={languageLogo} 
@@ -202,7 +202,7 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
             )}
             {language}
           </div>
-          <div className="text-[10px] text-cyan-600 dark:text-cyan-400 font-['Space_Mono'] hidden sm:flex items-center gap-1.5">
+          <div className="text-[10px] text-cyan-600 dark:text-cyan-400 font-mono hidden sm:flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
             Use code with caution
           </div>
@@ -277,7 +277,7 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
             ...style,
             margin: 0,
             background: isDark ? 'hsl(230, 12%, 11%)' : 'hsl(210, 15%, 96.5%)',
-            fontFamily: "'Space Mono', monospace",
+            fontFamily: "var(--font-space-mono), monospace",
           }}>
             {tokens.map((line, i) => (
               <div key={i} {...getLineProps({ line })}>

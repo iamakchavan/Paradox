@@ -281,17 +281,15 @@ const TimelineStepItem = memo(({ step, idx, totalSteps, isExpanded, isStepLoadin
                   >
                     <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">Reading</span>
                     <div className="flex flex-wrap gap-1.5">
-                      <motion.a
-                        whileHover={{ scale: 1.03, translateY: -0.5 }}
-                        transition={{ type: "spring", stiffness: 450, damping: 15 }}
+                      <a
                         href={targetUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium rounded-full bg-secondary/80 dark:bg-secondary/40 hover:bg-secondary border border-border/50 transition-all duration-200 select-none shadow-xs cursor-pointer no-underline align-middle text-foreground/75 hover:text-foreground"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium rounded-full bg-secondary/80 dark:bg-secondary/40 hover:bg-secondary border border-border/50 hover:scale-[1.03] hover:-translate-y-0.5 transition-all duration-200 select-none shadow-xs cursor-pointer no-underline align-middle text-foreground/75 hover:text-foreground"
                       >
-                        <FaviconImage domain={hostname} className="w-3 h-3 rounded-sm shrink-0" />
+                        <FaviconImage domain={hostname} className="w-3.5 h-3.5 rounded-sm shrink-0" />
                         <span className="truncate max-w-[120px] font-mono">{hostname}</span>
-                      </motion.a>
+                      </a>
                     </div>
                   </motion.div>
                 );
@@ -316,19 +314,17 @@ const TimelineStepItem = memo(({ step, idx, totalSteps, isExpanded, isStepLoadin
                         domain = res.url;
                       }
                       return (
-                        <motion.a
-                          whileHover={{ scale: 1.03, translateY: -0.5 }}
-                          transition={{ type: "spring", stiffness: 450, damping: 15 }}
+                        <a
                           key={rIdx}
                           href={res.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           title={res.title || domain}
-                          className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium rounded-full bg-secondary/80 dark:bg-secondary/40 hover:bg-secondary border border-border/50 transition-all duration-200 select-none shadow-xs cursor-pointer no-underline align-middle text-foreground/75 hover:text-foreground"
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium rounded-full bg-secondary/80 dark:bg-secondary/40 hover:bg-secondary border border-border/50 hover:scale-[1.03] hover:-translate-y-0.5 transition-all duration-200 select-none shadow-xs cursor-pointer no-underline align-middle text-foreground/75 hover:text-foreground"
                         >
-                          <FaviconImage domain={domain} className="w-3 h-3 rounded-sm shrink-0" />
+                          <FaviconImage domain={domain} className="w-3.5 h-3.5 rounded-sm shrink-0" />
                           <span className="truncate max-w-[120px]">{domain}</span>
-                        </motion.a>
+                        </a>
                       );
                     })}
                   </div>

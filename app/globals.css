@@ -116,7 +116,7 @@
 
 .prose code:not(pre code) {
   @apply bg-secondary/50 px-1.5 py-0.5 rounded text-sm;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-jetbrains-mono), monospace;
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
@@ -806,4 +806,11 @@ html, body {
    via the Visual Viewport API when the keyboard is open. */
 :root {
   --visual-viewport-offset-bottom: 0px;
+}
+
+/* GPU acceleration layers for performance-heavy backdrop blurs */
+.liquid-glass-dock,
+.progressive-blur {
+  will-change: backdrop-filter, transform;
+  isolation: isolate;
 }
