@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 
-export default function manifest(): MetadataRoute.Manifest {
+export default function manifest(): any {
   return {
     name: 'Paradox',
     short_name: 'Paradox',
@@ -9,6 +9,10 @@ export default function manifest(): MetadataRoute.Manifest {
     display: 'standalone',
     background_color: '#f7f5ef',
     theme_color: '#f7f5ef',
+    color_scheme_dark: {
+      theme_color: '#09090b',
+      background_color: '#09090b',
+    },
     icons: [
       {
         src: '/chaticons/paradox-192.png',

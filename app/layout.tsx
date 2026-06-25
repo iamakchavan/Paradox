@@ -24,10 +24,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   interactiveWidget: 'resizes-content',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f7f5ef' },
-    { media: '(prefers-color-scheme: dark)',  color: '#09090b' },
-  ],
 };
 
 export const metadata: Metadata = {
