@@ -948,52 +948,54 @@ export default function ChatPage() {
                 </p>
               </div>
 
-              <motion.div
-                layoutId="chat-input-container"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  y: { type: "spring", stiffness: 350, damping: 32, delay: 0.4 },
-                  opacity: { duration: 0.35, delay: 0.4 },
-                  layout: { type: "spring", stiffness: 350, damping: 32 }
-                }}
-                className={cn(
-                  "w-full max-w-2xl mx-auto",
-                  "fixed bottom-6 left-0 right-0 z-20 px-6 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0"
-                )}
-                style={
-                  keyboardOffset > 0
-                    ? { bottom: `${keyboardOffset + 8}px` }
-                    : undefined
-                }
-              >
-                <ChatInput
-                  handleSubmit={handleSubmit}
-                  onStop={handleStop}
-                  isLoading={isLoading}
-                  geminiApiKey={apiKeys.geminiApiKey}
-                  mistralApiKey={apiKeys.mistralApiKey}
-                  perplexityApiKey={apiKeys.perplexityApiKey}
-                  zenmuxApiKey={apiKeys.zenmuxApiKey}
-                  nvidiaApiKey={apiKeys.nvidiaApiKey}
-                  inceptionApiKey={apiKeys.inceptionApiKey}
-                  selectedModelId={selectedModelId}
-                  onSelectModel={setSelectedModelId}
-                  handleFileUpload={handleFileUpload}
-                  selectedImages={selectedImages}
-                  removeImage={removeImage}
-                  selectedPDFs={selectedPDFs}
-                  removePDF={removePDF}
-                  error={error}
-                  isInitialView={true}
-                  shouldFocus={true}
-                  searchEnabled={searchEnabled}
-                  onToggleSearch={handleToggleSearch}
-                  researchEnabled={researchEnabled}
-                  onToggleResearch={handleToggleResearch}
-                  onExpandedChange={setIsInputExpanded}
-                />
-              </motion.div>
+              {!isSettingsActive && (
+                <motion.div
+                  layoutId="chat-input-container"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    y: { type: "spring", stiffness: 350, damping: 32, delay: 0.4 },
+                    opacity: { duration: 0.35, delay: 0.4 },
+                    layout: { type: "spring", stiffness: 350, damping: 32 }
+                  }}
+                  className={cn(
+                    "w-full max-w-2xl mx-auto",
+                    "fixed bottom-6 left-0 right-0 z-20 px-6 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0"
+                  )}
+                  style={
+                    keyboardOffset > 0
+                      ? { bottom: `${keyboardOffset + 8}px` }
+                      : undefined
+                  }
+                >
+                  <ChatInput
+                    handleSubmit={handleSubmit}
+                    onStop={handleStop}
+                    isLoading={isLoading}
+                    geminiApiKey={apiKeys.geminiApiKey}
+                    mistralApiKey={apiKeys.mistralApiKey}
+                    perplexityApiKey={apiKeys.perplexityApiKey}
+                    zenmuxApiKey={apiKeys.zenmuxApiKey}
+                    nvidiaApiKey={apiKeys.nvidiaApiKey}
+                    inceptionApiKey={apiKeys.inceptionApiKey}
+                    selectedModelId={selectedModelId}
+                    onSelectModel={setSelectedModelId}
+                    handleFileUpload={handleFileUpload}
+                    selectedImages={selectedImages}
+                    removeImage={removeImage}
+                    selectedPDFs={selectedPDFs}
+                    removePDF={removePDF}
+                    error={error}
+                    isInitialView={true}
+                    shouldFocus={true}
+                    searchEnabled={searchEnabled}
+                    onToggleSearch={handleToggleSearch}
+                    researchEnabled={researchEnabled}
+                    onToggleResearch={handleToggleResearch}
+                    onExpandedChange={setIsInputExpanded}
+                  />
+                </motion.div>
+              )}
             </div>
           ) : (
             <div ref={contentRef} className="space-y-6 pb-64 sm:pb-72">
