@@ -103,6 +103,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
       type: 'success',
       mode: 'capsule'
     });
+    onClose();
   };
 
   const AppearanceIcon = ({ className }: { className?: string }) => (
@@ -217,105 +218,110 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
           })}
         </div>
 
-        {/* Settings details - Scrollable content block */}
-        <div className="flex-1 min-h-0 overflow-y-auto pr-1 no-scrollbar space-y-6">
-          <div className="space-y-6">
-            {activeTab === 'ai-providers' && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 tracking-wider uppercase px-0.5">
-                  <Key className="w-3.5 h-3.5 text-muted-foreground/70" />
-                  <span>AI API Provider Keys</span>
+        {/* Settings details - Column container */}
+        <div className="flex-1 flex flex-col min-h-0 relative">
+          {/* Scrollable content block */}
+          <div className="flex-1 overflow-y-auto pr-1 no-scrollbar">
+            <div className="space-y-6 pb-28 md:pb-6">
+              {activeTab === 'ai-providers' && (
+                <div className="space-y-4 animate-fade-in">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 tracking-wider uppercase px-0.5">
+                    <Key className="w-3.5 h-3.5 text-muted-foreground/70" />
+                    <span>AI API Provider Keys</span>
+                  </div>
+                  {renderKeyInputList(AI_FIELDS)}
                 </div>
-                {renderKeyInputList(AI_FIELDS)}
-              </div>
-            )}
+              )}
 
-            {activeTab === 'search-scraping' && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 tracking-wider uppercase px-0.5">
-                  <Database className="w-3.5 h-3.5 text-muted-foreground/70" />
-                  <span>Search Extensions & Scrapers</span>
+              {activeTab === 'search-scraping' && (
+                <div className="space-y-4 animate-fade-in">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 tracking-wider uppercase px-0.5">
+                    <Database className="w-3.5 h-3.5 text-muted-foreground/70" />
+                    <span>Search Extensions & Scrapers</span>
+                  </div>
+                  {renderKeyInputList(SEARCH_FIELDS)}
                 </div>
-                {renderKeyInputList(SEARCH_FIELDS)}
-              </div>
-            )}
+              )}
 
-            {activeTab === 'appearance' && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 tracking-wider uppercase px-0.5">
-                  <AppearanceIcon className="w-3.5 h-3.5 text-muted-foreground/70" />
-                  <span>Choose Theme Preference</span>
+              {activeTab === 'appearance' && (
+                <div className="space-y-4 animate-fade-in">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 tracking-wider uppercase px-0.5">
+                    <AppearanceIcon className="w-3.5 h-3.5 text-muted-foreground/70" />
+                    <span>Choose Theme Preference</span>
+                  </div>
+
+                  {/* Minimal Segmented Theme Switcher */}
+                  <div className="bg-zinc-200/55 dark:bg-zinc-900/70 p-[3px] rounded-xl flex w-full h-11 gap-0 max-w-md border border-zinc-200/30 dark:border-zinc-800/40">
+                    {/* Light Mode */}
+                    <button
+                      type="button"
+                      onClick={() => setTheme('light')}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
+                        theme === 'light'
+                          ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
+                          : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
+                      )}
+                    >
+                      <Sun className="h-4 w-4 text-amber-500" />
+                      <span>Light</span>
+                    </button>
+
+                    {/* Dark Mode */}
+                    <button
+                      type="button"
+                      onClick={() => setTheme('dark')}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
+                        theme === 'dark'
+                          ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
+                          : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
+                      )}
+                    >
+                      <Moon className="h-4 w-4 text-violet-400" />
+                      <span>Dark</span>
+                    </button>
+
+                    {/* System Default */}
+                    <button
+                      type="button"
+                      onClick={() => setTheme('system')}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
+                        theme === 'system'
+                          ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
+                          : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
+                      )}
+                    >
+                      <Monitor className="h-4 w-4 text-cyan-500" />
+                      <span>System</span>
+                    </button>
+                  </div>
                 </div>
-
-                {/* Minimal Segmented Theme Switcher */}
-                <div className="bg-zinc-200/55 dark:bg-zinc-900/70 p-[3px] rounded-xl flex w-full h-11 gap-0 max-w-md border border-zinc-200/30 dark:border-zinc-800/40">
-                  {/* Light Mode */}
-                  <button
-                    type="button"
-                    onClick={() => setTheme('light')}
-                    className={cn(
-                      "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
-                      theme === 'light'
-                        ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
-                        : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
-                    )}
-                  >
-                    <Sun className="h-4 w-4 text-amber-500" />
-                    <span>Light</span>
-                  </button>
-
-                  {/* Dark Mode */}
-                  <button
-                    type="button"
-                    onClick={() => setTheme('dark')}
-                    className={cn(
-                      "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
-                      theme === 'dark'
-                        ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
-                        : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
-                    )}
-                  >
-                    <Moon className="h-4 w-4 text-violet-400" />
-                    <span>Dark</span>
-                  </button>
-
-                  {/* System Default */}
-                  <button
-                    type="button"
-                    onClick={() => setTheme('system')}
-                    className={cn(
-                      "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
-                      theme === 'system'
-                        ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
-                        : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
-                    )}
-                  >
-                    <Monitor className="h-4 w-4 text-cyan-500" />
-                    <span>System</span>
-                  </button>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
-          {/* Action footer inside content pane - sticky / clean bottom block */}
-          {activeTab !== 'appearance' && (
-            <div className="pt-4 border-t border-zinc-200/40 dark:border-zinc-800/40 flex items-center justify-end gap-3 flex-wrap">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="h-10 px-5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800/80 transition-all"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSave}
-                className="h-10 px-6 rounded-xl text-xs font-semibold bg-cyan-600 hover:bg-cyan-700 text-white dark:bg-cyan-800/90 dark:hover:bg-cyan-700/90 shadow-sm transition-all"
-              >
-                Save Changes
-              </Button>
-            </div>
-          )}
+          {/* Action footer inside content pane - floating pill style on mobile, clean footer on desktop */}
+          <div className={cn(
+            "flex items-center gap-2 transition-all duration-200",
+            "fixed bottom-6 left-1/2 -translate-x-1/2 rounded-full liquid-glass-dock p-1.5 z-30 shadow-lg justify-center",
+            "md:relative md:bottom-auto md:left-auto md:translate-x-0 md:rounded-none md:border-0 md:shadow-none md:bg-transparent md:backdrop-blur-none md:p-0 md:justify-end md:pt-4 md:border-t md:border-zinc-200/40 md:dark:border-zinc-800/40 md:gap-3"
+          )}>
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="h-9 px-4 rounded-full text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800/80 transition-all active:scale-[0.97]"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSave}
+              className="h-9 px-5 rounded-full text-xs font-semibold bg-cyan-600 hover:bg-cyan-700 text-white dark:bg-cyan-800/90 dark:hover:bg-cyan-700/90 shadow-sm transition-all active:scale-[0.97]"
+            >
+              Save Changes
+            </Button>
+          </div>
         </div>
       </div>
     </div>
