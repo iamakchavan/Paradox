@@ -18,15 +18,18 @@ export function SearchPageContent({ onSelectChat }: SearchPageContentProps) {
 
   const results = useLiveQuery(
     async () => {
+      const arr = await db.chats.toArray();
+      const sorted = arr.sort((a, b) => {
+        const timeA = a.updatedAt ?? a.createdAt;
+        const timeB = b.updatedAt ?? b.createdAt;
+        return timeB - timeA;
+      });
+
       if (!query.trim()) {
-        return db.chats.orderBy('updatedAt').reverse().limit(25).toArray();
+        return sorted.slice(0, 25);
       }
       const q = query.toLowerCase();
-      return db.chats
-        .orderBy('updatedAt')
-        .reverse()
-        .filter(chat => chat.title.toLowerCase().includes(q))
-        .toArray();
+      return sorted.filter(chat => chat.title.toLowerCase().includes(q));
     },
     [query]
   );

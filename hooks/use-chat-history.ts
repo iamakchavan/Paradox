@@ -29,7 +29,7 @@ export const deleteChatSession = async (chatId: string): Promise<void> => {
 };
 
 export const renameChatSession = async (chatId: string, newTitle: string): Promise<void> => {
-  await db.chats.update(chatId, { title: newTitle });
+  await db.chats.update(chatId, { title: newTitle, updatedAt: Date.now() });
 };
 
 export const addMessageToSession = async (
@@ -141,6 +141,9 @@ export const branchOffChat = async (
 
   // Clamp to valid bounds
   const lastIndex = Math.min(branchAtIndex, sourceMessages.length - 1);
+
+  // Fetch the parent chat session details
+  const sourceChat = await db.chats.get(sourceChatId);
 
   // 2. Create the branched session
   const now = Date.now();

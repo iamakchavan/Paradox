@@ -55,16 +55,24 @@ export function Sidebar({
 
   const chats = useLiveQuery(
     () => {
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        return db.chats
-          .orderBy('updatedAt')
-          .reverse()
-          .filter(chat => chat.title.toLowerCase().includes(query))
-          .limit(visibleLimit)
-          .toArray();
-      }
-      return db.chats.orderBy('updatedAt').reverse().limit(visibleLimit).toArray();
+      return db.chats
+        .toArray()
+        .then(arr => {
+          // Sort in-memory: fallback to createdAt if updatedAt is missing
+          const sorted = arr.sort((a, b) => {
+            const timeA = a.updatedAt ?? a.createdAt;
+            const timeB = b.updatedAt ?? b.createdAt;
+            return timeB - timeA;
+          });
+
+          if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            return sorted
+              .filter(chat => chat.title.toLowerCase().includes(query))
+              .slice(0, visibleLimit);
+          }
+          return sorted.slice(0, visibleLimit);
+        });
     },
     [visibleLimit, searchQuery]
   );

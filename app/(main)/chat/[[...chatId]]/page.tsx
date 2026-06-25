@@ -471,7 +471,7 @@ export default function ChatPage() {
         const { title } = await response.json();
         if (title && title.trim()) {
           const cleanTitle = title.trim().replace(/^["']|["']$/g, '');
-          await db.chats.update(chatId, { title: cleanTitle });
+          await db.chats.update(chatId, { title: cleanTitle, updatedAt: Date.now() });
         }
       }
     } catch (err) {
@@ -646,6 +646,7 @@ export default function ChatPage() {
       }
 
       await updateMessageContentById(assistantMessageId, finalContent);
+      await db.chats.update(chatId, { updatedAt: Date.now() });
 
       // Append completed message to messages state and clear streamingMessage
       const finalAssistantMsg: Message = {
@@ -683,6 +684,7 @@ export default function ChatPage() {
         setStreamingMessage(null);
 
         await updateMessageContentById(assistantMessageId, accumulatedContent);
+        await db.chats.update(chatId, { updatedAt: Date.now() });
       } else {
         // If no content was accumulated, clean up the assistant placeholder
         setStreamingMessage(null);
