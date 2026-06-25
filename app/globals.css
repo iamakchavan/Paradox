@@ -768,15 +768,15 @@
   background: linear-gradient(
     to top,
     hsl(var(--background)) 0%,
-    hsl(var(--background) / 0.95) 15%,
-    hsl(var(--background) / 0.8) 35%,
-    hsl(var(--background) / 0.2) 65%,
+    hsl(var(--background) / 0.96) 20%,
+    hsl(var(--background) / 0.85) 40%,
+    hsl(var(--background) / 0.3) 70%,
     transparent 100%
   );
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  mask-image: linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.85) 25%, rgba(0, 0, 0, 0.25) 55%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.85) 25%, rgba(0, 0, 0, 0.25) 55%, transparent 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  mask-image: linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
 }
 
 /* Viewport-based rendering containments for infinite chat scalability */
@@ -821,13 +821,13 @@ html, body {
   background: linear-gradient(
     to bottom,
     hsl(var(--background)) 0%,
-    hsl(var(--background) / 0.95) 15%,
-    hsl(var(--background) / 0.8) 35%,
-    hsl(var(--background) / 0.2) 65%,
+    hsl(var(--background) / 0.96) 20%,
+    hsl(var(--background) / 0.85) 40%,
+    hsl(var(--background) / 0.3) 70%,
     transparent 100%
   );
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.85) 25%, rgba(0, 0, 0, 0.25) 55%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.85) 25%, rgba(0, 0, 0, 0.25) 55%, transparent 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
 }
