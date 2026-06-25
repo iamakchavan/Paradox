@@ -4,6 +4,7 @@ export interface ChatSession {
   id: string; // uuid or unique string
   title: string;
   createdAt: number;
+  updatedAt?: number;
   modelMode: string;
   branchedFromChatId?: string; // parent chat ID if this chat was branched
   branchedAtIndex?: number;    // message index at which the branch was created
@@ -91,6 +92,22 @@ export class ParadoxDatabase extends Dexie {
       favicons: 'domain, createdAt',
       library: '++id, chatId, type, createdAt',
       libraryPayloads: 'fileId',
+    });
+    this.version(6).stores({
+      chats: 'id, title, createdAt, updatedAt, modelMode, branchedFromChatId',
+      messages: '++id, chatId, role, createdAt',
+      favicons: 'domain, createdAt',
+      library: '++id, chatId, type, createdAt',
+      libraryPayloads: 'fileId',
+    }).upgrade(async tx => {
+      // Initialize updatedAt value for existing chats to their createdAt value
+      const chats = await tx.table('chats').toArray();
+      for (const chat of chats) {
+        if (!chat.updatedAt) {
+          chat.updatedAt = chat.createdAt;
+          await tx.table('chats').put(chat);
+        }
+      }
     });
   }
 }

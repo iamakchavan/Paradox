@@ -58,12 +58,13 @@ export function Sidebar({
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         return db.chats
-          .filter(chat => chat.title.toLowerCase().includes(query))
+          .orderBy('updatedAt')
           .reverse()
+          .filter(chat => chat.title.toLowerCase().includes(query))
           .limit(visibleLimit)
           .toArray();
       }
-      return db.chats.orderBy('createdAt').reverse().limit(visibleLimit).toArray();
+      return db.chats.orderBy('updatedAt').reverse().limit(visibleLimit).toArray();
     },
     [visibleLimit, searchQuery]
   );
@@ -120,7 +121,7 @@ export function Sidebar({
     startOfYesterday.setDate(startOfYesterday.getDate() - 1);
 
     chats.forEach(chat => {
-      const chatTime = chat.createdAt;
+      const chatTime = chat.updatedAt || chat.createdAt;
       if (chatTime >= startOfToday.getTime()) {
         groups.Today.push(chat);
       } else if (chatTime >= startOfYesterday.getTime()) {

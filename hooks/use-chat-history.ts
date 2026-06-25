@@ -2,10 +2,12 @@ import { db, type ChatSession, type ChatMessage } from '@/lib/db';
 
 export const createChatSession = async (modelMode: string, title: string = 'New Chat'): Promise<string> => {
   const id = crypto.randomUUID();
+  const now = Date.now();
   const session: ChatSession = {
     id,
     title,
-    createdAt: Date.now(),
+    createdAt: now,
+    updatedAt: now,
     modelMode,
   };
   await db.chats.add(session);
@@ -47,6 +49,9 @@ export const addMessageToSession = async (
   };
   const messageId = await db.messages.add(msg);
   const numericId = messageId as number;
+
+  // Simultaneously update the chat session's updatedAt timestamp
+  await db.chats.update(chatId, { updatedAt: Date.now() });
 
   // Simultaneously sync sent files to the library for index-lookup
   if (role === 'user') {
@@ -138,11 +143,12 @@ export const branchOffChat = async (
   const lastIndex = Math.min(branchAtIndex, sourceMessages.length - 1);
 
   // 2. Create the branched session
-  const sourceChat = await db.chats.get(sourceChatId);
+  const now = Date.now();
   const session: ChatSession = {
     id: newChatId,
     title: sourceChat?.title ? `${sourceChat.title} (branch)` : 'Branch',
-    createdAt: Date.now(),
+    createdAt: now,
+    updatedAt: now,
     modelMode,
     branchedFromChatId: sourceChatId,
     branchedAtIndex: lastIndex,

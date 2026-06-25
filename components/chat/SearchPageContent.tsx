@@ -19,12 +19,13 @@ export function SearchPageContent({ onSelectChat }: SearchPageContentProps) {
   const results = useLiveQuery(
     async () => {
       if (!query.trim()) {
-        return db.chats.orderBy('createdAt').reverse().limit(25).toArray();
+        return db.chats.orderBy('updatedAt').reverse().limit(25).toArray();
       }
       const q = query.toLowerCase();
       return db.chats
-        .filter(chat => chat.title.toLowerCase().includes(q))
+        .orderBy('updatedAt')
         .reverse()
+        .filter(chat => chat.title.toLowerCase().includes(q))
         .toArray();
     },
     [query]
@@ -93,7 +94,7 @@ export function SearchPageContent({ onSelectChat }: SearchPageContentProps) {
                   {chat.title}
                 </span>
                 <span className="text-[11.5px] text-muted-foreground/60 flex-shrink-0 font-sans">
-                  {formatDate(chat.createdAt)}
+                  {formatDate(chat.updatedAt || chat.createdAt)}
                 </span>
               </div>
             ))}
