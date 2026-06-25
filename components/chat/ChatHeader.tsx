@@ -132,9 +132,17 @@ export function ChatHeader({
                   }}
                   isSettingsActive={isSettingsActive}
                   onSettingsClick={() => {
-                    setIsSettingsActive(!isSettingsActive);
+                    const nextVal = !isSettingsActive;
                     setIsSearchActive(false);
                     setIsMobileSidebarOpen(false);
+                    if (nextVal) {
+                      // Delay opening settings so the sidebar drawer slide-out completes smoothly first
+                      setTimeout(() => {
+                        setIsSettingsActive(true);
+                      }, 250);
+                    } else {
+                      setIsSettingsActive(false);
+                    }
                   }}
                   className="w-full h-full border-r-0 bg-transparent backdrop-blur-none"
                 />
