@@ -34,7 +34,7 @@ import { MessageAnimator } from '@/components/chat/MessageAnimator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { useVisualViewport } from '@/hooks/use-visual-viewport';
-import { AppleSpinner } from '@/components/ui/AppleSpinner';
+import { Spinner } from '@/components/ui/Spinner';
 
 const SettingsPageContent = dynamic(
   () => import('@/components/chat/SettingsPageContent').then(mod => mod.SettingsPageContent),
@@ -1086,7 +1086,7 @@ export default function ChatPage() {
             <div ref={contentRef} className="space-y-6 pb-64 sm:pb-72">
                {isLoadingHistory && (
                  <div className="w-full flex justify-center py-2" id="history-loading-spinner">
-                   <AppleSpinner />
+                   <Spinner />
                  </div>
                )}
                <div ref={sentinelRef} className="h-4 w-full" />

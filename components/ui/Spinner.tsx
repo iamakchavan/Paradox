@@ -1,11 +1,11 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-interface AppleSpinnerProps {
+interface SpinnerProps {
   className?: string;
 }
 
-export function AppleSpinner({ className }: AppleSpinnerProps) {
+export function Spinner({ className }: SpinnerProps) {
   return (
     <div className="relative flex items-center justify-center">
       <svg
@@ -16,19 +16,19 @@ export function AppleSpinner({ className }: AppleSpinnerProps) {
         style={{ width: '1.25rem', height: '1.25rem' }}
       >
         <style>{`
-          @keyframes ios-spinner {
+          @keyframes system-spinner {
             0% { opacity: 1; }
             100% { opacity: 0.15; }
           }
-          .ios-bar {
-            animation: ios-spinner 0.8s linear infinite;
+          .spinner-bar {
+            animation: system-spinner 0.8s linear infinite;
             fill: currentColor;
           }
         `}</style>
         {[...Array(8)].map((_, i) => (
           <rect
             key={i}
-            className="ios-bar"
+            className="spinner-bar"
             x="11"
             y="3"
             width="2"
