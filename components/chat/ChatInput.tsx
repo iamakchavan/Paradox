@@ -141,6 +141,7 @@ export const ChatInput = ({
   const dragCounterRef = useRef(0);
   const [isMobile, setIsMobile] = useState(false);
   const [showAttachDropdown, setShowAttachDropdown] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleAttachClick = (type: 'image' | 'pdf' | 'all') => {
     if (fileInputRef.current) {
@@ -156,13 +157,16 @@ export const ChatInput = ({
     setShowAttachDropdown(false);
   };
 
-  const isExpanded = useMemo(() => {
+  const isExpandedVisual = useMemo(() => {
+    if (isMobile) {
+      return (isFocused && localMessage.length > 0) || selectedImages.length > 0 || selectedPDFs.length > 0 || searchEnabled || researchEnabled;
+    }
     return localMessage.length > 0 || selectedImages.length > 0 || selectedPDFs.length > 0 || searchEnabled || researchEnabled;
-  }, [localMessage, selectedImages, selectedPDFs, searchEnabled, researchEnabled]);
+  }, [isMobile, isFocused, localMessage.length, selectedImages.length, selectedPDFs.length, searchEnabled, researchEnabled]);
 
   useEffect(() => {
-    onExpandedChange?.(isExpanded);
-  }, [isExpanded, onExpandedChange]);
+    onExpandedChange?.(isExpandedVisual);
+  }, [isExpandedVisual, onExpandedChange]);
 
   const [isCapsuleHovered, setIsCapsuleHovered] = useState(false);
   const [isResearchCapsuleHovered, setIsResearchCapsuleHovered] = useState(false);
@@ -172,7 +176,7 @@ export const ChatInput = ({
     if (textarea) {
       const baseHeight = 24;
       textarea.style.height = `${baseHeight}px`;
-      if (isExpanded) {
+      if (isExpandedVisual) {
         const newHeight = Math.min(textarea.scrollHeight, isInitialView ? 240 : 160);
         textarea.style.height = `${newHeight}px`;
       }
@@ -181,7 +185,33 @@ export const ChatInput = ({
 
   useEffect(() => {
     adjustTextareaHeight();
-  }, [localMessage, isExpanded]);
+    
+    // Ensure scroll position is at the start when collapsed to show the beginning words of the text
+    const textarea = textareaRef.current;
+    if (textarea) {
+      if (!isExpandedVisual) {
+        textarea.scrollTop = 0;
+        textarea.scrollLeft = 0;
+        const t1 = setTimeout(() => {
+          textarea.scrollTop = 0;
+          textarea.scrollLeft = 0;
+        }, 50);
+        const t2 = setTimeout(() => {
+          textarea.scrollTop = 0;
+          textarea.scrollLeft = 0;
+        }, 150);
+        const t3 = setTimeout(() => {
+          textarea.scrollTop = 0;
+          textarea.scrollLeft = 0;
+        }, 350);
+        return () => {
+          clearTimeout(t1);
+          clearTimeout(t2);
+          clearTimeout(t3);
+        };
+      }
+    }
+  }, [localMessage, isExpandedVisual]);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -438,11 +468,9 @@ export const ChatInput = ({
 
             {/* Input container - Transitions between Single Line Bar and Expanded Box */}
             <motion.div
-              layout
-              transition={{ type: "spring", stiffness: 350, damping: 32 }}
               className={cn(
-                "w-full relative flex transition-colors duration-300",
-                isExpanded
+                "w-full relative flex transition-all duration-300 ease-out",
+                isExpandedVisual
                   ? "flex-col pt-2.5 pb-[46px] px-4"
                   : "flex-row items-center gap-2 pl-1.5 pr-1.5 py-1.5 min-h-[48px]"
               )}
@@ -451,7 +479,7 @@ export const ChatInput = ({
               {/* Left Actions (Plus Button & Search Capsule) */}
               <div className={cn(
                 "flex items-center gap-2 shrink-0",
-                isExpanded ? "absolute bottom-2 left-2.5 h-9" : ""
+                isExpandedVisual ? "absolute bottom-2 left-2.5 h-9" : ""
               )}>
                 {/* Attachment Button */}
                 <div className="relative attach-dropdown-container flex items-center justify-center shrink-0 h-9 w-9">
@@ -640,7 +668,7 @@ export const ChatInput = ({
               {/* Text Area */}
               <div className={cn(
                 "min-w-0 self-center",
-                isExpanded ? "w-full" : "flex-1"
+                isExpandedVisual ? "w-full" : "flex-1"
               )}>
                 <textarea
                   ref={textareaRef}
@@ -652,6 +680,45 @@ export const ChatInput = ({
                       setMessage(e.target.value);
                     }
                     adjustTextareaHeight();
+                  }}
+                  onFocus={() => {
+                    setIsFocused(true);
+                    // Move selection caret to the end of the text and scroll to bottom
+                    const textarea = textareaRef.current;
+                    if (textarea) {
+                      const len = textarea.value.length;
+                      setTimeout(() => {
+                        textarea.setSelectionRange(len, len);
+                        textarea.scrollTop = textarea.scrollHeight;
+                      }, 50);
+                      setTimeout(() => {
+                        textarea.setSelectionRange(len, len);
+                        textarea.scrollTop = textarea.scrollHeight;
+                      }, 150);
+                      setTimeout(() => {
+                        textarea.setSelectionRange(len, len);
+                        textarea.scrollTop = textarea.scrollHeight;
+                      }, 350);
+                    }
+                  }}
+                  onBlur={() => {
+                    setIsFocused(false);
+                    // Ensure the text scroll is centered at the start to show the starting words when minimized
+                    const textarea = textareaRef.current;
+                    if (textarea) {
+                      setTimeout(() => {
+                        textarea.scrollTop = 0;
+                        textarea.scrollLeft = 0;
+                      }, 50);
+                      setTimeout(() => {
+                        textarea.scrollTop = 0;
+                        textarea.scrollLeft = 0;
+                      }, 150);
+                      setTimeout(() => {
+                        textarea.scrollTop = 0;
+                        textarea.scrollLeft = 0;
+                      }, 350);
+                    }
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -692,10 +759,12 @@ export const ChatInput = ({
                   className={cn(
                     "w-full placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-foreground",
                     "selection:bg-primary/20 selection:text-foreground",
-                    "scrollbar-none overflow-y-auto block px-1 text-base",
-                    isExpanded ? "py-1 leading-relaxed" : "py-0.5 leading-5"
+                    "scrollbar-none block px-1 text-base",
+                    isExpandedVisual 
+                      ? "py-1 leading-relaxed overflow-y-auto whitespace-pre-wrap" 
+                      : "py-0.5 leading-5 overflow-hidden whitespace-nowrap"
                   )}
-                  style={{ height: isExpanded ? undefined : '24px' }}
+                  style={{ height: isExpandedVisual ? undefined : '24px' }}
                   disabled={isInputDisabled}
                 />
               </div>
@@ -703,7 +772,7 @@ export const ChatInput = ({
               {/* Action buttons (Right) */}
               <div className={cn(
                 "flex items-center shrink-0",
-                isExpanded
+                isExpandedVisual
                   ? "absolute bottom-2 right-2.5 h-9 gap-1.5 sm:gap-2"
                   : "gap-1.5 sm:gap-2 self-center"
               )}>
