@@ -290,7 +290,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
           {/* Action footer inside content pane - floating pill style on mobile, clean footer on desktop */}
           <div className={cn(
             "flex items-center gap-2 transition-all duration-200",
-            "fixed bottom-6 left-1/2 -translate-x-1/2 rounded-full liquid-glass-dock p-1.5 z-30 shadow-lg justify-center",
+            "fixed bottom-6 left-1/2 -translate-x-1/2 rounded-full max-md:liquid-glass-dock p-1.5 z-30 shadow-lg justify-center",
             "md:relative md:bottom-auto md:left-auto md:translate-x-0 md:rounded-none md:border-0 md:shadow-none md:bg-transparent md:backdrop-blur-none md:p-0 md:justify-end md:pt-4 md:border-t md:border-zinc-200/40 md:dark:border-zinc-800/40 md:gap-3"
           )}>
             <Button

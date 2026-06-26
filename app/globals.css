@@ -727,6 +727,25 @@
     inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
 }
 
+@media (max-width: 767px) {
+  .max-md\:liquid-glass-dock {
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(228, 228, 231, 0.4);
+    @apply backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300;
+    box-shadow: 
+      0 12px 30px rgba(0, 0, 0, 0.03),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.45);
+  }
+
+  .dark .max-md\:liquid-glass-dock {
+    background-color: rgba(10, 10, 12, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 12px 30px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  }
+}
+
 @media (hover: hover) {
   .liquid-glass-dock:hover {
     @apply bg-white/70 border-zinc-300/60;
