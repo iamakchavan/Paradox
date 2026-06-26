@@ -1051,14 +1051,13 @@ export default function ChatPage() {
                     opacity: { duration: 0.25, delay: 0.4 }
                   }}
                   className={cn(
-                    "w-full max-w-2xl mx-auto",
-                    "fixed bottom-6 left-0 right-0 z-20 px-6 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0"
+                    "w-full max-w-2xl mx-auto focus-within:max-w-[720px] px-6 focus-within:px-3 md:focus-within:px-0",
+                    "fixed bottom-6 left-0 right-0 z-20 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0"
                   )}
-                  style={
-                    keyboardOffset > 0
-                      ? { bottom: `${keyboardOffset + 8}px` }
-                      : undefined
-                  }
+                  style={{
+                    transition: 'bottom 300ms cubic-bezier(0.4, 0, 0.2, 1), max-width 300ms cubic-bezier(0.4, 0, 0.2, 1), padding 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    bottom: keyboardOffset > 0 ? `${keyboardOffset + 8}px` : undefined
+                  }}
                 >
                   <ChatInput
                     handleSubmit={handleSubmit}
@@ -1150,15 +1149,16 @@ export default function ChatPage() {
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           className={cn(
             "fixed z-20 bottom-6 sm:bottom-12",
-            mounted && "transition-[left,bottom] duration-300 ease-in-out",
             "max-w-2xl right-0 mx-auto px-6 sm:px-4",
             isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]",
+            "focus-within:max-w-[720px] focus-within:px-3 sm:focus-within:px-2 md:focus-within:px-4"
           )}
-          style={
-            keyboardOffset > 0
-              ? { bottom: `${keyboardOffset + 8}px` }
-              : undefined
-          }
+          style={{
+            transition: mounted
+              ? 'left 300ms cubic-bezier(0.4, 0, 0.2, 1), bottom 300ms cubic-bezier(0.4, 0, 0.2, 1), max-width 300ms cubic-bezier(0.4, 0, 0.2, 1), padding 300ms cubic-bezier(0.4, 0, 0.2, 1)'
+              : 'max-width 300ms cubic-bezier(0.4, 0, 0.2, 1), padding 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+            bottom: keyboardOffset > 0 ? `${keyboardOffset + 8}px` : undefined
+          }}
         >
           <div className="absolute left-1/2 -translate-x-1/2 -top-11 z-20">
             <button

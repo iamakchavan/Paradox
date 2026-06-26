@@ -463,26 +463,42 @@ export const ChatInput = ({
                     accept=".png,.jpg,.jpeg,.gif,.webp,.pdf"
                     multiple
                   />
-                  <TooltipProvider delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <motion.div whileTap={{ scale: 0.88 }} className="h-9 w-9 shrink-0">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-full hover:bg-secondary/80 flex items-center justify-center shrink-0 cursor-pointer"
-                            onClick={() => setShowAttachDropdown(!showAttachDropdown)}
-                            disabled={isLoading}
-                          >
-                            <Plus className="w-5 h-5 text-foreground/60 transition-transform duration-200" style={{ transform: showAttachDropdown ? 'rotate(45deg)' : 'none' }} />
-                          </Button>
-                        </motion.div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
-                        <p>Attach files</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  {isMobile ? (
+                    <motion.div whileTap={{ scale: 0.88 }} className="h-9 w-9 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 rounded-full hover:bg-secondary/80 flex items-center justify-center shrink-0 cursor-pointer"
+                        onClick={() => setShowAttachDropdown(!showAttachDropdown)}
+                        onMouseDown={(e) => e.preventDefault()}
+                        disabled={isLoading}
+                      >
+                        <Plus className="w-5 h-5 text-foreground/60 transition-transform duration-200" style={{ transform: showAttachDropdown ? 'rotate(45deg)' : 'none' }} />
+                      </Button>
+                    </motion.div>
+                  ) : (
+                    <TooltipProvider delayDuration={300}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <motion.div whileTap={{ scale: 0.88 }} className="h-9 w-9 shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-9 w-9 rounded-full hover:bg-secondary/80 flex items-center justify-center shrink-0 cursor-pointer"
+                              onClick={() => setShowAttachDropdown(!showAttachDropdown)}
+                              onMouseDown={(e) => e.preventDefault()}
+                              disabled={isLoading}
+                            >
+                              <Plus className="w-5 h-5 text-foreground/60 transition-transform duration-200" style={{ transform: showAttachDropdown ? 'rotate(45deg)' : 'none' }} />
+                            </Button>
+                          </motion.div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" align="start" sideOffset={5} className="z-[60]">
+                          <p>Attach files</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
 
                   <AnimatePresence>
                     {showAttachDropdown && (
@@ -497,6 +513,7 @@ export const ChatInput = ({
                           <button
                             type="button"
                             onClick={() => handleAttachClick('image')}
+                            onMouseDown={(e) => e.preventDefault()}
                             className="group w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium hover:bg-secondary/60 text-foreground/80 hover:text-foreground transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
                           >
                             <Image className="w-4 h-4 text-foreground/60 group-hover:text-foreground/80 transition-colors duration-150 shrink-0" strokeWidth={1.5} />
@@ -505,6 +522,7 @@ export const ChatInput = ({
                           <button
                             type="button"
                             onClick={() => handleAttachClick('pdf')}
+                            onMouseDown={(e) => e.preventDefault()}
                             className="group w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium hover:bg-secondary/60 text-foreground/80 hover:text-foreground transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
                           >
                             <FileText className="w-4 h-4 text-foreground/60 group-hover:text-foreground/80 transition-colors duration-150 shrink-0" strokeWidth={1.5} />
@@ -520,6 +538,7 @@ export const ChatInput = ({
                             onToggleSearch?.(!searchEnabled);
                             setShowAttachDropdown(false);
                           }}
+                          onMouseDown={(e) => e.preventDefault()}
                           className={cn(
                             "group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer whitespace-nowrap",
                             searchEnabled
@@ -542,6 +561,7 @@ export const ChatInput = ({
                             onToggleResearch?.(!researchEnabled);
                             setShowAttachDropdown(false);
                           }}
+                          onMouseDown={(e) => e.preventDefault()}
                           className={cn(
                             "group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer whitespace-nowrap",
                             researchEnabled
@@ -570,6 +590,7 @@ export const ChatInput = ({
                       setIsCapsuleHovered(false);
                       onToggleSearch?.(false);
                     }}
+                    onMouseDown={(e) => e.preventDefault()}
                     onMouseEnter={() => setIsCapsuleHovered(true)}
                     onMouseLeave={() => setIsCapsuleHovered(false)}
                     className={cn(
@@ -596,6 +617,7 @@ export const ChatInput = ({
                       setIsResearchCapsuleHovered(false);
                       onToggleResearch?.(false);
                     }}
+                    onMouseDown={(e) => e.preventDefault()}
                     onMouseEnter={() => setIsResearchCapsuleHovered(true)}
                     onMouseLeave={() => setIsResearchCapsuleHovered(false)}
                     className={cn(
@@ -670,7 +692,7 @@ export const ChatInput = ({
                   className={cn(
                     "w-full placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-foreground",
                     "selection:bg-primary/20 selection:text-foreground",
-                    "scrollbar-none overflow-y-auto block px-1 text-sm",
+                    "scrollbar-none overflow-y-auto block px-1 text-base",
                     isExpanded ? "py-1 leading-relaxed" : "py-0.5 leading-5"
                   )}
                   style={{ height: isExpanded ? undefined : '24px' }}
@@ -692,6 +714,7 @@ export const ChatInput = ({
                 {isLoading ? (
                   <Button
                     onClick={onStop}
+                    onMouseDown={(e) => e.preventDefault()}
                     size="icon"
                     className="h-9 w-9 rounded-full bg-foreground text-background hover:bg-foreground/95 hover:scale-105 active:scale-[0.93] active:duration-75 shrink-0 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out"
                     title="Stop streaming"
@@ -702,6 +725,7 @@ export const ChatInput = ({
                   <Button
                     onClick={handleLocalSubmit}
                     disabled={isSendDisabled}
+                    onMouseDown={(e) => e.preventDefault()}
                     size="icon"
                     className={cn(
                       "h-9 w-9 rounded-full shrink-0 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out",

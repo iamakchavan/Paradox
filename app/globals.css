@@ -101,6 +101,7 @@
 
 /* Markdown Styles */
 .prose {
+  @apply text-zinc-700 dark:text-zinc-400;
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
@@ -123,6 +124,13 @@
 }
 
 .prose strong {
+  @apply text-zinc-800 dark:text-zinc-300 font-medium;
+}
+
+/* Headings and numbered list titles are styled cyan */
+.prose :is(h1, h2, h3, h4, h5, h6),
+.prose :is(h1, h2, h3, h4, h5, h6) strong,
+.prose ol > li strong:first-of-type {
   @apply text-cyan-600 dark:text-cyan-400 font-semibold;
 }
 
@@ -151,7 +159,8 @@
 }
 
 .prose th strong {
-  @apply text-cyan-700 dark:text-cyan-300 font-semibold;
+  @apply font-semibold;
+  color: inherit;
 }
 
 .prose td {
@@ -178,8 +187,8 @@
   }
 }
 
-.prose h1, .prose h2, .prose h3, .prose h4 {
-  @apply text-foreground mt-6 mb-4;
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  @apply mt-6 mb-4;
   font-family: 'Sentient', serif !important;
 }
 
