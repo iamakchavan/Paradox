@@ -360,9 +360,7 @@ export const ChatInput = ({
         </div>
       )}
 
-      <motion.div
-        layout
-        transition={{ type: "spring", stiffness: 350, damping: 32 }}
+      <div
         className={cn(
           "w-full flex flex-col bg-background/95 backdrop-blur-md border rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.15)] group transition-[border-color,background-color,box-shadow] duration-300 relative",
           isDragging
@@ -811,7 +809,7 @@ export const ChatInput = ({
             </motion.div>
           </>
         )}
-      </motion.div>
+      </div>
       {isInitialView && isInputDisabled && (
         <p className="text-center text-muted-foreground mt-4 text-xs sm:text-sm">
           Please set your API keys in the settings to start chatting
