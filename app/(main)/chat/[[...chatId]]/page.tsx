@@ -96,12 +96,19 @@ export default function ChatPage() {
   const { keys: apiKeys, updateKey } = useApiKeys();
   const [loadedLimit, setLoadedLimit] = useState(20);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(() => !!chatIdParam);
-  const isLoadingHistoryRef = useRef(!!chatIdParam);
-  const setIsLoadingHistoryState = (val: boolean) => {
+  const [isLoadingHistory, setIsLoadingHistory] = useState(() => {
+    if (!chatIdParam) return false;
+    if (typeof window !== 'undefined') {
+      const pendingStreamKey = `pending-stream-${chatIdParam}`;
+      if (sessionStorage.getItem(pendingStreamKey)) return false;
+    }
+    return true;
+  });
+  const isLoadingHistoryRef = useRef(isLoadingHistory);
+  const setIsLoadingHistoryState = useCallback((val: boolean) => {
     setIsLoadingHistory(val);
     isLoadingHistoryRef.current = val;
-  };
+  }, []);
   const hasScrolledToBottomRef = useRef<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [searchEnabled, setSearchEnabled] = useState(false);
@@ -135,6 +142,11 @@ export default function ChatPage() {
     }
   };
   const [isLoading, setIsLoading] = useState(false);
+  const isLoadingRef = useRef(false);
+  const setIsLoadingState = useCallback((val: boolean) => {
+    setIsLoading(val);
+    isLoadingRef.current = val;
+  }, []);
   const [error, setError] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [streamingMessage, setStreamingMessage] = useState<Message | null>(null);
@@ -142,7 +154,7 @@ export default function ChatPage() {
   conversationRef.current = messages;
 
   const displayMessages = streamingMessage
-    ? [...messages.filter(m => m.id !== streamingMessage.id), streamingMessage]
+    ? [...messages.filter(m => m.id === undefined || String(m.id) !== String(streamingMessage.id)), streamingMessage]
     : messages;
 
   const scrollHeightRef = useRef<number | null>(null);
@@ -163,12 +175,9 @@ export default function ChatPage() {
   const isNewChatCreatedRef = useRef(false);
   const isInitialScrollSnapRef = useRef(false);
   const isUserScrolledUpRef = useRef(false);
-  // Mirror of isLoading as a ref so ResizeObserver can read it without dep-array re-registration
-  const isLoadingRef = useRef(false);
   const initialMessageCountRef = useRef(0);
 
-  // Ref to latest apiKeys so runStreaming / triggerTitleGeneration don't
-  // need apiKeys in their useCallback deps (apiKeys object changes every render)
+  // Ref to latest apiKeys so runStreaming / triggerTitleGeneration don't need apiKeys in their useCallback deps
   const apiKeysRef = useRef(apiKeys);
   useEffect(() => { apiKeysRef.current = apiKeys; }, [apiKeys]);
 
@@ -176,16 +185,13 @@ export default function ChatPage() {
   const selectedModelIdRef = useRef(selectedModelId);
   useEffect(() => { selectedModelIdRef.current = selectedModelId; }, [selectedModelId]);
 
-  // Keep isLoadingRef in sync with isLoading so closures always have latest value without causing re-renders
-  useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
-
   const handleStop = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    setIsLoading(false);
-  }, []);
+    setIsLoadingState(false);
+  }, [setIsLoadingState]);
 
   const [isInitialView, setIsInitialView] = useState(() => !chatIdParam);
   const { setTheme, theme } = useTheme();
@@ -205,10 +211,18 @@ export default function ChatPage() {
 
   // Reset limit on session change
   useEffect(() => {
+    handleStop();
     setLoadedLimit(20);
     setMessages([]);
     setIsInitialView(!chatIdParam);
-    setIsLoadingHistoryState(!!chatIdParam);
+    
+    // Check if there is a pending stream in sessionStorage to bypass history-loading spinner
+    const pendingStreamKey = chatIdParam ? `pending-stream-${chatIdParam}` : '';
+    const hasPendingStream = pendingStreamKey && typeof window !== 'undefined'
+      ? !!sessionStorage.getItem(pendingStreamKey)
+      : false;
+
+    setIsLoadingHistoryState(!!chatIdParam && !hasPendingStream);
     showScrollButtonRef.current = false;
     setShowScrollButton(false);
     isInitialScrollSnapRef.current = true;
@@ -216,7 +230,7 @@ export default function ChatPage() {
       isInitialScrollSnapRef.current = false;
     }, 800);
     return () => clearTimeout(timer);
-  }, [chatIdParam]);
+  }, [chatIdParam, handleStop, setIsLoadingHistoryState]);
 
   // Check if there are more messages in the database
   useEffect(() => {
@@ -233,7 +247,7 @@ export default function ChatPage() {
 
   // Infinite Scroll IntersectionObserver for loading older messages
   useEffect(() => {
-    if (isInitialView || messages.length === 0 || !hasMore || isLoadingHistory) return;
+    if (isInitialView || messages.length === 0 || !hasMore || isLoadingHistory || isLoading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -314,6 +328,7 @@ export default function ChatPage() {
             .equals(chatIdParam)
             .sortBy('createdAt')
             .then(msgs => {
+              setIsLoadingHistoryState(false);
               if (msgs.length >= 2) {
                 const userMsgWithId = msgs[0];
                 const assistantMsgWithId = msgs[1];
@@ -346,16 +361,26 @@ export default function ChatPage() {
                   runStreaming(chatIdParam, activeModelId, [], userMsg, assistantMsgWithId.id);
                 }
               }
+            })
+            .catch(e => {
+              console.error('Error fetching initial messages:', e);
+              setIsLoadingHistoryState(false);
             });
           return;
         } catch (e) {
           console.error('Failed to parse pending stream data:', e);
+          setIsLoadingHistoryState(false);
         }
       }
 
       // If we just submitted a message on a new chat, bypass DB loading to avoid wiping stream state
       if (isNewChatCreatedRef.current) {
         isNewChatCreatedRef.current = false;
+        setIsLoadingHistoryState(false);
+        return;
+      }
+
+      if (isLoadingRef.current) {
         return;
       }
 
@@ -525,13 +550,13 @@ export default function ChatPage() {
 
     if (!key) {
       setError(`Please set your API key in the settings to use ${activeModel.name}`);
-      setIsLoading(false);
+      setIsLoadingState(false);
       return;
     }
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
-    setIsLoading(true);
+    setIsLoadingState(true);
     setError(null);
 
     let accumulatedContent = '';
@@ -697,7 +722,7 @@ export default function ChatPage() {
         await db.messages.delete(assistantMessageId);
       }
     } finally {
-      setIsLoading(false);
+      setIsLoadingState(false);
       if (visibilityChangeHandler) { document.removeEventListener('visibilitychange', visibilityChangeHandler); visibilityChangeHandler = null; }
       if (abortControllerRef.current === controller) {
         abortControllerRef.current = null;
@@ -795,7 +820,7 @@ export default function ChatPage() {
       router.push(`/chat/${newChatId}`);
     } else {
       // Existing chat - no page re-mount will occur
-      setIsLoading(true);
+      setIsLoadingState(true);
 
       // Save user message to IndexedDB
       const userMessageId = await addMessageToSession(chatId!, 'user', promptMessage, promptImages, promptPDFs);
