@@ -19,7 +19,7 @@ export interface ChatMessagePayload {
  */
 export function pruneChatHistory(
   conversation: ChatMessagePayload[],
-  maxMessages = 20,
+  maxMessages = 500,
   recentWindow = 4
 ): ChatMessagePayload[] {
   if (!conversation || conversation.length === 0) return [];

@@ -991,18 +991,13 @@ const MessageComponent = ({
   const [hasFinishedThinking, setHasFinishedThinking] = useState(false);
   const thinkingTimerRef = useRef<number>();
 
-  const [isManuallyCollapsed, setIsManuallyCollapsed] = useState(false);
 
   const isThinkingModel = !!(modelMode && (
     modelMode.toLowerCase().includes('glm-5.2') || 
-    modelMode.toLowerCase().includes('pro') || 
+    (modelMode.startsWith('gemini') && modelMode.toLowerCase().includes('pro')) || 
     modelMode.toLowerCase().includes('reasoning') ||
-    modelMode.toLowerCase().includes('deepseek') ||
-    modelMode.toLowerCase().includes('nemotron') ||
     modelMode.toLowerCase().includes('gpt-oss') ||
-    modelMode.toLowerCase().includes('step') ||
-    modelMode.toLowerCase().includes('sarvam') ||
-    modelMode.toLowerCase().includes('gemma-4')
+    (modelMode.toLowerCase().includes('nemotron') && (modelMode.includes('super') || modelMode.includes('ultra')))
   ));
 
   const processThinkingContent = (content: string) => {
@@ -1263,61 +1258,15 @@ const MessageComponent = ({
     );
   }
 
-  const isExpanded = isThinkingActive 
-    ? !isManuallyCollapsed 
-    : expandedThinking.includes(index);
 
   return (
     <div className={cn(
       "px-2 sm:px-4 mb-12 text-foreground message-viewport-contain",
       isStreaming && "streaming-message"
     )}>
-      {isThinkingActive && !thinking ? (
+      {isThinkingActive && (
         <div className="flex items-center gap-2 mb-4">
           <span className="thinking-shine text-sm font-medium">Thinking...</span>
-        </div>
-      ) : (thinking || isThinkingActive) && (
-        <div className="mb-4">
-          <button
-            onClick={() => {
-              if (isThinkingActive) {
-                setIsManuallyCollapsed(prev => !prev);
-              } else {
-                setExpandedThinking((prev: number[]) => 
-                  prev.includes(index) 
-                    ? prev.filter((i: number) => i !== index)
-                    : [...prev, index]
-                );
-              }
-            }}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronDown className={cn(
-              "w-4 h-4 transition-transform",
-              isExpanded ? "rotate-180" : ""
-            )} />
-            {isThinkingActive ? (
-              <span className="thinking-shine">Thinking...</span>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span>Show thinking</span>
-                <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">
-                  {displayThinkingTime.toFixed(1)}s
-                </span>
-              </div>
-            )}
-          </button>
-          {isExpanded && thinking && (
-            <div className="mt-2 pl-4 border-l-2 border-muted text-muted-foreground/80 text-xs tracking-wide thinking-content">
-              <ReactMarkdown 
-                remarkPlugins={[remarkGfm, remarkMath]}
-                rehypePlugins={[rehypeKatex]}
-                className="prose dark:prose-invert max-w-none prose-sm text-xs break-words"
-              >
-                {preprocessLaTeX(thinking)}
-              </ReactMarkdown>
-            </div>
-          )}
         </div>
       )}
       <div className="relative group w-full">

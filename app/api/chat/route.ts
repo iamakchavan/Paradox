@@ -69,38 +69,55 @@ export async function POST(req: Request) {
       perplexityKey: string | null; zenmuxKey: string | null;
       inceptionKey: string | null; nvidiaKey: string | null;
     }): any => {
-      if (config!.provider === 'google') {
-        if (!keys.geminiKey) throw new Error('Google Gemini API key is missing');
-        return createGoogleGenerativeAI({ apiKey: keys.geminiKey })(config!.id);
-      } else if (config!.provider === 'mistral') {
-        if (!keys.mistralKey) throw new Error('Mistral API key is missing');
-        return createMistral({ apiKey: keys.mistralKey })(config!.id);
-      } else if (config!.provider === 'perplexity') {
-        if (!keys.perplexityKey) throw new Error('Perplexity API key is missing');
-        return createOpenAI({
-          apiKey: keys.perplexityKey,
-          baseURL: 'https://api.perplexity.ai',
-        }).chat(config!.id);
-      } else if (config!.provider === 'zenmux') {
-        if (!keys.zenmuxKey) throw new Error('ZenMux API key is missing');
-        return createOpenAI({
-          apiKey: keys.zenmuxKey,
-          baseURL: 'https://zenmux.ai/api/v1',
-        }).chat(config!.id);
-      } else if (config!.provider === 'inception') {
-        if (!keys.inceptionKey) throw new Error('Inception Labs API key is missing');
-        return createOpenAI({
-          apiKey: keys.inceptionKey,
-          baseURL: 'https://api.inceptionlabs.ai/v1',
-        }).chat(config!.id);
-      } else if (config!.provider === 'nvidia') {
-        if (!keys.nvidiaKey) throw new Error('NVIDIA API key is missing');
-        return createOpenAI({
-          apiKey: keys.nvidiaKey,
-          baseURL: 'https://integrate.api.nvidia.com/v1',
-        }).chat(config!.id);
+      const baseModel = (() => {
+        if (config!.provider === 'google') {
+          if (!keys.geminiKey) throw new Error('Google Gemini API key is missing');
+          return createGoogleGenerativeAI({ apiKey: keys.geminiKey })(config!.id);
+        } else if (config!.provider === 'mistral') {
+          if (!keys.mistralKey) throw new Error('Mistral API key is missing');
+          return createMistral({ apiKey: keys.mistralKey })(config!.id);
+        } else if (config!.provider === 'perplexity') {
+          if (!keys.perplexityKey) throw new Error('Perplexity API key is missing');
+          return createOpenAI({
+            apiKey: keys.perplexityKey,
+            baseURL: 'https://api.perplexity.ai',
+          }).chat(config!.id);
+        } else if (config!.provider === 'zenmux') {
+          if (!keys.zenmuxKey) throw new Error('ZenMux API key is missing');
+          return createOpenAI({
+            apiKey: keys.zenmuxKey,
+            baseURL: 'https://zenmux.ai/api/v1',
+          }).chat(config!.id);
+        } else if (config!.provider === 'inception') {
+          if (!keys.inceptionKey) throw new Error('Inception Labs API key is missing');
+          return createOpenAI({
+            apiKey: keys.inceptionKey,
+            baseURL: 'https://api.inceptionlabs.ai/v1',
+          }).chat(config!.id);
+        } else if (config!.provider === 'nvidia') {
+          if (!keys.nvidiaKey) throw new Error('NVIDIA API key is missing');
+          return createOpenAI({
+            apiKey: keys.nvidiaKey,
+            baseURL: 'https://integrate.api.nvidia.com/v1',
+          }).chat(config!.id);
+        }
+        throw new Error(`Unsupported provider: ${config!.provider}`);
+      })();
+
+      // Wrap OpenAI-compatible models with reasoning extraction middleware to cleanly parse thoughts
+      if (
+        config!.provider === 'nvidia' ||
+        config!.provider === 'zenmux' ||
+        config!.provider === 'inception' ||
+        config!.provider === 'perplexity'
+      ) {
+        return wrapLanguageModel({
+          model: baseModel,
+          middleware: extractReasoningMiddleware({ tagName: 'think' }),
+        });
       }
-      throw new Error(`Unsupported provider: ${config!.provider}`);
+
+      return baseModel;
     };
 
     const providerKeys = { geminiKey, mistralKey, perplexityKey, zenmuxKey, inceptionKey, nvidiaKey };
@@ -244,11 +261,11 @@ IMPORTANT RULES:
       };
     }
 
-    if (modelConfig.provider === 'zenmux') {
-      const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning');
+    if (modelConfig.provider === 'zenmux' || modelConfig.provider === 'nvidia') {
+      const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron');
       providerOptions.openai = {
         parallelToolCalls: false,
-        ...(isReasoningModel ? {
+        ...(isReasoningModel && modelConfig.provider === 'zenmux' ? {
           reasoningEffort: 'medium',
           reasoningSummary: 'detailed',
         } : {}),

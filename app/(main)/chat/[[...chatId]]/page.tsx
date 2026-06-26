@@ -563,7 +563,7 @@ export default function ChatPage() {
     let visibilityChangeHandler: (() => void) | null = null;
 
     try {
-      const historyPruned = pruneChatHistory(history, 20, 4);
+      const historyPruned = pruneChatHistory(history, 500, 4);
       const payload = [
         ...historyPruned,
         {
@@ -1076,8 +1076,10 @@ export default function ChatPage() {
                     opacity: { duration: 0.25, delay: 0.4 }
                   }}
                   className={cn(
-                    "w-full max-w-2xl mx-auto focus-within:max-w-[720px] px-6 focus-within:px-3 md:focus-within:px-0",
-                    "fixed bottom-6 left-0 right-0 z-20 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0"
+                    "w-full mx-auto fixed bottom-6 left-0 right-0 z-20 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0",
+                    isInputExpanded
+                      ? "max-w-[720px] px-3 sm:px-2 md:px-0"
+                      : "max-w-2xl focus-within:max-w-[720px] px-6 focus-within:px-3 md:focus-within:px-0"
                   )}
                   style={{
                     transition: 'bottom 300ms cubic-bezier(0.4, 0, 0.2, 1), max-width 300ms cubic-bezier(0.4, 0, 0.2, 1), padding 300ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1173,10 +1175,11 @@ export default function ChatPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           className={cn(
-            "fixed z-20 bottom-6 sm:bottom-12",
-            "max-w-2xl right-0 mx-auto px-6 sm:px-4",
+            "fixed z-20 bottom-6 sm:bottom-12 right-0 mx-auto",
             isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]",
-            "focus-within:max-w-[720px] focus-within:px-3 sm:focus-within:px-2 md:focus-within:px-4"
+            isInputExpanded
+              ? "max-w-[720px] px-3 sm:px-2 md:px-4"
+              : "max-w-2xl px-6 sm:px-4 focus-within:max-w-[720px] focus-within:px-3 sm:focus-within:px-2 md:focus-within:px-4"
           )}
           style={{
             transition: mounted
