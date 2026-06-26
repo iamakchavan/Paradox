@@ -1,16 +1,16 @@
 "use client";
-
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import {
-  Key, Eye, EyeOff, ArrowLeft,
-  Sun, Moon, ExternalLink, Database, Cpu
+  Key, Eye, EyeOff,
+  Sun, Moon, ExternalLink, Database, Cpu, ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { ApiKeys } from '@/hooks/use-api-keys';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SettingsPageContentProps {
   apiKeys: ApiKeys;
@@ -47,6 +47,19 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { showToast } = useCustomToast();
   const [activeTab, setActiveTab] = useState<TabType>('appearance');
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [localDark, setLocalDark] = useState(resolvedTheme === 'dark');
+
+  useEffect(() => {
+    setLocalDark(resolvedTheme === 'dark');
+  }, [resolvedTheme]);
+
+  const handleThemeToggle = (newVal: boolean) => {
+    setLocalDark(newVal);
+    setTimeout(() => {
+      setTheme(newVal ? 'dark' : 'light');
+    }, 150);
+  };
 
   // Consolidate API keys into single state
   const [inputKeys, setInputKeys] = useState<Record<keyof ApiKeys, string>>({
@@ -142,54 +155,103 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
   };
 
   const renderKeyInputList = (fields: KeyField[]) => (
-    <div className="bg-zinc-100/40 dark:bg-zinc-950/40 border border-zinc-200/40 dark:border-zinc-800/40 rounded-2xl p-5 space-y-4 shadow-sm">
-      {fields.map((field) => (
-        <div key={field.key} className="space-y-1.5">
-          <div className="flex justify-between items-center">
-            <label htmlFor={field.key} className="text-xs font-semibold text-foreground/85 flex items-center gap-2">
-              {getLogoElement(field.key, resolvedTheme === 'dark')}
-              <span>{field.label}</span>
-            </label>
-            {field.href && (
-              <a
-                href={field.href}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-0.5"
-              >
-                <span>Get key</span>
-                <ExternalLink className="w-2.5 h-2.5" />
-              </a>
-            )}
-          </div>
-          <div className="relative">
-            <Input
-              id={field.key}
-              type={visibleFields[field.key] ? 'text' : 'password'}
-              value={inputKeys[field.key]}
-              onChange={(e) => setInputKeys(prev => ({ ...prev, [field.key]: e.target.value }))}
-              placeholder={field.placeholder}
-              className="h-10 rounded-xl border-zinc-200/70 dark:border-zinc-800/70 text-xs bg-background/50 pr-10 focus-visible:ring-zinc-300 dark:focus-visible:ring-zinc-700"
-            />
+    <div className="bg-zinc-50/40 dark:bg-zinc-950/45 border border-zinc-200/40 dark:border-zinc-850 rounded-2xl divide-y divide-zinc-250/20 dark:divide-zinc-800/45 overflow-hidden shadow-sm">
+      {fields.map((field) => {
+        const isExpanded = expandedKey === field.key;
+        const hasValue = (inputKeys[field.key] || '').trim().length > 0;
+        
+        return (
+          <div key={field.key} className="bg-zinc-100/5 dark:bg-zinc-950/5 hover:bg-zinc-100/10 dark:hover:bg-zinc-950/10 transition-colors duration-150">
+            {/* Header row (always visible) */}
             <button
               type="button"
-              onClick={() => toggleVisibility(field.key)}
-              className="absolute right-3.5 top-3 text-muted-foreground/60 hover:text-foreground transition-colors"
+              onClick={() => setExpandedKey(isExpanded ? null : field.key)}
+              className="w-full flex items-center justify-between p-4 sm:p-5 text-left select-none cursor-pointer"
             >
-              {visibleFields[field.key] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              <div className="flex items-center gap-3">
+                {getLogoElement(field.key, resolvedTheme === 'dark')}
+                <span className="text-xs sm:text-sm font-semibold text-foreground/90">{field.label.replace(' Key', '')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {hasValue ? (
+                  <span className="text-[10px] sm:text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">Configured</span>
+                ) : (
+                  <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground/60 bg-zinc-550/10 px-2.5 py-0.5 rounded-full border border-border/30">Not Set</span>
+                )}
+                <ChevronDown className={cn("w-4 h-4 text-muted-foreground/60 transition-transform duration-250", isExpanded && "transform rotate-180")} />
+              </div>
             </button>
+            
+            {/* Expandable input panel */}
+            <AnimatePresence initial={false}>
+              {isExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-4 pb-4 sm:px-5 sm:pb-5 space-y-2.5">
+                    <div className="relative flex items-center bg-zinc-200/20 dark:bg-zinc-900/35 rounded-xl border border-zinc-250/30 dark:border-zinc-800/40 px-3.5 focus-within:border-zinc-350 dark:focus-within:border-zinc-700 focus-within:ring-2 focus-within:ring-zinc-400/5 transition-all duration-200">
+                      <Input
+                        id={field.key}
+                        type={visibleFields[field.key] ? 'text' : 'password'}
+                        value={inputKeys[field.key]}
+                        onChange={(e) => setInputKeys(prev => ({ ...prev, [field.key]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        className="h-10 border-0 bg-transparent px-0 text-xs text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 w-full placeholder:text-muted-foreground/45"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => toggleVisibility(field.key)}
+                        className="ml-2 text-muted-foreground/60 hover:text-foreground transition-colors shrink-0"
+                      >
+                        {visibleFields[field.key] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    {field.href && (
+                      <div className="flex justify-end px-0.5">
+                        <a
+                          href={field.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-0.5"
+                        >
+                          <span>Get {field.label.replace(' API Key', '')} key</span>
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 flex flex-col h-full select-none">
       {/* Title Header */}
-      <div className="flex-shrink-0 mb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4">
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Settings</h1>
-        <p className="text-xs text-muted-foreground/80 mt-1">Configure your API credentials, search extensions, and theme preferences.</p>
+      <div className="flex-shrink-0 mb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4 flex items-center justify-between">
+        <div className="flex items-center">
+          <div>
+            <h1 className="text-lg sm:text-2xl font-semibold tracking-tight text-foreground">Settings</h1>
+            <p className="text-xs text-muted-foreground/80 mt-1 hidden md:block">Configure your API credentials, search credentials, and theme preferences.</p>
+          </div>
+        </div>
+
+        {/* Mobile-only Save Button */}
+        <button
+          type="button"
+          onClick={handleSave}
+          className="md:hidden px-4 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full text-xs font-semibold shadow-sm transition-all active:scale-[0.97]"
+        >
+          Save
+        </button>
       </div>
 
       {/* Main double pane container */}
@@ -222,7 +284,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
         <div className="flex-1 flex flex-col min-h-0 relative">
           {/* Scrollable content block */}
           <div className="flex-1 overflow-y-auto pr-1 no-scrollbar">
-            <div className="space-y-6 pb-28 md:pb-6">
+            <div className="space-y-6 pb-6">
               {activeTab === 'ai-providers' && (
                 <div className="space-y-4 animate-fade-in">
                   <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 tracking-wider uppercase px-0.5">
@@ -247,52 +309,45 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
                 <div className="space-y-4 animate-fade-in">
                   <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 tracking-wider uppercase px-0.5">
                     <AppearanceIcon className="w-3.5 h-3.5 text-muted-foreground/70" />
-                    <span>Choose Theme Preference</span>
+                    <span>Choose Appearance Preferences</span>
                   </div>
 
-                  {/* Minimal Segmented Theme Switcher */}
-                  <div className="bg-zinc-200/55 dark:bg-zinc-900/70 p-[3px] rounded-xl flex w-full h-11 gap-0 max-w-md border border-zinc-200/30 dark:border-zinc-800/40">
-                    {/* Light Mode */}
-                    <button
-                      type="button"
-                      onClick={() => setTheme('light')}
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
-                        theme === 'light'
-                          ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
-                          : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
-                      )}
-                    >
-                      <Sun className="h-4 w-4 text-amber-500" />
-                      <span>Light</span>
-                    </button>
-
-                    {/* Dark Mode */}
-                    <button
-                      type="button"
-                      onClick={() => setTheme('dark')}
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-2 rounded-lg text-xs font-medium transition-all duration-205 active:scale-[0.97]",
-                        theme === 'dark'
-                          ? "bg-white dark:bg-zinc-800 shadow-[0_1px_3px_rgba(0,0,0,0.12)] text-foreground font-semibold"
-                          : "text-zinc-550 dark:text-zinc-400 hover:text-foreground"
-                      )}
-                    >
-                      <Moon className="h-4 w-4 text-violet-400" />
-                      <span>Dark</span>
-                    </button>
+                  <div className="bg-zinc-50/40 dark:bg-zinc-950/45 border border-zinc-200/40 dark:border-zinc-850 rounded-2xl divide-y divide-zinc-250/20 dark:divide-zinc-800/45 overflow-hidden shadow-sm">
+                    {/* Dark Mode Toggle Row */}
+                    <div className="flex items-center justify-between p-4 sm:p-5 bg-zinc-100/5 dark:bg-zinc-950/5 hover:bg-zinc-100/10 dark:hover:bg-zinc-950/10 transition-colors duration-150">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-zinc-200/40 dark:bg-zinc-900/60 text-muted-foreground/80 rounded-xl">
+                          <Moon className="h-4.5 w-4.5 text-violet-500 dark:text-violet-400" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-xs sm:text-sm font-semibold text-foreground">Dark Mode</span>
+                          <span className="text-[10px] text-muted-foreground mt-0.5">Reduce eye strain in low-light environments</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleThemeToggle(!localDark)}
+                        className={cn(
+                          "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                          localDark ? "bg-cyan-600 dark:bg-cyan-500" : "bg-zinc-250 dark:bg-zinc-800"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                            localDark ? "translate-x-5" : "translate-x-0"
+                          )}
+                        />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Action footer inside content pane - floating pill style on mobile, clean footer on desktop */}
-          <div className={cn(
-            "flex items-center gap-2 transition-all duration-200",
-            "fixed bottom-6 left-1/2 -translate-x-1/2 rounded-full max-md:liquid-glass-dock p-1.5 z-30 shadow-lg justify-center",
-            "md:relative md:bottom-auto md:left-auto md:translate-x-0 md:rounded-none md:border-0 md:shadow-none md:bg-transparent md:backdrop-blur-none md:p-0 md:justify-end md:pt-4 md:border-t md:border-zinc-200/40 md:dark:border-zinc-800/40 md:gap-3"
-          )}>
+          {/* Action footer inside content pane - hidden on mobile (Save/Back are top-aligned), clean footer on desktop */}
+          <div className="hidden md:flex items-center gap-3 relative bottom-auto left-auto translate-x-0 rounded-none border-0 shadow-none bg-transparent backdrop-blur-none p-0 justify-end pt-4 border-t border-zinc-200/40 dark:border-zinc-800/40">
             <Button
               variant="outline"
               onClick={onClose}
