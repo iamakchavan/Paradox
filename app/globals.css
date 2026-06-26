@@ -65,6 +65,30 @@
   * {
     @apply border-border;
   }
+  
+  /* Smooth global theme transitions for primary elements */
+  body, 
+  div, 
+  header, 
+  footer, 
+  nav, 
+  a, 
+  button, 
+  input, 
+  textarea, 
+  span, 
+  p, 
+  h1, 
+  h2, 
+  h3, 
+  h4, 
+  h5, 
+  h6 {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, box-shadow;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   body {
     @apply bg-background text-foreground;
   }
