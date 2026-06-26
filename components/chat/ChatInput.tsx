@@ -470,7 +470,7 @@ export const ChatInput = ({
                 "w-full relative flex transition-all duration-300 ease-out",
                 isExpandedVisual
                   ? "flex-col pt-2.5 pb-[46px] px-4"
-                  : "flex-row items-center gap-2 pl-1.5 pr-1.5 py-1.5 min-h-[48px]"
+                  : "flex-row items-center gap-1 pl-1.5 pr-1.5 py-1.5 min-h-[48px]"
               )}
             >
 
@@ -757,10 +757,10 @@ export const ChatInput = ({
                   className={cn(
                     "w-full placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0 resize-none border-0 bg-transparent text-foreground",
                     "selection:bg-primary/20 selection:text-foreground",
-                    "scrollbar-none block px-1 text-base",
+                    "scrollbar-none block text-base",
                     isExpandedVisual 
-                      ? "py-1 leading-relaxed overflow-y-auto whitespace-pre-wrap" 
-                      : "py-0.5 leading-5 overflow-hidden whitespace-nowrap"
+                      ? "py-1 leading-relaxed overflow-y-auto whitespace-pre-wrap px-1" 
+                      : "py-0.5 leading-5 overflow-hidden whitespace-nowrap pl-0 pr-0.5"
                   )}
                   style={{ height: isExpandedVisual ? undefined : '24px' }}
                   disabled={isInputDisabled}
