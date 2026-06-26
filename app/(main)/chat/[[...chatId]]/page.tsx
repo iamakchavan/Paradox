@@ -96,8 +96,8 @@ export default function ChatPage() {
   const { keys: apiKeys, updateKey } = useApiKeys();
   const [loadedLimit, setLoadedLimit] = useState(20);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-  const isLoadingHistoryRef = useRef(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(() => !!chatIdParam);
+  const isLoadingHistoryRef = useRef(!!chatIdParam);
   const setIsLoadingHistoryState = (val: boolean) => {
     setIsLoadingHistory(val);
     isLoadingHistoryRef.current = val;
@@ -172,6 +172,10 @@ export default function ChatPage() {
   const apiKeysRef = useRef(apiKeys);
   useEffect(() => { apiKeysRef.current = apiKeys; }, [apiKeys]);
 
+  // Ref to latest selectedModelId so callbacks don't need to rebuild when it changes
+  const selectedModelIdRef = useRef(selectedModelId);
+  useEffect(() => { selectedModelIdRef.current = selectedModelId; }, [selectedModelId]);
+
   // Keep isLoadingRef in sync with isLoading so closures always have latest value without causing re-renders
   useEffect(() => { isLoadingRef.current = isLoading; }, [isLoading]);
 
@@ -183,7 +187,7 @@ export default function ChatPage() {
     setIsLoading(false);
   }, []);
 
-  const [isInitialView, setIsInitialView] = useState(true);
+  const [isInitialView, setIsInitialView] = useState(() => !chatIdParam);
   const { setTheme, theme } = useTheme();
   const [expandedThinking, setExpandedThinking] = useState<number[]>([]);
   const [processingPDF, setProcessingPDF] = useState(false);
@@ -202,7 +206,9 @@ export default function ChatPage() {
   // Reset limit on session change
   useEffect(() => {
     setLoadedLimit(20);
-    setIsLoadingHistoryState(false);
+    setMessages([]);
+    setIsInitialView(!chatIdParam);
+    setIsLoadingHistoryState(!!chatIdParam);
     showScrollButtonRef.current = false;
     setShowScrollButton(false);
     isInitialScrollSnapRef.current = true;
@@ -826,17 +832,16 @@ export default function ChatPage() {
     }
   };
 
-  // Branch off a conversation at a given assistant message index
   const handleBranchOff = useCallback(async (messageIndex: number) => {
     if (!chatIdParam) return;
 
     try {
-      const newChatId = await branchOffChat(chatIdParam, messageIndex, selectedModelId);
+      const newChatId = await branchOffChat(chatIdParam, messageIndex, selectedModelIdRef.current);
 
       // Find the first user message from the branched conversation for title generation
       const firstUserMsg = conversationRef.current.find(m => m.role === 'user');
       if (firstUserMsg) {
-        triggerTitleGeneration(newChatId, firstUserMsg.content, selectedModelId);
+        triggerTitleGeneration(newChatId, firstUserMsg.content, selectedModelIdRef.current);
       }
 
       showToast({
@@ -854,7 +859,7 @@ export default function ChatPage() {
         type: 'error',
       });
     }
-  }, [chatIdParam, selectedModelId, triggerTitleGeneration, router, showToast]);
+  }, [chatIdParam, triggerTitleGeneration, router, showToast]);
 
   // Handle scroll button visibility and manual scroll tracking
   // NOTE: deliberately NOT in conversation deps — that caused setState loop on every token
@@ -1004,12 +1009,14 @@ export default function ChatPage() {
                 {isSettingsActive && (
                   <motion.div
                     key="settings-panel"
-                    initial={{ x: "100%", opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: "100%", opacity: 0 }}
-                    transition={{ type: "spring", damping: 28, stiffness: 240 }}
+                    initial={{ x: "100%" }}
+                    animate={{ x: 0 }}
+                    exit={{ x: "100%" }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    style={{ willChange: 'transform' }}
                     className={cn(
-                      "fixed top-0 bottom-0 right-0 bg-background z-20 flex flex-col overflow-hidden transition-[left] duration-300",
+                      "fixed top-0 bottom-0 right-0 bg-background z-20 flex flex-col overflow-hidden",
+                      mounted && "transition-[left] duration-300 ease-in-out",
                       isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]"
                     )}
                   >
@@ -1037,13 +1044,11 @@ export default function ChatPage() {
 
               {!isSettingsActive && (
                 <motion.div
-                  layoutId="chat-input-container"
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
-                    y: { type: "spring", stiffness: 350, damping: 32, delay: 0.4 },
-                    opacity: { duration: 0.35, delay: 0.4 },
-                    layout: { type: "spring", stiffness: 350, damping: 32 }
+                    y: { duration: 0.25, ease: [0.16, 1, 0.3, 1], delay: 0.4 },
+                    opacity: { duration: 0.25, delay: 0.4 }
                   }}
                   className={cn(
                     "w-full max-w-2xl mx-auto",
@@ -1140,11 +1145,12 @@ export default function ChatPage() {
       {/* Input Area - Only show when not in initial view and search is not active */}
       {!isInitialView && !isSearchActive && !isSettingsActive && (
         <motion.div
-          layoutId="chat-input-container"
-          transition={{ type: "spring", stiffness: 350, damping: 32 }}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           className={cn(
             "fixed z-20 bottom-6 sm:bottom-12",
-            mounted && "transition-[left,bottom] duration-300",
+            mounted && "transition-[left,bottom] duration-300 ease-in-out",
             "max-w-2xl right-0 mx-auto px-6 sm:px-4",
             isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]",
           )}

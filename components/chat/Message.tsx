@@ -1506,6 +1506,6 @@ export const Message = memo(MessageComponent, (prevProps, nextProps) => {
     prevProps.isStreaming === nextProps.isStreaming &&
     prevProps.expandedThinking.includes(prevProps.index) === nextProps.expandedThinking.includes(nextProps.index) &&
     prevProps.onBranchOff === nextProps.onBranchOff &&
-    prevProps.modelMode === nextProps.modelMode
+    (nextProps.isStreaming ? prevProps.modelMode === nextProps.modelMode : true)
   );
 }); 
