@@ -213,23 +213,23 @@
 
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
   @apply mt-6 mb-4;
-  font-family: 'Sentient', serif !important;
+  font-family: 'Inria Serif', serif !important;
 }
 
 .prose h1 {
-  @apply text-2xl font-bold; /* weight 700 */
+  @apply text-2xl font-normal; /* weight 400 */
 }
 
 .prose h2 {
-  @apply text-xl font-bold; /* weight 700 */
+  @apply text-xl font-normal; /* weight 400 */
 }
 
 .prose h3 {
-  @apply text-lg font-medium; /* weight 500 */
+  @apply text-lg font-normal; /* weight 400 */
 }
 
 .prose h4 {
-  @apply font-medium; /* weight 500 */
+  @apply font-normal; /* weight 400 */
 }
 
 /* Streaming cursor animation */

@@ -19,7 +19,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Switzer', 'sans-serif'],
-        serif: ['Sentient', 'serif'],
+        serif: ['Inria Serif', 'serif'],
         mono: ['var(--font-space-mono)', 'monospace'],
       },
       borderRadius: {

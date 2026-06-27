@@ -341,7 +341,7 @@ const SingleCitationPill = memo(({ item, searchMap }: {
           </div>
           {matchedResult ? (
             <>
-              <h4 className="font-serif font-semibold text-foreground text-[13px] leading-snug line-clamp-2 mt-0.5">
+              <h4 className="font-serif font-normal text-foreground text-[13px] leading-snug line-clamp-2 mt-0.5">
                 {matchedResult.title}
               </h4>
               <p className="text-muted-foreground/90 leading-normal line-clamp-3 text-[11px] font-normal">
@@ -492,7 +492,7 @@ const GroupedCitationPill = memo(({ items, searchMap }: {
             </div>
             {matchedResult ? (
               <>
-                <h4 className="font-serif font-semibold text-foreground text-[13px] leading-snug line-clamp-2">
+                <h4 className="font-serif font-normal text-foreground text-[13px] leading-snug line-clamp-2">
                   {matchedResult.title}
                 </h4>
                 <p className="text-muted-foreground/80 text-[11px] leading-relaxed line-clamp-3">
@@ -513,7 +513,7 @@ const GroupedCitationPill = memo(({ items, searchMap }: {
         <DrawerContent className="max-h-[80vh] p-0 flex flex-col bg-background rounded-t-[24px] select-none border-t border-border/40 shadow-2xl">
           <DrawerHeader className="px-6 pt-6 pb-4 border-b border-border/40 text-left shrink-0">
             <div className="flex items-center gap-2">
-              <DrawerTitle className="font-serif text-lg font-bold tracking-tight text-foreground">
+              <DrawerTitle className="font-serif text-lg font-medium tracking-tight text-foreground">
                 Sources
               </DrawerTitle>
               <span className="bg-secondary text-secondary-foreground font-semibold px-2 py-0.5 text-[10px] rounded-full">
@@ -552,7 +552,7 @@ const GroupedCitationPill = memo(({ items, searchMap }: {
                   </div>
                   {matched ? (
                     <div className="flex flex-col gap-1">
-                      <h4 className="font-serif font-semibold text-foreground text-[13px] leading-snug line-clamp-2">
+                      <h4 className="font-serif font-normal text-foreground text-[13px] leading-snug line-clamp-2">
                         {matched.title}
                       </h4>
                       <p className="text-muted-foreground/90 leading-normal line-clamp-3 text-[11px] font-normal">
