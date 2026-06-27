@@ -158,10 +158,11 @@
   @apply text-cyan-600 dark:text-cyan-400 font-semibold;
 }
 
-/* Minimal Table styles */
+/* Premium Table styles */
 .prose table {
-  @apply m-0 w-full border-collapse mt-4 mb-6;
+  @apply m-0 w-full border-collapse;
   border-spacing: 0;
+  table-layout: auto;
 }
 
 .prose thead {
@@ -169,45 +170,44 @@
 }
 
 .prose thead tr {
-  @apply border-b border-border/80 dark:border-border/60;
-}
-
-.prose tr {
-  @apply border-b border-border/20 dark:border-border/10 hover:bg-secondary/15 dark:hover:bg-white/[0.01] transition-colors last:border-b-0;
+  @apply border-b border-zinc-200/50 dark:border-zinc-800/40;
 }
 
 .prose th {
-  @apply px-4 py-3 text-left text-xs font-semibold tracking-wide text-foreground/80 bg-secondary/95 dark:bg-secondary/90 backdrop-blur-sm;
-  white-space: nowrap;
-  vertical-align: bottom;
+  @apply px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100/30 dark:bg-zinc-900/20 border-b border-zinc-200 dark:border-zinc-800;
 }
 
-.prose th strong {
-  @apply font-semibold;
-  color: inherit;
+.prose tr {
+  @apply border-b border-zinc-200/25 dark:border-zinc-800/20 hover:bg-zinc-50/15 dark:hover:bg-white/[0.003] transition-colors duration-150 last:border-b-0;
+}
+
+.prose tbody tr:nth-child(even) {
+  @apply bg-zinc-50/40 dark:bg-zinc-900/15;
 }
 
 .prose td {
-  @apply px-4 py-3 text-sm text-foreground/75 leading-relaxed;
-  vertical-align: middle;
+  @apply px-3 py-2.5 text-left text-sm text-zinc-700 dark:text-zinc-300 align-top leading-normal;
 }
 
 /* Ensure proper cell content wrapping */
 .prose td, .prose th {
   @apply break-words;
-  max-width: 300px; /* Prevent cells from becoming too wide */
+  max-width: 320px; /* Prevent cells from becoming too wide */
 }
 
 /* Add responsive styles */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .prose table {
-    @apply rounded-none border-none;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
   }
   
-  .prose td, .prose th {
-    @apply px-3 py-2;
-    max-width: 200px;
+  .prose th {
+    @apply px-3.5 py-3 text-[10px];
+  }
+  
+  .prose td {
+    @apply px-3.5 py-3;
+    max-width: 240px;
   }
 }
 

@@ -654,23 +654,23 @@ const MarkdownTable = memo(({ children }: { children?: React.ReactNode }) => {
 MarkdownTable.displayName = 'MarkdownTable';
 
 const MarkdownThead = memo(({ children }: { children?: React.ReactNode }) => (
-  <thead className="bg-secondary/50 dark:bg-secondary/20">{children}</thead>
+  <thead className="bg-transparent">{children}</thead>
 ));
 MarkdownThead.displayName = 'MarkdownThead';
 
 const MarkdownTbody = memo(({ children }: { children?: React.ReactNode }) => (
-  <tbody className="divide-y divide-border/30">{children}</tbody>
+  <tbody className="divide-y divide-zinc-200/30 dark:divide-zinc-800/20">{children}</tbody>
 ));
 MarkdownTbody.displayName = 'MarkdownTbody';
 
 const MarkdownTr = memo(({ children }: { children?: React.ReactNode }) => (
-  <tr className="transition-colors hover:bg-secondary/30 dark:hover:bg-secondary/10">{children}</tr>
+  <tr className="transition-colors hover:bg-zinc-50/15 dark:hover:bg-white/[0.002]">{children}</tr>
 ));
 MarkdownTr.displayName = 'MarkdownTr';
 
 const MarkdownTh = memo(({ children, style, ...props }: any) => (
   <th 
-    className="px-6 py-3.5 text-left text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/85"
+    className="px-3 py-2 text-left text-[11px] font-semibold tracking-wider uppercase text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/20 dark:bg-zinc-900/10"
     style={{ ...style, ...props.style, textAlign: 'left' }}
     {...props}
   >
@@ -681,7 +681,7 @@ MarkdownTh.displayName = 'MarkdownTh';
 
 const MarkdownTd = memo(({ children, style, ...props }: any) => (
   <td 
-    className="px-6 py-4 text-sm text-foreground/80"
+    className="px-3 py-2.5 text-left text-sm text-zinc-700 dark:text-zinc-300 align-top leading-normal"
     style={{ ...style, ...props.style, textAlign: 'left' }}
     {...props}
   >

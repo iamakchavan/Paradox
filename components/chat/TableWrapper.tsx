@@ -53,8 +53,8 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
   }, [tableData, messageContent, isStreaming, handleDownload]);
 
   return (
-    <div className="my-6 mx-1 sm:mx-2 relative group/table table-container">
-      <div className="overflow-x-auto custom-scrollbar border-b border-border/20 pb-2">
+    <div className="my-6 relative group/table table-container border-y border-zinc-200/50 dark:border-zinc-800/40 bg-zinc-50/5 dark:bg-zinc-950/10">
+      <div className="overflow-x-auto custom-scrollbar">
         <table ref={tableRef} className="min-w-max md:min-w-full w-full text-left border-collapse table-auto">
           {children}
         </table>
