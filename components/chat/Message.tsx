@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, memo, createContext, useContext, Children, isValidElement } from 'react';
-import { ChevronDown, FileText, Globe, Search, ShieldAlert, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, FileText, Globe, Search, ShieldAlert, Loader2, ChevronLeft, ChevronRight, ExternalLink, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -12,6 +12,7 @@ import { preprocessLaTeX } from '@/utils/latex';
 import { CodeBlock } from './CodeBlock';
 import { db } from '@/lib/db';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { parseResearchStream, ResearchStep } from '@/lib/research/parser';
 import { ResearchTimeline } from './ResearchTimeline';
@@ -366,10 +367,31 @@ const GroupedCitationPill = memo(({ items, searchMap }: {
   searchMap: Map<string, { title: string; content: string }> | null;
 }) => {
   const [page, setPage] = useState(0);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const total = items.length;
   const current = items[page];
   const first = items[0];
   const extraCount = total - 1;
+
+  // Synchronize history state to dismiss drawer on mobile browser back button / back gestures
+  useEffect(() => {
+    if (!isDrawerOpen) return;
+
+    // Push a dummy state to history so that a back gesture pops this state instead of navigating away
+    window.history.pushState({ modalOpen: true }, '');
+
+    const handlePopState = () => {
+      setIsDrawerOpen(false);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      if (window.history.state?.modalOpen) {
+        window.history.back();
+      }
+    };
+  }, [isDrawerOpen]);
 
   // Recompute matched result whenever page changes
   const matchedResult = useMemo(() => {
@@ -404,9 +426,18 @@ const GroupedCitationPill = memo(({ items, searchMap }: {
     ? (extractSiteName(matchedResult.title) ?? current.domain)
     : current.domain;
 
+  const handlePillClick = (e: React.MouseEvent) => {
+    if (window.innerWidth < 640) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDrawerOpen(true);
+    }
+  };
+
   const triggerPill = (
     <button
       type="button"
+      onClick={handlePillClick}
       className="inline-flex items-center gap-1 px-2.5 py-0.5 mx-0.5 text-[11px] font-medium rounded-full bg-secondary/80 hover:bg-secondary border border-border/50 text-foreground/75 hover:text-foreground transition-all duration-200 hover:scale-[1.03] select-none shadow-sm cursor-pointer align-middle"
     >
       <span className="truncate max-w-[100px] font-medium">{firstSiteName}</span>
@@ -415,66 +446,131 @@ const GroupedCitationPill = memo(({ items, searchMap }: {
   );
 
   return (
-    <HoverCard openDelay={150}>
-      <HoverCardTrigger asChild>{triggerPill}</HoverCardTrigger>
-      <HoverCardContent
-        side="bottom"
-        align="start"
-        sideOffset={6}
-        className="hidden sm:flex sm:flex-col z-50 w-80 bg-popover border border-border/60 rounded-xl shadow-lg pointer-events-auto animate-in fade-in-0 zoom-in-95 overflow-hidden p-0"
-      >
-        {/* Header: chevron nav + page counter */}
-        <div className="flex items-center justify-between px-3 pt-2.5 pb-2 border-b border-border/40">
-          <div className="flex items-center gap-0.5">
-            <button
-              onClick={(e) => { e.preventDefault(); setPage(p => Math.max(0, p - 1)); }}
-              disabled={page === 0}
-              className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-secondary/70 disabled:opacity-25 transition-colors"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={(e) => { e.preventDefault(); setPage(p => Math.min(total - 1, p + 1)); }}
-              disabled={page === total - 1}
-              className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-secondary/70 disabled:opacity-25 transition-colors"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
-            {page + 1}/{total}
-          </span>
-        </div>
-
-        {/* Source card — links to the current page's source */}
-        <a
-          href={current.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex flex-col gap-1.5 px-3.5 py-3 no-underline hover:bg-secondary/20 transition-colors"
-          onClick={(e) => e.stopPropagation()}
+    <>
+      <HoverCard openDelay={150}>
+        <HoverCardTrigger asChild>{triggerPill}</HoverCardTrigger>
+        <HoverCardContent
+          side="bottom"
+          align="start"
+          sideOffset={6}
+          className="hidden sm:flex sm:flex-col z-50 w-80 bg-popover border border-border/60 rounded-xl shadow-lg pointer-events-auto animate-in fade-in-0 zoom-in-95 overflow-hidden p-0"
         >
-          <div className="flex items-center gap-1.5">
-            <FaviconImage domain={current.domain} className="w-4 h-4 rounded-sm shrink-0" />
-            <span className="text-[11px] font-semibold text-foreground truncate flex-1">{currentSiteName}</span>
+          {/* Header: chevron nav + page counter */}
+          <div className="flex items-center justify-between px-3 pt-2.5 pb-2 border-b border-border/40">
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={(e) => { e.preventDefault(); setPage(p => Math.max(0, p - 1)); }}
+                disabled={page === 0}
+                className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-secondary/70 disabled:opacity-25 transition-colors"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={(e) => { e.preventDefault(); setPage(p => Math.min(total - 1, p + 1)); }}
+                disabled={page === total - 1}
+                className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-secondary/70 disabled:opacity-25 transition-colors"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
+              {page + 1}/{total}
+            </span>
           </div>
-          {matchedResult ? (
-            <>
-              <h4 className="font-serif font-semibold text-foreground text-[13px] leading-snug line-clamp-2">
-                {matchedResult.title}
-              </h4>
-              <p className="text-muted-foreground/80 text-[11px] leading-relaxed line-clamp-3">
-                {matchedResult.content}
+
+          {/* Source card — links to the current page's source */}
+          <a
+            href={current.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-col gap-1.5 px-3.5 py-3 no-underline hover:bg-secondary/20 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-1.5">
+              <FaviconImage domain={current.domain} className="w-4 h-4 rounded-sm shrink-0" />
+              <span className="text-[11px] font-semibold text-foreground truncate flex-1">{currentSiteName}</span>
+            </div>
+            {matchedResult ? (
+              <>
+                <h4 className="font-serif font-semibold text-foreground text-[13px] leading-snug line-clamp-2">
+                  {matchedResult.title}
+                </h4>
+                <p className="text-muted-foreground/80 text-[11px] leading-relaxed line-clamp-3">
+                  {matchedResult.content}
+                </p>
+              </>
+            ) : (
+              <p className="text-[11px] text-muted-foreground/70 break-all leading-relaxed">
+                {current.href}
               </p>
-            </>
-          ) : (
-            <p className="text-[11px] text-muted-foreground/70 break-all leading-relaxed">
-              {current.href}
-            </p>
-          )}
-        </a>
-      </HoverCardContent>
-    </HoverCard>
+            )}
+          </a>
+        </HoverCardContent>
+      </HoverCard>
+
+      {/* Mobile Drawer (Bottom Sheet) */}
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <DrawerContent className="max-h-[80vh] p-0 flex flex-col bg-background rounded-t-[24px] select-none border-t border-border/40 shadow-2xl">
+          <DrawerHeader className="px-6 pt-6 pb-4 border-b border-border/40 text-left shrink-0">
+            <div className="flex items-center gap-2">
+              <DrawerTitle className="font-serif text-lg font-bold tracking-tight text-foreground">
+                Sources
+              </DrawerTitle>
+              <span className="bg-secondary text-secondary-foreground font-semibold px-2 py-0.5 text-[10px] rounded-full">
+                {total}
+              </span>
+            </div>
+          </DrawerHeader>
+
+          {/* List of citation items scrollable */}
+          <div className="flex-1 overflow-y-auto px-6 py-2 divide-y divide-border/30">
+            {items.map((item, idx) => {
+              const matched = searchMap ? (searchMap.get(getCleanUrl(item.href)) || (() => {
+                try {
+                  const dom = new URL(item.href).hostname.replace('www.', '').toLowerCase();
+                  return searchMap.get(dom) ?? null;
+                } catch { return null; }
+              })()) : null;
+
+              const siteName = matched ? (extractSiteName(matched.title) ?? item.domain) : item.domain;
+
+              return (
+                <a
+                  key={idx}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col gap-1.5 py-4 no-underline active:opacity-70 transition-all select-none"
+                  onClick={() => setIsDrawerOpen(false)}
+                >
+                  <div className="flex items-center justify-between w-full min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <FaviconImage domain={item.domain} className="w-3.5 h-3.5 rounded-sm shrink-0" />
+                      <span className="text-[10px] font-bold tracking-wider uppercase text-zinc-500 truncate">{item.domain}</span>
+                    </div>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
+                  </div>
+                  {matched ? (
+                    <div className="flex flex-col gap-1">
+                      <h4 className="font-serif font-semibold text-foreground text-[13px] leading-snug line-clamp-2">
+                        {matched.title}
+                      </h4>
+                      <p className="text-muted-foreground/90 leading-normal line-clamp-3 text-[11px] font-normal">
+                        {matched.content}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground/75 break-all leading-normal">
+                      {item.href}
+                    </p>
+                  )}
+                </a>
+              );
+            })}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    </>
   );
 });
 GroupedCitationPill.displayName = 'GroupedCitationPill';
