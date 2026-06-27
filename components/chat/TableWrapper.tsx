@@ -44,7 +44,7 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
     return (
       <button
         onClick={handleDownload}
-        className="absolute top-2 right-2 opacity-0 group-hover/table:opacity-100 transition-opacity duration-200 p-1.5 bg-background/90 hover:bg-secondary border border-border/50 rounded-lg shadow-sm text-muted-foreground hover:text-foreground z-10"
+        className="absolute top-2 right-2 opacity-0 group-hover/table:opacity-100 max-md:opacity-100 transition-opacity duration-200 p-1.5 bg-background/90 hover:bg-secondary border border-border/50 rounded-lg shadow-sm text-muted-foreground hover:text-foreground z-10"
         title="Download as CSV"
       >
         <Download className="w-3.5 h-3.5" />
@@ -53,9 +53,9 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
   }, [tableData, messageContent, isStreaming, handleDownload]);
 
   return (
-    <div className="my-6 mx-1 sm:mx-2 relative group/table">
+    <div className="my-6 mx-1 sm:mx-2 relative group/table table-container">
       <div className="overflow-x-auto custom-scrollbar border-b border-border/20 pb-2">
-        <table ref={tableRef} className="w-full text-left border-collapse">
+        <table ref={tableRef} className="min-w-max md:min-w-full w-full text-left border-collapse table-auto">
           {children}
         </table>
       </div>
