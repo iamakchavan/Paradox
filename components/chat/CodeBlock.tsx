@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Copy, Check } from 'lucide-react';
 import { Highlight, themes } from 'prism-react-renderer';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
-import { getLanguageLogo } from '@/utils/language';
 import { useCustomToast } from '@/components/ui/custom-toast';
 
 interface CodeBlockProps {
@@ -160,24 +159,12 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
     window.URL.revokeObjectURL(url);
   };
 
-  const languageLogo = getLanguageLogo(language);
-
   if (isStreaming) {
     return (
       <div className="relative group rounded-xl sm:rounded-2xl overflow-hidden mb-6 border border-zinc-200/90 dark:border-zinc-800/90 shadow-sm bg-background">
-        <div className="h-9 sm:h-10 flex items-center justify-between px-3 sm:px-4 bg-zinc-100/90 dark:bg-zinc-900/90 border-b border-zinc-200/65 dark:border-zinc-800/65">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="h-full flex items-center gap-1.5 text-xs text-muted-foreground font-['Space_Mono'] lowercase font-semibold">
-              {languageLogo && (
-                <img 
-                  src={languageLogo} 
-                  alt={`${language} logo`} 
-                  className={cn("w-3 h-3 sm:w-3.5 sm:h-3.5", language.toLowerCase() === 'rust' && "dark:invert")}
-                  style={{ margin: 0 }}
-                />
-              )}
-              {language}
-            </div>
+        <div className="h-9 flex items-center justify-between px-4 bg-zinc-100/90 dark:bg-zinc-900/90 border-b border-zinc-200/65 dark:border-zinc-800/65 select-none">
+          <div className="text-[11px] text-muted-foreground/80 font-mono lowercase font-medium">
+            {language}
           </div>
         </div>
         <pre className="p-3 sm:p-4 overflow-x-auto custom-scrollbar text-xs sm:text-[13px] font-mono whitespace-pre bg-zinc-50 dark:bg-zinc-950/20" style={{ margin: 0, fontFamily: "var(--font-space-mono), monospace" }}>
@@ -189,23 +176,9 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
 
   return (
     <div className="relative group rounded-xl sm:rounded-2xl overflow-hidden mb-6 border border-zinc-200/90 dark:border-zinc-800/90 shadow-sm bg-background">
-      <div className="h-9 sm:h-10 flex items-center justify-between px-3 sm:px-4 bg-zinc-100/90 dark:bg-zinc-900/90 border-b border-zinc-200/65 dark:border-zinc-800/65">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <div className="h-full flex items-center gap-1.5 text-xs text-muted-foreground font-mono lowercase font-semibold">
-            {languageLogo && (
-              <img 
-                src={languageLogo} 
-                alt={`${language} logo`} 
-                className={cn("w-3 h-3 sm:w-3.5 sm:h-3.5", language.toLowerCase() === 'rust' && "dark:invert")}
-                style={{ margin: 0 }}
-              />
-            )}
-            {language}
-          </div>
-          <div className="text-[10px] text-cyan-600 dark:text-cyan-400 font-mono hidden sm:flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-            Use code with caution
-          </div>
+      <div className="h-9 flex items-center justify-between px-4 bg-zinc-100/90 dark:bg-zinc-900/90 border-b border-zinc-200/65 dark:border-zinc-800/65 select-none">
+        <div className="text-[11px] text-muted-foreground/80 font-mono lowercase font-medium">
+          {language}
         </div>
         <div className="flex items-center gap-1 sm:gap-2">
           <button
