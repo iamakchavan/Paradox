@@ -141,8 +141,13 @@ export default function ChatPage() {
       localStorage.setItem('search-enabled', 'false');
     }
   };
-  const [isLoading, setIsLoading] = useState(false);
-  const isLoadingRef = useRef(false);
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window !== 'undefined' && chatIdParam) {
+      return !!sessionStorage.getItem(`pending-stream-${chatIdParam}`);
+    }
+    return false;
+  });
+  const isLoadingRef = useRef(isLoading);
   const setIsLoadingState = useCallback((val: boolean) => {
     setIsLoading(val);
     isLoadingRef.current = val;
@@ -211,17 +216,19 @@ export default function ChatPage() {
 
   // Reset limit on session change
   useEffect(() => {
-    handleStop();
-    setLoadedLimit(20);
-    setMessages([]);
-    setIsInitialView(!chatIdParam);
-    
     // Check if there is a pending stream in sessionStorage to bypass history-loading spinner
     const pendingStreamKey = chatIdParam ? `pending-stream-${chatIdParam}` : '';
     const hasPendingStream = pendingStreamKey && typeof window !== 'undefined'
       ? !!sessionStorage.getItem(pendingStreamKey)
       : false;
 
+    if (!hasPendingStream) {
+      handleStop();
+    }
+    
+    setLoadedLimit(20);
+    setMessages([]);
+    setIsInitialView(!chatIdParam);
     setIsLoadingHistoryState(!!chatIdParam && !hasPendingStream);
     showScrollButtonRef.current = false;
     setShowScrollButton(false);
@@ -800,6 +807,8 @@ export default function ChatPage() {
     setError(null);
 
     if (isNewChat) {
+      setIsInitialView(false); // Instantly slide down the input bar for visual fluidity
+      setIsLoadingState(true); // Instantly show stop/loading state to prevent disabled send button flash
       const title = promptMessage.trim().substring(0, 30) || 'New Chat';
       const newChatId = await createChatSession(selectedModelId, title);
       isNewChatCreatedRef.current = true;
@@ -1085,6 +1094,7 @@ export default function ChatPage() {
 
               {!isSettingsActive && (
                 <motion.div
+                  layoutId="chat-input-bar"
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
@@ -1187,6 +1197,7 @@ export default function ChatPage() {
       {/* Input Area - Only show when not in initial view and search is not active */}
       {!isInitialView && !isSearchActive && !isSettingsActive && (
         <motion.div
+          layoutId="chat-input-bar"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
