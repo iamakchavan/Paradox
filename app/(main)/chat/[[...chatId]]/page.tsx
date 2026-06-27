@@ -861,8 +861,25 @@ export default function ChatPage() {
         pdfs: promptPDFs
       };
 
-      // Call streaming helper with current completed messages as history
-      await runStreaming(chatId!, selectedModelId, messages, userMsg, assistantMessageId);
+      // Fetch the full completed chat history directly from IndexedDB to ensure the LLM receives the entire context
+      const dbMessages = await db.messages
+        .where('chatId')
+        .equals(chatId!)
+        .sortBy('createdAt');
+
+      // Map and filter out the newly added user message and assistant placeholder
+      const completedHistory = dbMessages
+        .filter(m => m.id !== userMessageId && m.id !== assistantMessageId)
+        .map(m => ({
+          id: m.id,
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+          images: m.images,
+          pdfs: m.pdfs
+        }));
+
+      // Call streaming helper with the true completed history
+      await runStreaming(chatId!, selectedModelId, completedHistory, userMsg, assistantMessageId);
     }
   };
 
@@ -925,7 +942,7 @@ export default function ChatPage() {
           ('ontouchstart' in window) ||
           (navigator.maxTouchPoints > 0);
         
-        if (isMobileOrTablet) {
+        if (isMobileOrTablet && !isLoadingRef.current) {
           const activeEl = document.activeElement;
           if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'BUTTON')) {
             (activeEl as HTMLElement).blur();
