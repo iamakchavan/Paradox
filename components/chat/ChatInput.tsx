@@ -93,6 +93,16 @@ const containerVariants = {
   }
 };
 
+const isMobileOrTablet = () => {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.innerWidth < 1024 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    ('ontouchstart' in window) ||
+    (navigator.maxTouchPoints > 0)
+  );
+};
+
 export const ChatInput = ({
   message,
   setMessage,
@@ -131,6 +141,12 @@ export const ChatInput = ({
   const handleLocalSubmit = () => {
     const trimmed = localMessage.trim();
     if (!trimmed && selectedImages.length === 0 && selectedPDFs.length === 0) return;
+    
+    // Explicitly dismiss keyboard on mobile/tablet viewports before sending
+    if (isMobileOrTablet()) {
+      textareaRef.current?.blur();
+    }
+    
     handleSubmit(localMessage);
     setLocalMessage('');
   };
@@ -226,33 +242,26 @@ export const ChatInput = ({
   }, [showAttachDropdown]);
 
   useEffect(() => {
-    // Avoid autofocus on mobile devices to prevent keyboard popups
-    if (typeof window === 'undefined') return;
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-      (window.innerWidth <= 768 && 'ontouchstart' in window);
+    // Avoid autofocus on mobile and tablet devices to prevent keyboard popups
+    if (isMobileOrTablet()) return;
 
-    if (!isLoading && textareaRef.current && !isMobileDevice) {
+    if (!isLoading && textareaRef.current) {
       textareaRef.current.focus();
     }
   }, [isLoading]);
 
   useEffect(() => {
-    // Avoid autofocus on mobile devices to prevent keyboard popups
-    if (typeof window === 'undefined') return;
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-      (window.innerWidth <= 768 && 'ontouchstart' in window);
+    // Avoid autofocus on mobile and tablet devices to prevent keyboard popups
+    if (isMobileOrTablet()) return;
 
-    if ((shouldFocus || isInitialView) && textareaRef.current && !isMobileDevice) {
+    if ((shouldFocus || isInitialView) && textareaRef.current) {
       textareaRef.current.focus();
     }
   }, [shouldFocus, isInitialView]);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-        (window.innerWidth <= 768 && 'ontouchstart' in window)
-      );
+      setIsMobile(window.innerWidth < 768);
     };
 
     checkMobile();
