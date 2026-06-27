@@ -999,9 +999,6 @@ export default function ChatPage() {
       if (isInitialScrollSnapRef.current) {
         // During initial page mount – always snap
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      } else if (isLoadingRef.current && !isUserScrolledUpRef.current) {
-        // During active streaming/deep research and user hasn't scrolled up
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
     });
 
