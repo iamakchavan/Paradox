@@ -1079,7 +1079,7 @@ export default function ChatPage() {
                     "w-full mx-auto fixed bottom-6 left-0 right-0 z-20 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0",
                     isInputExpanded
                       ? "max-w-[720px] px-3 sm:px-2 md:px-0"
-                      : "max-w-2xl focus-within:max-w-[720px] px-6 focus-within:px-3 md:focus-within:px-0"
+                      : "max-w-2xl focus-within:max-w-[720px] px-10 focus-within:px-3 sm:px-4 md:focus-within:px-0"
                   )}
                   style={{
                     transition: 'bottom 300ms cubic-bezier(0.4, 0, 0.2, 1), max-width 300ms cubic-bezier(0.4, 0, 0.2, 1), padding 300ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1179,7 +1179,7 @@ export default function ChatPage() {
             isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]",
             isInputExpanded
               ? "max-w-[720px] px-3 sm:px-2 md:px-4"
-              : "max-w-2xl px-6 sm:px-4 focus-within:max-w-[720px] focus-within:px-3 sm:focus-within:px-2 md:focus-within:px-4"
+              : "max-w-2xl px-10 sm:px-4 focus-within:max-w-[720px] focus-within:px-3 sm:focus-within:px-2 md:focus-within:px-4"
           )}
           style={{
             transition: mounted
