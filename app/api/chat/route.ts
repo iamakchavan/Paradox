@@ -176,6 +176,9 @@ export async function POST(req: Request) {
     console.log(`[CHAT] canUseTools=${canUseTools}, hasSearchKeys=${hasSearchKeys}, searchEnabled=${searchEnabled}, provider=${modelConfig.provider}`);
 
     let finalSystemPrompt = systemPrompt || '';
+    const dateInstruction = `Today's date is ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit', weekday: 'short' })}. Use this date to inform temporal reasoning and to construct accurate, current search queries (e.g., when asked about "this year", "recent events", or "latest releases").`;
+    finalSystemPrompt = (dateInstruction + '\n' + finalSystemPrompt).trim();
+
     if (canUseTools) {
       const searchInstruction = `
 You have access to separate tools to gather external knowledge:
