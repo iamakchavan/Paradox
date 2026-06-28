@@ -935,21 +935,6 @@ export default function ChatPage() {
       const scrollContainer = scrollContainerRef.current;
       if (!scrollContainer) return;
 
-      // Dismiss keyboard on scroll on mobile/tablet viewports to match native iOS/Android behavior
-      if (typeof window !== 'undefined') {
-        const isMobileOrTablet = window.innerWidth < 1024 ||
-          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-          ('ontouchstart' in window) ||
-          (navigator.maxTouchPoints > 0);
-        
-        if (isMobileOrTablet && !isLoadingRef.current) {
-          const activeEl = document.activeElement;
-          if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'BUTTON')) {
-            (activeEl as HTMLElement).blur();
-          }
-        }
-      }
-
       const scrollPosition = scrollContainer.scrollTop;
       const scrollHeight = scrollContainer.scrollHeight;
       const containerHeight = scrollContainer.clientHeight;
@@ -971,12 +956,32 @@ export default function ChatPage() {
       isUserScrolledUpRef.current = scrollHeight - (scrollPosition + containerHeight) > 100;
     };
 
+    const handleGestureScroll = () => {
+      if (typeof window !== 'undefined') {
+        const isMobileOrTablet = window.innerWidth < 1024 ||
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+          ('ontouchstart' in window) ||
+          (navigator.maxTouchPoints > 0);
+        
+        if (isMobileOrTablet && !isLoadingRef.current) {
+          const activeEl = document.activeElement;
+          if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'BUTTON')) {
+            (activeEl as HTMLElement).blur();
+          }
+        }
+      }
+    };
+
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
       handleScroll();
       scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      scrollContainer.addEventListener('touchmove', handleGestureScroll, { passive: true });
+      scrollContainer.addEventListener('wheel', handleGestureScroll, { passive: true });
       return () => {
         scrollContainer.removeEventListener('scroll', handleScroll);
+        scrollContainer.removeEventListener('touchmove', handleGestureScroll);
+        scrollContainer.removeEventListener('wheel', handleGestureScroll);
         if (rafId !== null) cancelAnimationFrame(rafId);
       };
     }
