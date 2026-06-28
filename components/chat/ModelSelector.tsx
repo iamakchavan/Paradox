@@ -362,10 +362,10 @@ export const ModelSelector = ({
         align === 'top'
           ? (isMobile 
               ? (isOpen ? "top-20 left-4 right-4 slide-in-from-top-4" : "top-20 left-4 right-4 slide-out-to-top-4")
-              : (isOpen ? "md:absolute md:top-11 md:left-1/2 md:-translate-x-1/2 md:bottom-auto slide-in-from-top-4" : "md:absolute md:top-11 md:left-1/2 md:-translate-x-1/2 md:bottom-auto slide-out-to-top-4"))
+              : (isOpen ? "md:absolute md:top-14 md:left-1/2 md:-translate-x-1/2 md:bottom-auto slide-in-from-top-4" : "md:absolute md:top-14 md:left-1/2 md:-translate-x-1/2 md:bottom-auto slide-out-to-top-4"))
           : (isMobile 
               ? (isOpen ? "bottom-20 left-4 right-4 slide-in-from-bottom-4" : "bottom-20 left-4 right-4 slide-out-to-bottom-4")
-              : (isOpen ? "md:absolute md:bottom-11 md:right-0 md:left-auto slide-in-from-bottom-4" : "md:absolute md:bottom-11 md:right-0 md:left-auto slide-out-to-bottom-4"))
+              : (isOpen ? "md:absolute md:bottom-14 md:right-0 md:left-auto slide-in-from-bottom-4" : "md:absolute md:bottom-14 md:right-0 md:left-auto slide-out-to-bottom-4"))
       )}
       style={{
         '--tw-enter-translate-x': (!isMobile && align === 'top') ? '-50%' : '0px',
