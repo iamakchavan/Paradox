@@ -1156,7 +1156,7 @@ export default function ChatPage() {
               )}
             </div>
           ) : (
-            <div ref={contentRef} className="space-y-6 pb-28 sm:pb-36">
+            <div ref={contentRef} className="space-y-6 pb-20 sm:pb-24">
                {isLoadingHistory && (
                  <div className="w-full flex justify-center py-2" id="history-loading-spinner">
                    <Spinner />
