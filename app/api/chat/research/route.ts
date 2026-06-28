@@ -262,14 +262,29 @@ export async function POST(req: Request) {
         },
       };
     }
-    if (modelConfig.provider === 'zenmux') {
-      const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning');
+    if (modelConfig.provider === 'zenmux' || modelConfig.provider === 'nvidia') {
+      const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron');
+      
+      let extraBody: Record<string, any> = {};
+      if (model === 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning') {
+        extraBody = {
+          reasoning_budget: 16384,
+          chat_template_kwargs: { enable_thinking: true }
+        };
+      } else if (model === 'nvidia/nvidia-nemotron-nano-9b-v2') {
+        extraBody = {
+          min_thinking_tokens: 1024,
+          max_thinking_tokens: 2048
+        };
+      }
+
       plannerProviderOptions.openai = {
         parallelToolCalls: false,
-        ...(isReasoningModel ? {
+        ...(isReasoningModel && modelConfig.provider === 'zenmux' ? {
           reasoningEffort: 'medium',
           reasoningSummary: 'detailed',
         } : {}),
+        ...(Object.keys(extraBody).length > 0 ? { extraBody } : {}),
       };
     }
 
@@ -282,14 +297,29 @@ export async function POST(req: Request) {
         } : undefined
       };
     }
-    if (modelConfig.provider === 'zenmux') {
-      const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning');
+    if (modelConfig.provider === 'zenmux' || modelConfig.provider === 'nvidia') {
+      const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron');
+
+      let extraBody: Record<string, any> = {};
+      if (model === 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning') {
+        extraBody = {
+          reasoning_budget: 16384,
+          chat_template_kwargs: { enable_thinking: true }
+        };
+      } else if (model === 'nvidia/nvidia-nemotron-nano-9b-v2') {
+        extraBody = {
+          min_thinking_tokens: 1024,
+          max_thinking_tokens: 2048
+        };
+      }
+
       synthesisProviderOptions.openai = {
         parallelToolCalls: false,
-        ...(isReasoningModel ? {
+        ...(isReasoningModel && modelConfig.provider === 'zenmux' ? {
           reasoningEffort: 'medium',
           reasoningSummary: 'detailed',
         } : {}),
+        ...(Object.keys(extraBody).length > 0 ? { extraBody } : {}),
       };
     }
 

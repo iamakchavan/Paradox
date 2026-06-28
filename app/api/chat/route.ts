@@ -179,6 +179,12 @@ export async function POST(req: Request) {
     const dateInstruction = `Today's date is ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit', weekday: 'short' })}. Use this date to inform temporal reasoning and to construct accurate, current search queries (e.g., when asked about "this year", "recent events", or "latest releases").`;
     finalSystemPrompt = (dateInstruction + '\n' + finalSystemPrompt).trim();
 
+    if (modelConfig.id === 'nvidia/nemotron-nano-12b-v2-vl') {
+      const hasVideo = false;
+      const mediaSystemPrompt = hasVideo ? '/no_think' : '/think';
+      finalSystemPrompt = (mediaSystemPrompt + '\n' + finalSystemPrompt).trim();
+    }
+
     if (canUseTools) {
       const searchInstruction = `
 You have access to separate tools to gather external knowledge:
@@ -266,12 +272,27 @@ IMPORTANT RULES:
 
     if (modelConfig.provider === 'zenmux' || modelConfig.provider === 'nvidia') {
       const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron');
+      
+      let extraBody: Record<string, any> = {};
+      if (model === 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning') {
+        extraBody = {
+          reasoning_budget: 16384,
+          chat_template_kwargs: { enable_thinking: true }
+        };
+      } else if (model === 'nvidia/nvidia-nemotron-nano-9b-v2') {
+        extraBody = {
+          min_thinking_tokens: 1024,
+          max_thinking_tokens: 2048
+        };
+      }
+
       providerOptions.openai = {
         parallelToolCalls: false,
         ...(isReasoningModel && modelConfig.provider === 'zenmux' ? {
           reasoningEffort: 'medium',
           reasoningSummary: 'detailed',
         } : {}),
+        ...(Object.keys(extraBody).length > 0 ? { extraBody } : {}),
       };
     }
 

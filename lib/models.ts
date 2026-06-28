@@ -421,5 +421,68 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     contextWindow: '128k tokens',
     pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
     tags: ['Reasoning', 'Coding', 'Fast']
+  },
+  {
+    id: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
+    name: 'Nemotron-3 Nano Omni 30B (Reasoning)',
+    provider: 'nvidia',
+    description: "NVIDIA's lightweight omni reasoning model, optimized for transparent chain-of-thought and rapid reasoning.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
+    tags: ['Reasoning', 'Fast', 'Transparent-CoT']
+  },
+  {
+    id: 'nvidia/nemotron-nano-12b-v2-vl',
+    name: 'Nemotron Nano 12B VL',
+    provider: 'nvidia',
+    description: "NVIDIA's multimodal vision-language model, optimized for video and image understanding.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
+    tags: ['Vision', 'Multimodal', 'Fast']
+  },
+  {
+    id: 'nvidia/nvidia-nemotron-nano-9b-v2',
+    name: 'Nemotron Nano 9B V2 (Reasoning)',
+    provider: 'nvidia',
+    description: "NVIDIA's highly efficient 9B reasoning model, designed for fast reasoning tasks with custom thinking tokens.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
+    tags: ['Reasoning', 'Fast']
+  },
+  {
+    id: 'google/gemma-3n-e4b-it',
+    name: 'Gemma 3N E4B IT',
+    provider: 'nvidia',
+    description: "Google's Gemma 3N iteration model, optimized for instruction following and reasoning tasks.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
+    tags: ['Reasoning', 'Fast']
+  },
+  {
+    id: 'google/gemma-3n-e2b-it',
+    name: 'Gemma 3N E2B IT',
+    provider: 'nvidia',
+    description: "Google's Gemma 3N iteration model, designed for rapid responses and lightweight edge tasks.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
+    tags: ['Fast', 'Cost-Effective']
+  },
+  {
+    id: 'mistralai/mistral-nemotron',
+    name: 'Mistral Nemotron',
+    provider: 'nvidia',
+    description: "Mistral's model optimized in collaboration with NVIDIA, delivering fast and high-context reasoning.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
+    tags: ['Chat', 'Reasoning', 'Fast']
+  },
+  {
+    id: 'nvidia/nemotron-mini-4b-instruct',
+    name: 'Nemotron Mini 4B Instruct',
+    provider: 'nvidia',
+    description: "NVIDIA's mini 4B model, designed for fast instruction following and local edge-device tasks.",
+    contextWindow: '32k tokens',
+    pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
+    tags: ['Fast', 'Edge', 'Chat']
   }
 ];
