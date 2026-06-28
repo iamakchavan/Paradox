@@ -27,24 +27,24 @@
   }
  
   .dark {
-    --background: 230 10% 8%;
+    --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-    --card: 230 10% 8%;
+    --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
-    --popover: 230 10% 8%;
+    --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 240 5.9% 10%;
-    --secondary: 230 8% 14%;
+    --secondary: 240 6% 10%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 230 8% 14%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 230 8% 14%;
+    --muted: 240 6% 10%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 6% 10%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 230 8% 14%;
-    --input: 230 8% 14%;
+    --border: 240 6% 15%;
+    --input: 240 6% 15%;
     --ring: 240 4.9% 83.9%;
   }
 
@@ -780,10 +780,10 @@
   }
 
   .dark .liquid-glass-dock:hover {
-    @apply bg-zinc-950/75 border-zinc-700/80;
+    @apply bg-black/60 border-white/15;
     box-shadow: 
-      0 16px 40px rgba(0, 0, 0, 0.45),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+      0 16px 40px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
   }
 }
 

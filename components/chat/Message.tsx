@@ -913,7 +913,7 @@ const WebSearchWidget = memo(({ searchData }: { searchData: { query: string; res
         {hasMoreThanFour && !showAll && (
           <button
             onClick={() => setShowAll(true)}
-            className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-100/50 dark:bg-zinc-900/40 hover:bg-zinc-200/50 dark:hover:bg-zinc-850/50 hover:border-zinc-300 dark:hover:border-zinc-700 hover:scale-[1.01] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group shadow-3xs text-left"
+            className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-100/50 dark:bg-zinc-900/40 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 hover:scale-[1.01] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group shadow-3xs text-left"
           >
             {/* Top: Favicons row */}
             <div className="flex items-center gap-1 select-none">

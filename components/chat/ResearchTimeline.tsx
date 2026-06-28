@@ -568,14 +568,14 @@ export const ResearchTimeline = memo(function ResearchTimeline({ steps, isLoadin
                   whileHover={{ scale: 1.01, translateY: -0.5 }}
                   transition={{ type: "spring", stiffness: 450, damping: 15 }}
                   onClick={() => setShowAllSources(true)}
-                  className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-100/50 dark:bg-zinc-900/40 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 cursor-pointer group shadow-3xs text-left"
+                  className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-100/50 dark:bg-zinc-900/40 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 cursor-pointer group shadow-3xs text-left"
                 >
                   {/* Top: Favicons row */}
                   <div className="flex items-center gap-1 select-none">
                     {uniqueSources.slice(3, 6).map((r, i) => (
                       <div
                         key={i}
-                        className="w-5 h-5 rounded-full bg-zinc-200/50 dark:bg-zinc-850/60 flex items-center justify-center shrink-0 border border-border/10 overflow-hidden"
+                        className="w-5 h-5 rounded-full bg-zinc-200/50 dark:bg-white/5 flex items-center justify-center shrink-0 border border-border/10 overflow-hidden"
                       >
                         <FaviconImage domain={r.domain} className="w-3.5 h-3.5 rounded-full" />
                       </div>

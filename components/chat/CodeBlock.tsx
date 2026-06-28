@@ -249,7 +249,7 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
           <pre className={cn(className, 'p-3 sm:p-4 overflow-x-auto custom-scrollbar text-xs sm:text-[13px]')} style={{
             ...style,
             margin: 0,
-            background: isDark ? 'hsl(230, 12%, 11%)' : 'hsl(210, 15%, 96.5%)',
+            background: isDark ? 'hsl(240, 6%, 10%)' : 'hsl(210, 15%, 96.5%)',
             fontFamily: "var(--font-space-mono), monospace",
           }}>
             {tokens.map((line, i) => (

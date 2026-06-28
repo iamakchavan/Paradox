@@ -503,7 +503,7 @@ export const ChatInput = ({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-9 w-9 rounded-full hover:bg-secondary/80 flex items-center justify-center shrink-0 cursor-pointer"
+                        className="h-9 w-9 rounded-full hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-center shrink-0 cursor-pointer"
                         onClick={() => setShowAttachDropdown(!showAttachDropdown)}
                         onMouseDown={(e) => e.preventDefault()}
                         disabled={isLoading}
@@ -519,7 +519,7 @@ export const ChatInput = ({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-9 w-9 rounded-full hover:bg-secondary/80 flex items-center justify-center shrink-0 cursor-pointer"
+                              className="h-9 w-9 rounded-full hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-center shrink-0 cursor-pointer"
                               onClick={() => setShowAttachDropdown(!showAttachDropdown)}
                               onMouseDown={(e) => e.preventDefault()}
                               disabled={isLoading}
@@ -542,14 +542,14 @@ export const ChatInput = ({
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="absolute bottom-12 left-0 w-[200px] bg-popover/95 dark:bg-zinc-950/95 border border-border/50 rounded-2xl shadow-lg p-1.5 z-50 flex flex-col gap-0.5 backdrop-blur-md"
+                        className="absolute bottom-12 left-0 w-[200px] bg-popover border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-[0_12px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_30px_rgba(0,0,0,0.4)] p-1.5 z-50 flex flex-col gap-0.5 select-none"
                       >
                         <div className="flex flex-col">
                           <button
                             type="button"
                             onClick={() => handleAttachClick('image')}
                             onMouseDown={(e) => e.preventDefault()}
-                            className="group w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium hover:bg-secondary/60 text-foreground/80 hover:text-foreground transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
+                            className="group w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
                           >
                             <Image className="w-4 h-4 text-foreground/60 group-hover:text-foreground/80 transition-colors duration-150 shrink-0" strokeWidth={1.5} />
                             <span className="transition-colors duration-150">Upload image</span>
@@ -558,7 +558,7 @@ export const ChatInput = ({
                             type="button"
                             onClick={() => handleAttachClick('pdf')}
                             onMouseDown={(e) => e.preventDefault()}
-                            className="group w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium hover:bg-secondary/60 text-foreground/80 hover:text-foreground transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
+                            className="group w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
                           >
                             <FileText className="w-4 h-4 text-foreground/60 group-hover:text-foreground/80 transition-colors duration-150 shrink-0" strokeWidth={1.5} />
                             <span className="transition-colors duration-150">Upload document</span>
@@ -577,8 +577,8 @@ export const ChatInput = ({
                           className={cn(
                             "group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer whitespace-nowrap",
                             searchEnabled
-                              ? "bg-blue-500/5 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10"
-                              : "hover:bg-secondary/60 text-foreground/80 hover:text-foreground"
+                              ? "bg-blue-500/10 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/15"
+                              : "hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground"
                           )}
                         >
                           <div className="flex items-center gap-3">
@@ -600,8 +600,8 @@ export const ChatInput = ({
                           className={cn(
                             "group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer whitespace-nowrap",
                             researchEnabled
-                              ? "bg-purple-500/5 text-purple-600 dark:text-purple-400 hover:bg-purple-500/10"
-                              : "hover:bg-secondary/60 text-foreground/80 hover:text-foreground"
+                              ? "bg-purple-500/10 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/15"
+                              : "hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground"
                           )}
                         >
                           <div className="flex items-center gap-3">

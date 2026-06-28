@@ -155,13 +155,13 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
   };
 
   const renderKeyInputList = (fields: KeyField[]) => (
-    <div className="bg-zinc-50/40 dark:bg-zinc-950/45 border border-zinc-200/40 dark:border-zinc-850 rounded-2xl divide-y divide-zinc-250/20 dark:divide-zinc-800/45 overflow-hidden shadow-sm">
+    <div className="bg-zinc-50/40 dark:bg-zinc-950/45 border border-zinc-200/40 dark:border-zinc-850 rounded-2xl divide-y divide-zinc-200/20 dark:divide-zinc-800/45 overflow-hidden shadow-sm">
       {fields.map((field) => {
         const isExpanded = expandedKey === field.key;
         const hasValue = (inputKeys[field.key] || '').trim().length > 0;
         
         return (
-          <div key={field.key} className="bg-zinc-100/5 dark:bg-zinc-950/5 hover:bg-zinc-100/10 dark:hover:bg-zinc-950/10 transition-colors duration-150">
+          <div key={field.key} className="bg-zinc-100/5 dark:bg-zinc-950/5 hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors duration-150">
             {/* Header row (always visible) */}
             <button
               type="button"
@@ -193,7 +193,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
                   className="overflow-hidden"
                 >
                   <div className="px-4 pb-4 sm:px-5 sm:pb-5 space-y-2.5">
-                    <div className="relative flex items-center bg-zinc-200/20 dark:bg-zinc-900/35 rounded-xl border border-zinc-250/30 dark:border-zinc-800/40 px-3.5 focus-within:border-zinc-350 dark:focus-within:border-zinc-700 focus-within:ring-2 focus-within:ring-zinc-400/5 transition-all duration-200">
+                    <div className="relative flex items-center bg-zinc-200/20 dark:bg-zinc-900/35 rounded-xl border border-zinc-200/30 dark:border-zinc-800/40 px-3.5 focus-within:border-zinc-300 dark:focus-within:border-zinc-700 focus-within:ring-2 focus-within:ring-zinc-400/5 transition-all duration-200">
                       <Input
                         id={field.key}
                         type={visibleFields[field.key] ? 'text' : 'password'}
@@ -270,7 +270,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
                   "flex items-center justify-center md:justify-start gap-2 px-3 py-1.5 md:px-3.5 md:py-2.5 rounded-lg md:rounded-xl text-center md:text-left transition-all duration-200 flex-1 md:flex-none text-xs md:text-sm font-medium",
                   isActive
                     ? "bg-white dark:bg-zinc-800 md:bg-zinc-100 md:dark:bg-zinc-900 shadow-[0_1px_3px_rgba(0,0,0,0.12)] md:shadow-none border border-transparent md:border-zinc-200/50 md:dark:border-zinc-800/50 text-foreground font-semibold"
-                    : "text-zinc-550 dark:text-zinc-400 hover:text-foreground hover:bg-white/20 dark:hover:bg-zinc-800/20 md:hover:bg-zinc-100/50 md:dark:hover:bg-zinc-900/40"
+                    : "text-zinc-550 dark:text-zinc-400 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 md:hover:bg-black/[0.04] md:dark:hover:bg-white/[0.04]"
                 )}
               >
                 <Icon className={cn("w-4 h-4 flex-shrink-0 hidden md:block", isActive ? "text-cyan-600 dark:text-cyan-400" : "text-muted-foreground/75")} />
@@ -312,9 +312,9 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
                     <span>Choose Appearance Preferences</span>
                   </div>
 
-                  <div className="bg-zinc-50/40 dark:bg-zinc-950/45 border border-zinc-200/40 dark:border-zinc-850 rounded-2xl divide-y divide-zinc-250/20 dark:divide-zinc-800/45 overflow-hidden shadow-sm">
+                  <div className="bg-zinc-50/40 dark:bg-zinc-950/45 border border-zinc-200/40 dark:border-zinc-850 rounded-2xl divide-y divide-zinc-200/20 dark:divide-zinc-800/45 overflow-hidden shadow-sm">
                     {/* Dark Mode Toggle Row */}
-                    <div className="flex items-center justify-between p-4 sm:p-5 bg-zinc-100/5 dark:bg-zinc-950/5 hover:bg-zinc-100/10 dark:hover:bg-zinc-950/10 transition-colors duration-150">
+                    <div className="flex items-center justify-between p-4 sm:p-5 bg-zinc-100/5 dark:bg-zinc-950/5 hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors duration-150">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-zinc-200/40 dark:bg-zinc-900/60 text-muted-foreground/80 rounded-xl">
                           <Moon className="h-4.5 w-4.5 text-violet-500 dark:text-violet-400" />
@@ -329,7 +329,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
                         onClick={() => handleThemeToggle(!localDark)}
                         className={cn(
                           "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                          localDark ? "bg-cyan-600 dark:bg-cyan-500" : "bg-zinc-250 dark:bg-zinc-800"
+                          localDark ? "bg-cyan-600 dark:bg-cyan-500" : "bg-zinc-200 dark:bg-zinc-800"
                         )}
                       >
                         <span
