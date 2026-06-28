@@ -204,6 +204,7 @@ export default function ChatPage() {
   const [processingPDF, setProcessingPDF] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const showScrollButtonRef = useRef(false);
+  const isUserTouchingRef = useRef(false);
 
   useEffect(() => {
     const search = localStorage.getItem('search-enabled') === 'true';
@@ -936,13 +937,15 @@ export default function ChatPage() {
       if (!scrollContainer) return;
 
       // Dismiss keyboard on scroll on mobile/tablet viewports to match native iOS/Android behavior
+      // Only dismiss if the user is actively touching/dragging the container to prevent
+      // layout-resize scroll events (such as the keyboard opening) from instantly blurring the input.
       if (typeof window !== 'undefined') {
         const isMobileOrTablet = window.innerWidth < 1024 ||
           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
           ('ontouchstart' in window) ||
           (navigator.maxTouchPoints > 0);
         
-        if (isMobileOrTablet && !isLoadingRef.current) {
+        if (isMobileOrTablet && !isLoadingRef.current && isUserTouchingRef.current) {
           const activeEl = document.activeElement;
           if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'BUTTON')) {
             (activeEl as HTMLElement).blur();
@@ -971,12 +974,26 @@ export default function ChatPage() {
       isUserScrolledUpRef.current = scrollHeight - (scrollPosition + containerHeight) > 100;
     };
 
+    const handleTouchStart = () => {
+      isUserTouchingRef.current = true;
+    };
+
+    const handleTouchEnd = () => {
+      isUserTouchingRef.current = false;
+    };
+
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
       handleScroll();
       scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+      scrollContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
+      scrollContainer.addEventListener('touchcancel', handleTouchEnd, { passive: true });
       return () => {
         scrollContainer.removeEventListener('scroll', handleScroll);
+        scrollContainer.removeEventListener('touchstart', handleTouchStart);
+        scrollContainer.removeEventListener('touchend', handleTouchEnd);
+        scrollContainer.removeEventListener('touchcancel', handleTouchEnd);
         if (rafId !== null) cancelAnimationFrame(rafId);
       };
     }
