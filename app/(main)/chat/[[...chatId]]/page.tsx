@@ -956,32 +956,12 @@ export default function ChatPage() {
       isUserScrolledUpRef.current = scrollHeight - (scrollPosition + containerHeight) > 100;
     };
 
-    const handleGestureScroll = () => {
-      if (typeof window !== 'undefined') {
-        const isMobileOrTablet = window.innerWidth < 1024 ||
-          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-          ('ontouchstart' in window) ||
-          (navigator.maxTouchPoints > 0);
-        
-        if (isMobileOrTablet && !isLoadingRef.current) {
-          const activeEl = document.activeElement;
-          if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'BUTTON')) {
-            (activeEl as HTMLElement).blur();
-          }
-        }
-      }
-    };
-
     const scrollContainer = scrollContainerRef.current;
     if (scrollContainer) {
       handleScroll();
       scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-      scrollContainer.addEventListener('touchmove', handleGestureScroll, { passive: true });
-      scrollContainer.addEventListener('wheel', handleGestureScroll, { passive: true });
       return () => {
         scrollContainer.removeEventListener('scroll', handleScroll);
-        scrollContainer.removeEventListener('touchmove', handleGestureScroll);
-        scrollContainer.removeEventListener('wheel', handleGestureScroll);
         if (rafId !== null) cancelAnimationFrame(rafId);
       };
     }
@@ -1161,7 +1141,7 @@ export default function ChatPage() {
               )}
             </div>
           ) : (
-            <div ref={contentRef} className="space-y-6 pb-64 sm:pb-72">
+            <div ref={contentRef} className="space-y-6 pb-28 sm:pb-36">
                {isLoadingHistory && (
                  <div className="w-full flex justify-center py-2" id="history-loading-spinner">
                    <Spinner />
