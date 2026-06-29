@@ -249,7 +249,7 @@ export async function POST(req: Request) {
 
     // Map tools to a serializable format to return to the client browser
     const formattedTools = Object.entries(tools).map(([name, config]: [string, any]) => ({
-      name,
+      name: name.replace(/:/g, '_'),
       description: config.description || '',
       inputSchema: config.inputSchema || {}
     }));

@@ -572,13 +572,18 @@ export function IntegrationsTab() {
         console.log(`[MCP Sync] Proxy backend tools list success: loaded ${tools.length} tools.`);
       }
 
-      // Namespace the tools using the integration ID to prevent collision
-      const namespacedTools = tools.map((t: any) => ({
-        name: t.name,
-        namespacedName: `${integrationId.toLowerCase()}_${t.name.toLowerCase()}`,
-        description: t.description || 'No description provided.',
-        inputSchema: t.inputSchema || {}
-      }));
+      // Namespace the tools using the integration ID to prevent collision if they aren't already namespaced
+      const namespacedTools = tools.map((t: any) => {
+        const cleanName = t.name.replace(/:/g, '_');
+        const prefix = `${integrationId.toLowerCase()}_`;
+        const namespacedName = cleanName.startsWith(prefix) ? cleanName : `${prefix}${cleanName}`;
+        return {
+          name: namespacedName,
+          namespacedName: namespacedName,
+          description: t.description || 'No description provided.',
+          inputSchema: t.inputSchema || {}
+        };
+      });
 
       await db.mcpIntegrations.update(integrationId, {
         cachedTools: namespacedTools,

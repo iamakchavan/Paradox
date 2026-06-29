@@ -332,17 +332,12 @@ You currently have the following active MCP App Integrations connected and loade
       for (const server of mcpServers) {
         if (!server.isEnabled) continue;
 
-        // Dynamic Heuristic Filtering: Only load tools if the query mentions or needs this server
-        if (!shouldLoadServerTools(server, messages)) {
-          console.log(`[CHAT] Skipping MCP server ${server.name} to optimize context and avoid rate limits.`);
-          continue;
-        }
 
         if (server.connectionMode === 'direct') {
           // CLIENT-SIDE DIRECT TOOLS: Omit 'execute' method.
           // Server only provides schemas. LLM tool-calls are streamed to the client.
           for (const tool of server.cachedTools) {
-            tools[tool.namespacedName] = {
+            tools[tool.name] = {
               description: tool.description,
               parameters: {
                 type: 'object',
@@ -367,9 +362,9 @@ You currently have the following active MCP App Integrations connected and loade
 
             const serverTools = await mcpClient.tools();
             for (const [name, config] of Object.entries(serverTools)) {
-              // Namespace tools to avoid collisions: e.g. github_search
-              const namespacedName = `${server.id.toLowerCase()}_${name.toLowerCase()}`;
-              tools[namespacedName] = {
+              // Ensure we register under the correct underscore-separated namespaced key matching client expectations
+              const resolvedKey = name.replace(/:/g, '_');
+              tools[resolvedKey] = {
                 ...config,
                 execute: async (args: any) => {
                   try {

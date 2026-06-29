@@ -75,7 +75,12 @@ function AuthCallbackContent() {
           if (discRes.ok) {
             const discData = await discRes.json();
             if (discData.tools) {
-              cachedTools = discData.tools;
+              cachedTools = discData.tools.map((t: any) => ({
+                name: t.name,
+                namespacedName: t.name,
+                description: t.description || 'No description provided.',
+                inputSchema: t.inputSchema || {}
+              }));
             }
           }
         } catch (syncErr) {
