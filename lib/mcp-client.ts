@@ -75,7 +75,7 @@ export async function preflightRefreshIntegrations(): Promise<void> {
           // 1. Attempt direct client-side refresh using dynamically registered browser client ID
           try {
             const metadata = await discoverOAuthMetadata(app.url);
-            const tokenEndpoint = metadata.token_endpoint;
+            const tokenEndpoint = metadata?.token_endpoint;
             const clientId = localStorage.getItem(`mcp_oauth_client_${app.id}`) || 'paradox-local';
 
             if (tokenEndpoint) {

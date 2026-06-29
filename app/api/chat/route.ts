@@ -295,7 +295,7 @@ IMPORTANT RULES:
     }
 
     const activeIntegrations = mcpServers?.filter((server: any) => 
-      server.isEnabled && shouldLoadServerTools(server, messages)
+      server.isEnabled
     ) || [];
 
     if (activeIntegrations.length > 0) {
@@ -356,9 +356,10 @@ You currently have the following active MCP App Integrations connected and loade
           // SERVER-SIDE PROXY TOOLS: Contains 'execute' method.
           // Executed immediately on Next.js server.
           try {
+            const transportType = server.url.includes('/sse') ? 'sse' : 'http';
             const mcpClient = await createMCPClient({
               transport: {
-                type: 'http',
+                type: transportType as 'sse' | 'http',
                 url: server.url,
                 headers: server.accessToken ? { 'Authorization': `Bearer ${server.accessToken}` } : undefined
               }

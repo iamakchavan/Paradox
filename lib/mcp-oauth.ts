@@ -43,7 +43,7 @@ export interface OAuthMetadata {
 /**
  * Fetches OAuth metadata from the remote MCP server using standard RFC 8414 discovery.
  */
-export async function discoverOAuthMetadata(serverUrl: string): Promise<OAuthMetadata> {
+export async function discoverOAuthMetadata(serverUrl: string): Promise<OAuthMetadata | null> {
   try {
     const res = await fetch('/api/mcp/discover', {
       method: 'POST',
@@ -55,19 +55,22 @@ export async function discoverOAuthMetadata(serverUrl: string): Promise<OAuthMet
     });
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.error || `Discovery failed with status: ${res.status}`);
+      return null;
     }
 
     const data = await res.json();
+    if (!data.authorization_endpoint || !data.token_endpoint) {
+      return null;
+    }
+
     return {
       authorization_endpoint: data.authorization_endpoint,
       token_endpoint: data.token_endpoint,
       registration_endpoint: data.registration_endpoint
     };
   } catch (err: any) {
-    console.error('[OAuth Discovery Error]:', err);
-    throw new Error(err.message || 'Failed to discover OAuth endpoints on this remote MCP server.');
+    console.warn('[OAuth Discovery Info]: Remote server does not support OAuth.', err.message || err);
+    return null;
   }
 }
 

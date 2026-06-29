@@ -59,6 +59,29 @@ function AuthCallbackContent() {
         const expiresAt = expiresIn ? Date.now() + expiresIn * 1000 : undefined;
         const targetUrl = remoteUrl || `https://mcp.${provider}.com/mcp`;
 
+        setStatus('Syncing tools and completing connection...');
+
+        // Pre-fetch tools list to store in database cache (crucial for mobile/redirect flow)
+        let cachedTools: any[] = [];
+        try {
+          const discRes = await fetch('/api/mcp/discover', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url: targetUrl,
+              accessToken
+            })
+          });
+          if (discRes.ok) {
+            const discData = await discRes.json();
+            if (discData.tools) {
+              cachedTools = discData.tools;
+            }
+          }
+        } catch (syncErr) {
+          console.warn('[Auth Callback] Background tool sync failed:', syncErr);
+        }
+
         await db.mcpIntegrations.put({
           id: provider,
           name: provider.charAt(0).toUpperCase() + provider.slice(1),
@@ -70,16 +93,16 @@ function AuthCallbackContent() {
           expiresAt,
           isEnabled: true,
           status: 'connected',
-          cachedTools: [],
-          lastToolSync: 0,
+          cachedTools,
+          lastToolSync: Date.now(),
           createdAt: Date.now()
         });
 
-        setStatus('Integration connected successfully! Syncing...');
+        setStatus('Integration connected successfully!');
 
         if (isMobile) {
           setTimeout(() => {
-            router.push(`/chat/${chatId}`);
+            router.push('/');
           }, 800);
         } else {
           window.opener?.postMessage(
@@ -126,10 +149,14 @@ function AuthCallbackContent() {
           code_verifier: codeVerifier
         });
 
-        fetch(tokenEndpoint, {
+        fetch('/api/mcp/discover', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: bodyParams.toString()
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'exchange-token',
+            tokenEndpoint,
+            bodyParams: Object.fromEntries(bodyParams)
+          })
         })
         .then(async (res) => {
           if (!res.ok) {

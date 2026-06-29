@@ -62,6 +62,8 @@ interface ChatInputProps {
   onToggleResearch?: (enabled: boolean) => void;
   onExpandedChange?: (expanded: boolean) => void;
   onOpenSettingsTab?: (tab: 'ai-providers' | 'search-scraping' | 'appearance' | 'integrations') => void;
+  selectedMcpIds?: string[];
+  onToggleMcpId?: (id: string) => void;
 }
 
 const containerVariants = {
@@ -133,8 +135,12 @@ export const ChatInput = ({
   researchEnabled = false,
   onToggleResearch,
   onExpandedChange,
-  onOpenSettingsTab
+  onOpenSettingsTab,
+  selectedMcpIds: selectedMcpIdsProp = [],
+  onToggleMcpId: onToggleMcpIdProp = () => {}
 }: ChatInputProps) => {
+  const selectedMcpIds = selectedMcpIdsProp;
+  const onToggleMcpId = onToggleMcpIdProp;
   const [localMessage, setLocalMessage] = useState(message || '');
   
   const mcpServers = useLiveQuery(() => db.mcpIntegrations.toArray()) || [];
@@ -180,12 +186,16 @@ export const ChatInput = ({
     setShowAttachDropdown(false);
   };
 
+  const hasActiveApp = useMemo(() => {
+    return activeApps.some(app => selectedMcpIds.includes(app.id));
+  }, [activeApps, selectedMcpIds]);
+
   const isExpandedVisual = useMemo(() => {
     if (isMobile) {
-      return (isFocused && localMessage.length > 0) || selectedImages.length > 0 || selectedPDFs.length > 0 || searchEnabled || researchEnabled;
+      return (isFocused && localMessage.length > 0) || selectedImages.length > 0 || selectedPDFs.length > 0 || searchEnabled || researchEnabled || hasActiveApp;
     }
-    return localMessage.length > 0 || selectedImages.length > 0 || selectedPDFs.length > 0 || searchEnabled || researchEnabled;
-  }, [isMobile, isFocused, localMessage.length, selectedImages.length, selectedPDFs.length, searchEnabled, researchEnabled]);
+    return localMessage.length > 0 || selectedImages.length > 0 || selectedPDFs.length > 0 || searchEnabled || researchEnabled || hasActiveApp;
+  }, [isMobile, isFocused, localMessage.length, selectedImages.length, selectedPDFs.length, searchEnabled, researchEnabled, hasActiveApp]);
 
   useEffect(() => {
     onExpandedChange?.(isExpandedVisual);
@@ -193,6 +203,7 @@ export const ChatInput = ({
 
   const [isCapsuleHovered, setIsCapsuleHovered] = useState(false);
   const [isResearchCapsuleHovered, setIsResearchCapsuleHovered] = useState(false);
+  const [showAppsSubmenu, setShowAppsSubmenu] = useState(false);
 
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
@@ -622,46 +633,108 @@ export const ChatInput = ({
 
                         <div className="my-1 border-t border-border/40" />
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onOpenSettingsTab?.('integrations');
-                            setShowAttachDropdown(false);
-                          }}
-                          onMouseDown={(e) => e.preventDefault()}
-                          className="group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
+                        <div 
+                          className="relative"
+                          onMouseEnter={() => setShowAppsSubmenu(true)}
+                          onMouseLeave={() => setShowAppsSubmenu(false)}
                         >
-                          <div className="flex items-center gap-3">
-                            <Grid className="w-4 h-4 text-foreground/60 group-hover:text-foreground/80 transition-colors duration-150 shrink-0" strokeWidth={1.5} />
-                            <span className="transition-colors duration-150">Apps</span>
-                          </div>
-                          {activeApps.length > 0 && (
-                            <span className="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
-                              {activeApps.length}
-                            </span>
-                          )}
-                        </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              const isTouch = isMobileOrTablet();
+                              if (isTouch && activeApps.length > 0) {
+                                e.stopPropagation();
+                                setShowAppsSubmenu(!showAppsSubmenu);
+                              } else {
+                                onOpenSettingsTab?.('integrations');
+                                setShowAttachDropdown(false);
+                              }
+                            }}
+                            onMouseDown={(e) => e.preventDefault()}
+                            className={cn(
+                              "group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer whitespace-nowrap",
+                              showAppsSubmenu
+                                ? "bg-black/5 dark:bg-white/5 text-foreground"
+                                : "text-foreground/80 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                            )}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Grid className="w-4 h-4 text-foreground/60 group-hover:text-foreground/80 transition-colors duration-150 shrink-0" strokeWidth={1.5} />
+                              <span className="transition-colors duration-150">Apps</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {activeApps.length > 0 && (
+                                <span className="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                  {activeApps.length}
+                                </span>
+                              )}
+                              <span className="text-[10px] text-muted-foreground/50 font-normal">❯</span>
+                            </div>
+                          </button>
 
-                        {activeApps.length > 0 && (
-                          <div className="flex flex-col gap-0.5 max-h-[120px] overflow-y-auto mt-0.5 no-scrollbar">
-                            {activeApps.map((app) => {
-                              const iconMap: Record<string, any> = { github: Github, cal: Calendar };
-                              const AppIcon = iconMap[app.id] || Puzzle;
-                              return (
-                                <div
-                                  key={app.id}
-                                  className="w-full flex items-center justify-between pl-7 pr-3 py-1 text-[11px] text-muted-foreground/85 font-medium select-none"
-                                >
-                                  <div className="flex items-center gap-2 truncate">
-                                    <AppIcon className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" strokeWidth={1.5} />
-                                    <span className="truncate">{app.name}</span>
+                          <AnimatePresence>
+                            {showAppsSubmenu && (
+                              <motion.div
+                                initial={{ opacity: 0, x: 6, scale: 0.95 }}
+                                animate={{ opacity: 1, x: 0, scale: 1 }}
+                                exit={{ opacity: 0, x: 6, scale: 0.95 }}
+                                transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                                className="absolute left-[calc(100%+8px)] bottom-0 w-[200px] bg-popover border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-[0_12px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_30px_rgba(0,0,0,0.4)] p-1.5 z-50 flex flex-col gap-0.5"
+                              >
+                                {activeApps.length === 0 ? (
+                                  <div className="px-3 py-4 text-xs text-muted-foreground text-center leading-normal">
+                                    No apps connected. Click settings to manage.
                                   </div>
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.4)] animate-pulse" />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
+                                ) : (
+                                  <div className="flex flex-col gap-0.5">
+                                    <div className="px-2.5 py-1 text-[9.5px] font-bold text-muted-foreground/60 tracking-wider uppercase">
+                                      Toggle Tools
+                                    </div>
+                                    {activeApps.map((app) => {
+                                      const iconMap: Record<string, any> = { github: Github, cal: Calendar };
+                                      const AppIcon = iconMap[app.id] || Puzzle;
+                                      const isSelected = selectedMcpIds.includes(app.id);
+                                      return (
+                                        <button
+                                          key={app.id}
+                                          type="button"
+                                          onClick={() => onToggleMcpId(app.id)}
+                                          className={cn(
+                                            "group w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 text-left cursor-pointer whitespace-nowrap",
+                                            isSelected
+                                              ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/15"
+                                              : "hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground"
+                                          )}
+                                        >
+                                          <div className="flex items-center gap-2 max-w-[130px] truncate">
+                                            <AppIcon className={cn("w-3.5 h-3.5 shrink-0 transition-colors duration-150", isSelected ? "text-cyan-500" : "text-foreground/60 group-hover:text-foreground/80")} strokeWidth={1.5} />
+                                            <span className="truncate">{app.name}</span>
+                                          </div>
+                                          {isSelected && (
+                                            <span className="text-cyan-600 dark:text-cyan-400 font-bold text-[10.5px] mr-0.5">✓</span>
+                                          )}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                                <div className="my-1 border-t border-border/40" />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    onOpenSettingsTab?.('integrations');
+                                    setShowAttachDropdown(false);
+                                    setShowAppsSubmenu(false);
+                                  }}
+                                  className="group w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/5 transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
+                                >
+                                  <Plus className="w-3.5 h-3.5 shrink-0" />
+                                  <span>Manage apps</span>
+                                </button>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -720,6 +793,35 @@ export const ChatInput = ({
                     <span>Deep Research</span>
                   </button>
                 )}
+
+                {/* Active App Capsules */}
+                {activeApps.map((app) => {
+                  const isSelected = selectedMcpIds.includes(app.id);
+                  if (!isSelected) return null;
+
+                  const iconMap: Record<string, any> = { github: Github, cal: Calendar };
+                  const AppIcon = iconMap[app.id] || Puzzle;
+
+                  // Uniform styling for all integration app capsules
+                  const capsuleColor = 'bg-cyan-500/10 hover:bg-cyan-500/15 border-cyan-500/20 text-cyan-600 dark:text-cyan-400';
+
+                  return (
+                    <button
+                      key={app.id}
+                      type="button"
+                      onClick={() => onToggleMcpId(app.id)}
+                      onMouseDown={(e) => e.preventDefault()}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out select-none border shadow-[0_1px_2px_rgba(0,0,0,0.02)] shrink-0 active:scale-[0.93] active:duration-75",
+                        capsuleColor
+                      )}
+                    >
+                      <X className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity shrink-0" />
+                      <AppIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
+                      <span>{app.name}</span>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Text Area */}

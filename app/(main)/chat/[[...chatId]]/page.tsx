@@ -170,6 +170,46 @@ export default function ChatPage() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [selectedPDFs, setSelectedPDFs] = useState<{ name: string; data: string }[]>([]);
   const [selectedModelId, setSelectedModelId] = useState('sonar');
+  const [selectedMcpIds, setSelectedMcpIds] = useState<string[]>([]);
+  const selectedMcpIdsRef = useRef(selectedMcpIds);
+  useEffect(() => { selectedMcpIdsRef.current = selectedMcpIds; }, [selectedMcpIds]);
+
+  // Load selected MCP integrations for the current chat session
+  useEffect(() => {
+    const loadSelectedMcps = async () => {
+      const allEnabled: string[] = await db.mcpIntegrations.toArray()
+        .then(list => list.filter(s => s.isEnabled).map(s => s.id))
+        .catch(() => [] as string[]);
+
+      if (chatIdParam) {
+        const stored = localStorage.getItem(`paradox_active_mcp_${chatIdParam}`);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              setSelectedMcpIds(parsed.filter(id => allEnabled.includes(id)));
+              return;
+            }
+          } catch (e) {
+            console.error('Failed to parse active MCPs:', e);
+          }
+        }
+      }
+      setSelectedMcpIds([]);
+    };
+
+    loadSelectedMcps();
+  }, [chatIdParam]);
+
+  const handleToggleMcpId = useCallback((id: string) => {
+    setSelectedMcpIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      if (chatIdParam) {
+        localStorage.setItem(`paradox_active_mcp_${chatIdParam}`, JSON.stringify(next));
+      }
+      return next;
+    });
+  }, [chatIdParam]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -660,7 +700,26 @@ export default function ChatPage() {
       visibilityChangeHandler = handleVisibilityChange;
       document.addEventListener('visibilitychange', handleVisibilityChange);
 
-      const activeMcpServers = await db.mcpIntegrations.toArray().catch(() => []).then(list => list.filter(s => s.isEnabled));
+      const activeMcpServers = await db.mcpIntegrations.toArray()
+        .catch(() => [])
+        .then(list => {
+          let selectedIds = selectedMcpIdsRef.current;
+          // Fallback: If selectedIds is empty (due to async state updates delay during mount), read directly from localStorage
+          if (selectedIds.length === 0 && chatId) {
+            const stored = localStorage.getItem(`paradox_active_mcp_${chatId}`);
+            if (stored) {
+              try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed)) {
+                  selectedIds = parsed;
+                }
+              } catch (e) {
+                console.error('Failed to parse active MCPs inside runStreaming:', e);
+              }
+            }
+          }
+          return list.filter(s => s.isEnabled && selectedIds.includes(s.id));
+        });
 
       let hasDirectToolCall = false;
       let directToolCallData: any = null;
@@ -946,6 +1005,9 @@ export default function ChatPage() {
       // Save user and empty assistant messages to IndexedDB
       await addMessageToSession(newChatId, 'user', promptMessage, promptImages, promptPDFs);
       await addMessageToSession(newChatId, 'assistant', '');
+
+      // Persist active MCP IDs to the new session
+      localStorage.setItem(`paradox_active_mcp_${newChatId}`, JSON.stringify(selectedMcpIds));
 
       // Buffer the stream inputs in sessionStorage so the newly mounted component picks it up
       sessionStorage.setItem(`pending-stream-${newChatId}`, JSON.stringify({
@@ -1299,6 +1361,8 @@ export default function ChatPage() {
                     onToggleResearch={handleToggleResearch}
                     onExpandedChange={setIsInputExpanded}
                     onOpenSettingsTab={handleOpenSettingsTab}
+                    selectedMcpIds={selectedMcpIds}
+                    onToggleMcpId={handleToggleMcpId}
                   />
                 </motion.div>
               )}
@@ -1422,6 +1486,8 @@ export default function ChatPage() {
             onToggleResearch={handleToggleResearch}
             onExpandedChange={setIsInputExpanded}
             onOpenSettingsTab={handleOpenSettingsTab}
+            selectedMcpIds={selectedMcpIds}
+            onToggleMcpId={handleToggleMcpId}
           />
         </motion.div>
       )}

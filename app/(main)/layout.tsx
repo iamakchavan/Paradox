@@ -27,6 +27,7 @@ export default function MainLayout({
     if (saved !== null) {
       setIsSidebarCollapsed(saved === 'true');
     }
+
     const frame = requestAnimationFrame(() => {
       setMounted(true);
     });
@@ -45,10 +46,27 @@ export default function MainLayout({
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  // Dismiss search & settings view when navigating to a library or another page
+  // Dismiss search & settings view when navigating, or restore settings state on chat load
   useEffect(() => {
-    if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
-      // Navigated away from chat entirely (e.g. /library) — close search and settings
+    const isValidChatPath = pathname === '/chat' || pathname.startsWith('/chat/') || pathname === '/';
+    
+    if (isValidChatPath) {
+      const restore = localStorage.getItem('mcp_oauth_restore_state');
+      if (restore) {
+        localStorage.removeItem('mcp_oauth_restore_state');
+        try {
+          const parsed = JSON.parse(restore);
+          if (parsed.provider) {
+            sessionStorage.setItem('settings-default-tab', 'integrations');
+            sessionStorage.setItem('settings-restore-provider', parsed.provider);
+          }
+        } catch (e) {
+          sessionStorage.setItem('settings-default-tab', 'integrations');
+        }
+        setIsSettingsActive(true);
+      }
+    } else {
+      // Navigated away from chat entirely (e.g. /library or /auth/callback) — close search and settings
       setIsSearchActive(false);
       setIsSettingsActive(false);
     }
