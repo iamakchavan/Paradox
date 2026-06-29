@@ -1,5 +1,7 @@
-import { useRef, useEffect, useState, useMemo } from 'react';
-import { Plus, Image, ArrowUp, X, FileText, Upload, Square } from 'lucide-react';
+import { useRef, useEffect, useState, useMemo, useCallback, useLayoutEffect } from 'react';
+import { Plus, Image, ArrowUp, X, FileText, Upload, Square, Grid, Github, Calendar, Puzzle } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/db';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -59,6 +61,7 @@ interface ChatInputProps {
   researchEnabled?: boolean;
   onToggleResearch?: (enabled: boolean) => void;
   onExpandedChange?: (expanded: boolean) => void;
+  onOpenSettingsTab?: (tab: 'ai-providers' | 'search-scraping' | 'appearance' | 'integrations') => void;
 }
 
 const containerVariants = {
@@ -129,9 +132,13 @@ export const ChatInput = ({
   onToggleSearch,
   researchEnabled = false,
   onToggleResearch,
-  onExpandedChange
+  onExpandedChange,
+  onOpenSettingsTab
 }: ChatInputProps) => {
   const [localMessage, setLocalMessage] = useState(message || '');
+  
+  const mcpServers = useLiveQuery(() => db.mcpIntegrations.toArray()) || [];
+  const activeApps = mcpServers.filter(s => s.isEnabled);
 
   // Synchronize external resets
   useEffect(() => {
@@ -612,6 +619,49 @@ export const ChatInput = ({
                             <span className="w-1.5 h-1.5 rounded-full bg-purple-600 dark:bg-purple-400 shrink-0 mr-1" />
                           )}
                         </button>
+
+                        <div className="my-1 border-t border-border/40" />
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onOpenSettingsTab?.('integrations');
+                            setShowAttachDropdown(false);
+                          }}
+                          onMouseDown={(e) => e.preventDefault()}
+                          className="group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Grid className="w-4 h-4 text-foreground/60 group-hover:text-foreground/80 transition-colors duration-150 shrink-0" strokeWidth={1.5} />
+                            <span className="transition-colors duration-150">Apps</span>
+                          </div>
+                          {activeApps.length > 0 && (
+                            <span className="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
+                              {activeApps.length}
+                            </span>
+                          )}
+                        </button>
+
+                        {activeApps.length > 0 && (
+                          <div className="flex flex-col gap-0.5 max-h-[120px] overflow-y-auto mt-0.5 no-scrollbar">
+                            {activeApps.map((app) => {
+                              const iconMap: Record<string, any> = { github: Github, cal: Calendar };
+                              const AppIcon = iconMap[app.id] || Puzzle;
+                              return (
+                                <div
+                                  key={app.id}
+                                  className="w-full flex items-center justify-between pl-7 pr-3 py-1 text-[11px] text-muted-foreground/85 font-medium select-none"
+                                >
+                                  <div className="flex items-center gap-2 truncate">
+                                    <AppIcon className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" strokeWidth={1.5} />
+                                    <span className="truncate">{app.name}</span>
+                                  </div>
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.4)] animate-pulse" />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>

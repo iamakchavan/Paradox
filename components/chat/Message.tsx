@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, memo, createContext, useContext, Children, isValidElement } from 'react';
-import { ChevronDown, FileText, Globe, Search, ShieldAlert, Loader2, ChevronLeft, ChevronRight, ExternalLink, ArrowUpRight } from 'lucide-react';
+import { ChevronDown, FileText, Globe, Search, ShieldAlert, Loader2, ChevronLeft, ChevronRight, ExternalLink, ArrowUpRight, Check, Cpu, Network, Terminal } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -1006,11 +1006,136 @@ const WebSearchWidget = memo(({ searchData }: { searchData: { query: string; res
 });
 WebSearchWidget.displayName = 'WebSearchWidget';
 
+interface ParadoxTaskTimelineProps {
+  steps: string[];
+  isStreaming: boolean;
+}
+
+const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelineProps) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
+  if (!steps || steps.length === 0) return null;
+
+  const lastStepIndex = steps.length - 1;
+
+  return (
+    <div className="w-full mb-5 rounded-2xl border border-zinc-200/85 dark:border-zinc-800/90 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md p-3.5 shadow-3xs overflow-hidden">
+      {/* Header */}
+      <button
+        type="button"
+        onClick={() => setIsCollapsed(prev => !prev)}
+        className="w-full flex items-center justify-between text-left cursor-pointer focus:outline-hidden group select-none"
+      >
+        <div className="flex items-center gap-2">
+          {/* Animated/Glowing Pulse or Checkmark based on completion */}
+          {isStreaming ? (
+            <div className="relative w-4 h-4 flex items-center justify-center shrink-0">
+              <motion.div
+                animate={{ scale: [0.8, 1.2, 0.8] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                className="absolute w-2 h-2 rounded-full bg-cyan-600 dark:bg-cyan-400"
+              />
+              <svg className="w-4 h-4 text-cyan-600/50 dark:text-cyan-400/50 animate-spin" viewBox="0 0 16 16">
+                <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
+              </svg>
+            </div>
+          ) : (
+            <div className="w-4 h-4 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <Check className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" strokeWidth={3} />
+            </div>
+          )}
+          
+          <span className={cn(
+            "text-sm font-semibold transition-all duration-300",
+            isStreaming ? "thinking-shine font-bold text-cyan-600 dark:text-cyan-400" : "text-foreground/90"
+          )}>
+            {isStreaming ? 'Running Paradox Task...' : 'Paradox Task complete'}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+          <span>{steps.length} {steps.length === 1 ? 'action' : 'actions'}</span>
+          <ChevronDown className={cn("w-4 h-4 transition-transform duration-250", !isCollapsed && "rotate-180")} />
+        </div>
+      </button>
+
+      {/* Steps List */}
+      <AnimatePresence initial={false}>
+        {!isCollapsed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="pt-3.5 pl-1.5 space-y-3 relative">
+              {steps.map((step, idx) => {
+                const isItemLoading = isStreaming && idx === lastStepIndex;
+                const isStepCompleted = !isStreaming || idx < lastStepIndex;
+
+                let icon = <Terminal className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />;
+                let label = step;
+
+                if (step.startsWith('Executing ')) {
+                  label = `Executing app tool: ${step.replace('Executing ', '').replace('...', '')}`;
+                  icon = <Cpu className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0" />;
+                } else if (step.startsWith('Reading ')) {
+                  label = `Reading web page: ${step.replace('Reading ', '')}`;
+                  icon = <Globe className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 shrink-0" />;
+                } else if (step.startsWith('Mapping ')) {
+                  label = `Mapping site: ${step.replace('Mapping ', '')}`;
+                  icon = <Network className="w-3.5 h-3.5 text-teal-500 dark:text-teal-400 shrink-0" />;
+                } else if (step === 'Searching web...') {
+                  label = 'Searching web';
+                  icon = <Search className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 shrink-0" />;
+                }
+
+                return (
+                  <div key={idx} className="relative flex items-start gap-3">
+                    {/* Vertical connector line */}
+                    {idx < steps.length - 1 && (
+                      <div className="absolute left-[9px] -translate-x-1/2 top-[22px] bottom-[-14px] w-[1.5px] bg-zinc-200 dark:bg-zinc-800/80 rounded-full" />
+                    )}
+
+                    {/* Step Icon with outline */}
+                    <div className="w-5 h-5 flex items-center justify-center shrink-0 z-10 select-none bg-background rounded-full border border-border/60">
+                      {isItemLoading ? (
+                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                      ) : isStepCompleted ? (
+                        <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" strokeWidth={3} />
+                      ) : (
+                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                      )}
+                    </div>
+
+                    {/* Detail Card */}
+                    <div className="flex-1 min-w-0 flex items-center gap-2 pt-0.5">
+                      {icon}
+                      <span className={cn(
+                        "text-[11px] font-medium leading-none truncate",
+                        isItemLoading ? "thinking-shine font-semibold text-foreground" : "text-muted-foreground"
+                      )}>
+                        {label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
+ParadoxTaskTimeline.displayName = 'ParadoxTaskTimeline';
+
 // Helper to extract search tags from content stream
 const extractSearchData = (content: string) => {
   let searchLoadingQuery: string | null = null;
   let searchData: { query: string; results: Array<{ title: string; url: string; content: string }> } | null = null;
   let cleanContent = content;
+  let toolSteps: string[] = [];
 
   // Extract search results
   const resultsMatch = content.match(/<search-results>([\s\S]*?)<\/search-results>/);
@@ -1023,14 +1148,16 @@ const extractSearchData = (content: string) => {
     }
   }
 
-  // Extract search loading query
-  const loadingMatch = content.match(/<search-loading query="([\s\S]*?)" \/>/);
-  if (loadingMatch) {
-    searchLoadingQuery = loadingMatch[1].replace(/&quot;/g, '"');
+  // Extract search loading query (last match in content to reflect active status)
+  const loadingMatches = Array.from(content.matchAll(/<search-loading query="([\s\S]*?)" \/>/g));
+  if (loadingMatches.length > 0) {
+    toolSteps = loadingMatches.map(m => m[1].replace(/&quot;/g, '"'));
+    const lastMatch = loadingMatches[loadingMatches.length - 1];
+    searchLoadingQuery = lastMatch[1].replace(/&quot;/g, '"');
     cleanContent = cleanContent.replace(/<search-loading query="[\s\S]*?" \/>/g, '');
   }
 
-  return { searchLoadingQuery, searchData, cleanContent: cleanContent.trim() };
+  return { searchLoadingQuery, searchData, toolSteps, cleanContent: cleanContent.trim() };
 };
 
 interface SearchData {
@@ -1209,7 +1336,7 @@ const MessageComponent = ({
   const prevSearchDataRef = useRef<SearchData | null>(null);
 
   // Group parsing and reference stabilization in a single useMemo keyed by rawMainContent
-  const { steps, searchLoadingQuery, searchData, mainContent, researchTime } = useMemo(() => {
+  const { steps, searchLoadingQuery, searchData, toolSteps, mainContent, researchTime } = useMemo(() => {
     let mainContent = rawMainContent;
     let researchTime = 0;
 
@@ -1223,6 +1350,7 @@ const MessageComponent = ({
     let parsedSteps: ResearchStep[] = [];
     let searchLoadingQuery: string | null = null;
     let parsedSearchData: SearchData | null = null;
+    let parsedToolSteps: string[] = [];
 
     if (isDeepResearch) {
       const parsed = parseResearchStream(mainContent);
@@ -1232,6 +1360,7 @@ const MessageComponent = ({
       const parsed = extractSearchData(mainContent);
       searchLoadingQuery = parsed.searchLoadingQuery;
       parsedSearchData = parsed.searchData;
+      parsedToolSteps = parsed.toolSteps;
       mainContent = parsed.cleanContent;
     }
 
@@ -1258,6 +1387,7 @@ const MessageComponent = ({
       steps: finalSteps,
       searchLoadingQuery,
       searchData: finalSearchData,
+      toolSteps: parsedToolSteps,
       mainContent,
       researchTime
     };
@@ -1370,7 +1500,11 @@ const MessageComponent = ({
           <ResearchTimeline steps={steps} isLoading={isStreaming} researchTime={researchTime} />
         )}
 
-        {searchLoadingQuery && !searchData && isStreaming && (() => {
+        {toolSteps && toolSteps.length > 0 && (
+          <ParadoxTaskTimeline steps={toolSteps} isStreaming={isStreaming} />
+        )}
+
+        {searchLoadingQuery && !searchData && isStreaming && (!toolSteps || toolSteps.length === 0) && (() => {
           let mainStatus = 'Searching web...';
           let subStatus = searchLoadingQuery;
 
@@ -1380,6 +1514,9 @@ const MessageComponent = ({
           } else if (searchLoadingQuery.startsWith('Mapping ')) {
             mainStatus = 'Exploring website...';
             subStatus = searchLoadingQuery.replace('Mapping ', '');
+          } else if (searchLoadingQuery.startsWith('Executing ')) {
+            mainStatus = 'Calling app tool...';
+            subStatus = searchLoadingQuery.replace('Executing ', '');
           }
 
           return (

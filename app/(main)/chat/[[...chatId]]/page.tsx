@@ -5,6 +5,7 @@ import { ArrowUp, X } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import dynamic from 'next/dynamic';
 import { streamChatContent } from '@/lib/chat-client';
+import { executeDirectTool, preflightRefreshIntegrations } from '@/lib/mcp-client';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -199,6 +200,13 @@ export default function ChatPage() {
   }, [setIsLoadingState]);
 
   const [isInitialView, setIsInitialView] = useState(() => !chatIdParam);
+  const [settingsDefaultTab, setSettingsDefaultTab] = useState<'ai-providers' | 'search-scraping' | 'appearance' | 'integrations'>('appearance');
+  
+  const handleOpenSettingsTab = useCallback((tab: 'ai-providers' | 'search-scraping' | 'appearance' | 'integrations') => {
+    setSettingsDefaultTab(tab);
+    setIsSettingsActive(true);
+  }, [setIsSettingsActive]);
+
   const { setTheme, theme } = useTheme();
   const [expandedThinking, setExpandedThinking] = useState<number[]>([]);
   const [processingPDF, setProcessingPDF] = useState(false);
@@ -214,6 +222,16 @@ export default function ChatPage() {
     searchEnabledRef.current = search;
     researchEnabledRef.current = research;
   }, []);
+
+  useEffect(() => {
+    if (isSettingsActive) {
+      const tab = sessionStorage.getItem('settings-default-tab');
+      if (tab) {
+        setSettingsDefaultTab(tab as any);
+        sessionStorage.removeItem('settings-default-tab');
+      }
+    }
+  }, [isSettingsActive]);
 
   // Reset limit on session change
   useEffect(() => {
@@ -528,6 +546,7 @@ export default function ChatPage() {
     assistantMessageId: number
   ) => {
     // Read from refs so the callback stays stable and doesn't re-create on every render
+    await preflightRefreshIntegrations();
     const keys = {
       geminiApiKey: apiKeysRef.current.geminiApiKey || localStorage.getItem('gemini-api-key'),
       mistralApiKey: apiKeysRef.current.mistralApiKey || localStorage.getItem('mistral-api-key'),
@@ -569,6 +588,7 @@ export default function ChatPage() {
 
     let accumulatedContent = '';
     let visibilityChangeHandler: (() => void) | null = null;
+    let isInternalAbort = false;
 
     try {
       const historyPruned = pruneChatHistory(history, 500, 4);
@@ -640,34 +660,142 @@ export default function ChatPage() {
       visibilityChangeHandler = handleVisibilityChange;
       document.addEventListener('visibilitychange', handleVisibilityChange);
 
-      await streamChatContent(
-        payload,
-        modelId,
-        keys,
-        isSearch,
-        isResearch,
-        (token) => {
-          accumulatedContent += token;
+      const activeMcpServers = await db.mcpIntegrations.toArray().catch(() => []).then(list => list.filter(s => s.isEnabled));
 
-          if (accumulatedContent.includes('</think>') && thinkingDuration === 0) {
-            thinkingDuration = (Date.now() - thinkingStartTime) / 1000;
+      let hasDirectToolCall = false;
+      let directToolCallData: any = null;
+      isInternalAbort = false;
+
+      const executeStreamLoop = async (payloadToSend: any[]) => {
+        accumulatedContent = '';
+        hasDirectToolCall = false;
+        directToolCallData = null;
+
+        await streamChatContent(
+          payloadToSend,
+          modelId,
+          keys,
+          isSearch,
+          isResearch,
+          (token) => {
+            accumulatedContent += token;
+
+            const match = accumulatedContent.match(/<mcp-tool-call id="([^"]+)" name="([^"]+)" args="([^"]+)"\s*\/>/);
+            if (match) {
+              hasDirectToolCall = true;
+              directToolCallData = {
+                id: match[1],
+                name: match[2],
+                args: JSON.parse(match[3].replace(/&quot;/g, '"'))
+              };
+              isInternalAbort = true;
+              controller.abort();
+            }
+
+            if (accumulatedContent.includes('</think>') && thinkingDuration === 0) {
+              thinkingDuration = (Date.now() - thinkingStartTime) / 1000;
+            }
+
+            // Schedule a throttled state flush instead of calling setState directly
+            pendingFlush = true;
+            scheduleFlush();
+
+            // Periodically save to IndexedDB to prevent data loss on connection drop or page refresh
+            const now = Date.now();
+            if (now - lastSavedTime > 1500) {
+              lastSavedTime = now;
+              const cleanContent = accumulatedContent.replace(/<mcp-tool-call[\s\S]*?\/>/g, '');
+              updateMessageContentById(assistantMessageId, cleanContent).catch(err => {
+                console.warn('[IndexedDB Save] Failed to update intermediate content:', err);
+              });
+            }
+          },
+          activeMcpServers,
+          controller.signal
+        ).catch((err) => {
+          if (hasDirectToolCall) return; // swallow abort error for client tool trigger
+          throw err;
+        });
+
+        if (hasDirectToolCall && directToolCallData) {
+          const targetServer = activeMcpServers.find(s => 
+            s.connectionMode === 'direct' && 
+            s.cachedTools?.some((t: any) => t.namespacedName === directToolCallData.name)
+          );
+
+          if (!targetServer) {
+            throw new Error(`Direct tool handler for ${directToolCallData.name} not found.`);
           }
 
-          // Schedule a throttled state flush instead of calling setState directly
-          pendingFlush = true;
-          scheduleFlush();
+          const toolMeta = targetServer.cachedTools.find(t => t.namespacedName === directToolCallData.name);
+          const originalToolName = toolMeta ? toolMeta.name : directToolCallData.name;
 
-          // Periodically save to IndexedDB to prevent data loss on connection drop or page refresh
-          const now = Date.now();
-          if (now - lastSavedTime > 1500) {
-            lastSavedTime = now;
-            updateMessageContentById(assistantMessageId, accumulatedContent).catch(err => {
-              console.warn('[IndexedDB Save] Failed to update intermediate content:', err);
-            });
+          accumulatedContent = accumulatedContent.replace(/<mcp-tool-call[\s\S]*?\/>/g, '');
+          doFlush();
+
+          let toolResult = null;
+          try {
+            toolResult = await executeDirectTool(
+              targetServer.url,
+              originalToolName,
+              directToolCallData.args,
+              targetServer.accessToken
+            );
+          } catch (e: any) {
+            toolResult = { error: e.message || 'Direct browser tool execution failed.' };
           }
-        },
-        controller.signal
-      );
+
+          let cleanResult = toolResult;
+          if (toolResult && typeof toolResult === 'object' && Array.isArray((toolResult as any).content)) {
+            const textContent = (toolResult as any).content.find((c: any) => c.type === 'text');
+            if (textContent && typeof textContent.text === 'string') {
+              try {
+                cleanResult = JSON.parse(textContent.text);
+              } catch {
+                cleanResult = textContent.text;
+              }
+            }
+          }
+
+          const assistantToolMessage = {
+            role: 'assistant',
+            content: '',
+            toolCalls: [{
+              id: directToolCallData.id,
+              type: 'function' as const,
+              function: {
+                name: directToolCallData.name,
+                arguments: JSON.stringify(directToolCallData.args)
+              }
+            }]
+          };
+
+          const toolResultMsg = {
+            role: 'tool',
+            content: [
+              {
+                type: 'tool-result',
+                toolCallId: directToolCallData.id,
+                toolName: directToolCallData.name,
+                result: cleanResult
+              }
+            ]
+          };
+
+          // Re-instantiate controller for the next loop execution
+          isInternalAbort = false;
+          const nextController = new AbortController();
+          abortControllerRef.current = nextController;
+
+          await executeStreamLoop([
+            ...payloadToSend,
+            assistantToolMessage,
+            toolResultMsg
+          ]);
+        }
+      };
+
+      await executeStreamLoop(payload);
 
       // Cancel any pending rAF/timer flush and do a final synchronous state update
       if (visibilityChangeHandler) { document.removeEventListener('visibilitychange', visibilityChangeHandler); visibilityChangeHandler = null; }
@@ -703,6 +831,7 @@ export default function ChatPage() {
 
     } catch (error: any) {
       if (error?.message === 'Aborted' || error?.name === 'AbortError') {
+        if (isInternalAbort) return; // swallow internal loop aborts
         console.log('Stream stopped by user');
         return;
       }
@@ -1105,6 +1234,7 @@ export default function ChatPage() {
                       apiKeys={apiKeys}
                       updateKey={updateKey}
                       onClose={() => setIsSettingsActive(false)}
+                      defaultTab={settingsDefaultTab}
                     />
                   </motion.div>
                 )}
@@ -1168,6 +1298,7 @@ export default function ChatPage() {
                     researchEnabled={researchEnabled}
                     onToggleResearch={handleToggleResearch}
                     onExpandedChange={setIsInputExpanded}
+                    onOpenSettingsTab={handleOpenSettingsTab}
                   />
                 </motion.div>
               )}
@@ -1290,6 +1421,7 @@ export default function ChatPage() {
             researchEnabled={researchEnabled}
             onToggleResearch={handleToggleResearch}
             onExpandedChange={setIsInputExpanded}
+            onOpenSettingsTab={handleOpenSettingsTab}
           />
         </motion.div>
       )}

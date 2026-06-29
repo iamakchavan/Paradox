@@ -42,12 +42,36 @@ export interface LibraryFilePayload {
   data: string; // Base64 data URL
 }
 
+export type IntegrationStatus = 'connected' | 'expired' | 'unreachable' | 'error' | 'disconnected';
+
+export interface MCPIntegration {
+  id: string;             // Unique identifier (e.g., 'github', 'cal', or UUID)
+  name: string;           // Display name (e.g., 'GitHub')
+  url: string;            // Remote SSE host URL (e.g., 'https://mcp.github.com/mcp')
+  connectionMode: 'auto' | 'direct' | 'proxy'; // Connection strategy
+  authType: 'none' | 'apiKey' | 'oauth';
+  accessToken?: string;   // Token stored locally in browser
+  refreshToken?: string;  // Refresh token for silent auth updates
+  expiresAt?: number;     // Token expiration timestamp (epoch ms)
+  isEnabled: boolean;
+  status: IntegrationStatus; // Connection health tracker
+  cachedTools: Array<{    // Populated during the Discovery lifecycle
+    name: string;         // Original tool name (e.g., 'search')
+    namespacedName: string; // Collision-free name (e.g., 'github_search')
+    description: string;
+    inputSchema: any;     // Cached arguments validator schema
+  }>;
+  lastToolSync: number;   // Epoch timestamp of last successful sync
+  createdAt: number;
+}
+
 export class ParadoxDatabase extends Dexie {
   chats!: Table<ChatSession>;
   messages!: Table<ChatMessage>;
   favicons!: Table<FaviconCache>;
   library!: Table<LibraryFile>;
   libraryPayloads!: Table<LibraryFilePayload>;
+  mcpIntegrations!: Table<MCPIntegration>;
 
   constructor() {
     super('ParadoxDatabase');
@@ -108,6 +132,14 @@ export class ParadoxDatabase extends Dexie {
           await tx.table('chats').put(chat);
         }
       }
+    });
+    this.version(7).stores({
+      chats: 'id, title, createdAt, updatedAt, modelMode, branchedFromChatId',
+      messages: '++id, chatId, role, createdAt',
+      favicons: 'domain, createdAt',
+      library: '++id, chatId, type, createdAt',
+      libraryPayloads: 'fileId',
+      mcpIntegrations: 'id, name, url, isEnabled'
     });
   }
 }

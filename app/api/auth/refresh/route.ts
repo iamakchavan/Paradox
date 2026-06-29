@@ -1,0 +1,83 @@
+import { NextResponse } from 'next/server';
+
+export async function POST(req: Request) {
+  try {
+    const { refreshToken, provider } = await req.json();
+    
+    if (!refreshToken || !provider) {
+      return NextResponse.json({ error: 'Refresh token and provider are required.' }, { status: 400 });
+    }
+
+    const clientId = process.env[`${provider.toUpperCase()}_CLIENT_ID`];
+    const clientSecret = process.env[`${provider.toUpperCase()}_CLIENT_SECRET`];
+
+    if (!clientId || !clientSecret) {
+      return NextResponse.json({ 
+        error: `OAuth credentials for ${provider} are not configured on the server.` 
+      }, { status: 400 });
+    }
+
+    let tokenUrl = '';
+    let requestOptions: RequestInit = {};
+
+    switch (provider) {
+      case 'github':
+        tokenUrl = 'https://github.com/login/oauth/access_token';
+        requestOptions = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            client_id: clientId,
+            client_secret: clientSecret,
+            grant_type: 'refresh_token',
+            refresh_token: refreshToken
+          })
+        };
+        break;
+
+      case 'google':
+      case 'cal':
+        tokenUrl = provider === 'google' 
+          ? 'https://oauth2.googleapis.com/token' 
+          : 'https://cal.com/oauth/token';
+          
+        const bodyParams = new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken
+        });
+        
+        requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: bodyParams.toString()
+        };
+        break;
+
+      default:
+        return NextResponse.json({ 
+          error: `Provider ${provider} does not support refreshing or is not configured.` 
+        }, { status: 400 });
+    }
+
+    const response = await fetch(tokenUrl, requestOptions);
+    const data = await response.json();
+
+    if (data.error) {
+      return NextResponse.json({ error: data.error_description || data.error }, { status: 400 });
+    }
+
+    return NextResponse.json({
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token || refreshToken,
+      expiresIn: data.expires_in || null
+    });
+  } catch (error: any) {
+    console.error('[OAuth Refresh Route Error]:', error);
+    return NextResponse.json({ error: error.message || 'Token refresh failed.' }, { status: 500 });
+  }
+}

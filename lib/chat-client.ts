@@ -23,12 +23,13 @@ export interface StreamKeys {
 const READ_TIMEOUT_MS = 90_000; // 90 seconds
 
 export const streamChatContent = async (
-  messages: ChatMessage[],
+  messages: any[],
   model: string,
   keys: StreamKeys,
   searchEnabled: boolean,
   researchEnabled: boolean,
   onToken: (token: string) => void,
+  mcpServers?: any[],
   signal?: AbortSignal
 ) => {
   const endpoint = researchEnabled ? '/api/chat/research' : '/api/chat';
@@ -55,9 +56,11 @@ export const streamChatContent = async (
         role: msg.role,
         content: msg.content,
         images: msg.images,
-        pdfs: msg.pdfs
+        pdfs: msg.pdfs,
+        toolCalls: msg.toolCalls
       })),
       model,
+      mcpServers
     }),
     // keepalive: true allows the request to outlive page navigation on some
     // browsers, but more importantly it signals to the browser not to treat

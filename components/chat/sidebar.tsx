@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type ChatSession } from '@/lib/db';
 import { deleteChatSession, renameChatSession } from '@/hooks/use-chat-history';
-import { Trash2, Edit3, Settings, Search, Folder, MoreVertical, ChevronDown, ChevronsLeft } from 'lucide-react';
+import { Trash2, Edit3, Settings, Search, Folder, MoreVertical, ChevronDown, ChevronsLeft, Grid } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { RenameConfirmModal } from './RenameConfirmModal';
@@ -27,6 +27,8 @@ interface SidebarProps {
   onLibraryClick?: () => void;
   isSettingsActive?: boolean;
   onSettingsClick?: () => void;
+  isIntegrationsActive?: boolean;
+  onIntegrationsClick?: () => void;
 }
 
 export function Sidebar({ 
@@ -40,7 +42,9 @@ export function Sidebar({
   isLibraryActive = false,
   onLibraryClick,
   isSettingsActive = false,
-  onSettingsClick
+  onSettingsClick,
+  isIntegrationsActive = false,
+  onIntegrationsClick
 }: SidebarProps) {
   const PAGE_SIZE = 20;
   const [visibleLimit, setVisibleLimit] = useState(PAGE_SIZE);
@@ -290,6 +294,20 @@ export function Sidebar({
             <span>Library</span>
           </button>
         )}
+
+        {/* Apps */}
+        <button
+          onClick={onIntegrationsClick}
+          className={cn(
+            "w-full h-[38px] px-3.5 rounded-xl flex items-center gap-3 text-[14px] font-medium transition-all duration-150 cursor-pointer active:scale-[0.98]",
+            isIntegrationsActive
+              ? "bg-foreground/[0.08] text-foreground"
+              : "text-foreground/75 hover:text-foreground hover:bg-foreground/[0.05]"
+          )}
+        >
+          <Grid className="w-[17px] h-[17px] flex-shrink-0" strokeWidth={2} />
+          <span>Apps & Tools</span>
+        </button>
       </div>
 
       {/* ── Divider ── */}

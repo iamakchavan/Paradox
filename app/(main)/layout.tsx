@@ -137,6 +137,15 @@ export default function MainLayout({
             setIsSettingsActive(!isSettingsActive);
             setIsSearchActive(false);
           }}
+          isIntegrationsActive={isSettingsActive && sessionStorage.getItem('settings-default-tab') === 'integrations'}
+          onIntegrationsClick={() => {
+            if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
+              router.push('/chat');
+            }
+            sessionStorage.setItem('settings-default-tab', 'integrations');
+            setIsSettingsActive(true);
+            setIsSearchActive(false);
+          }}
           className={cn(
             "fixed top-0 bottom-0 left-0 z-50 h-dvh hidden md:flex",
             mounted && "transition-[transform,box-shadow] duration-300 ease-in-out",

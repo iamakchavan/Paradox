@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import {
   Key, Eye, EyeOff,
-  Sun, Moon, ExternalLink, Database, Cpu, ChevronDown
+  Sun, Moon, ExternalLink, Database, Cpu, ChevronDown, Grid
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -11,14 +11,16 @@ import { Input } from '@/components/ui/input';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { ApiKeys } from '@/hooks/use-api-keys';
 import { motion, AnimatePresence } from 'framer-motion';
+import { IntegrationsTab } from './integrations/IntegrationsTab';
 
 interface SettingsPageContentProps {
   apiKeys: ApiKeys;
   updateKey: (keyName: keyof ApiKeys, value: string | null) => void;
   onClose: () => void;
+  defaultTab?: TabType;
 }
 
-type TabType = 'ai-providers' | 'search-scraping' | 'appearance';
+type TabType = 'ai-providers' | 'search-scraping' | 'appearance' | 'integrations';
 
 interface KeyField {
   key: keyof ApiKeys;
@@ -43,10 +45,10 @@ const SEARCH_FIELDS: KeyField[] = [
   { key: 'firecrawlApiKey', storageKey: 'firecrawl-api-key', label: 'Firecrawl API Key (Search/Scrape)', placeholder: 'Enter Firecrawl API key', href: 'https://www.firecrawl.dev/' },
 ];
 
-export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPageContentProps) {
+export function SettingsPageContent({ apiKeys, updateKey, onClose, defaultTab }: SettingsPageContentProps) {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { showToast } = useCustomToast();
-  const [activeTab, setActiveTab] = useState<TabType>('appearance');
+  const [activeTab, setActiveTab] = useState<TabType>(defaultTab || 'appearance');
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [localDark, setLocalDark] = useState(resolvedTheme === 'dark');
 
@@ -132,6 +134,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
     { id: 'appearance' as TabType, label: 'Appearance', icon: AppearanceIcon },
     { id: 'ai-providers' as TabType, label: 'AI Providers', icon: Key },
     { id: 'search-scraping' as TabType, label: 'Search & Scrape', icon: Database },
+    { id: 'integrations' as TabType, label: 'Apps & Tools', icon: Grid },
   ];
 
   const getLogoElement = (fieldKey: string, isDark: boolean) => {
@@ -343,24 +346,47 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
                   </div>
                 </div>
               )}
+
+              {activeTab === 'integrations' && (
+                <div className="space-y-4 animate-fade-in h-full flex flex-col min-h-0">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/60 tracking-wider uppercase px-0.5 shrink-0">
+                    <Grid className="w-3.5 h-3.5 text-muted-foreground/70" />
+                    <span>App Integrations Hub</span>
+                  </div>
+                  <div className="flex-1 min-h-0">
+                    <IntegrationsTab />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Action footer inside content pane - hidden on mobile (Save/Back are top-aligned), clean footer on desktop */}
-          <div className="hidden md:flex items-center gap-3 relative bottom-auto left-auto translate-x-0 rounded-none border-0 shadow-none bg-transparent backdrop-blur-none p-0 justify-end pt-4 border-t border-zinc-200/40 dark:border-zinc-800/40">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="h-9 px-4 rounded-full text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800/80 transition-all active:scale-[0.97]"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              className="h-9 px-5 rounded-full text-xs font-semibold bg-cyan-600 hover:bg-cyan-700 text-white dark:bg-cyan-800/90 dark:hover:bg-cyan-700/90 shadow-sm transition-all active:scale-[0.97]"
-            >
-              Save Changes
-            </Button>
+          <div className="hidden md:flex items-center gap-3 relative bottom-auto left-auto translate-x-0 rounded-none border-0 shadow-none bg-transparent backdrop-blur-none p-0 justify-end pt-4 border-t border-zinc-200/40 dark:border-zinc-800/40 shrink-0">
+            {activeTab === 'integrations' ? (
+              <Button
+                onClick={onClose}
+                className="h-9 px-5 rounded-full text-xs font-semibold bg-zinc-100 hover:bg-zinc-200 text-foreground dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm transition-all active:scale-[0.97]"
+              >
+                Close Settings
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={onClose}
+                  className="h-9 px-4 rounded-full text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800/80 transition-all active:scale-[0.97]"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  className="h-9 px-5 rounded-full text-xs font-semibold bg-cyan-600 hover:bg-cyan-700 text-white dark:bg-cyan-800/90 dark:hover:bg-cyan-700/90 shadow-sm transition-all active:scale-[0.97]"
+                >
+                  Save Changes
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
