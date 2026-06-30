@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { db } from '@/lib/db';
 
@@ -9,8 +9,11 @@ function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState('Verifying security check...');
   const [errorOccurred, setErrorOccurred] = useState(false);
+  const hasRunRef = useRef(false);
 
   useEffect(() => {
+    if (hasRunRef.current) return;
+    hasRunRef.current = true;
     const code = searchParams.get('code');
     const stateStr = searchParams.get('state');
     const directAccessToken = searchParams.get('access_token');
@@ -137,11 +140,13 @@ function AuthCallbackContent() {
       // 5. Swap code using PKCE if remote OAuth endpoint is set
       const codeVerifier = localStorage.getItem(`oauth_verifier_${provider}_${stateId}`);
       const clientId = localStorage.getItem(`oauth_client_${provider}_${stateId}`);
+      const clientSecret = localStorage.getItem(`oauth_secret_${provider}_${stateId}`);
       const tokenEndpoint = localStorage.getItem(`oauth_token_endpoint_${provider}_${stateId}`);
 
       // Cleanup verifier state
       localStorage.removeItem(`oauth_verifier_${provider}_${stateId}`);
       localStorage.removeItem(`oauth_client_${provider}_${stateId}`);
+      localStorage.removeItem(`oauth_secret_${provider}_${stateId}`);
       localStorage.removeItem(`oauth_token_endpoint_${provider}_${stateId}`);
 
       if (tokenEndpoint && codeVerifier) {
@@ -153,6 +158,9 @@ function AuthCallbackContent() {
           client_id: clientId || '',
           code_verifier: codeVerifier
         });
+        if (clientSecret) {
+          bodyParams.append('client_secret', clientSecret);
+        }
 
         fetch('/api/mcp/discover', {
           method: 'POST',

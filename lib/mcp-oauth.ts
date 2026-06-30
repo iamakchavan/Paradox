@@ -5,7 +5,7 @@ function dec2hex(dec: number) {
 }
 
 export function generateCodeVerifier() {
-  const array = new Uint32Array(56 / 2);
+  const array = new Uint8Array(32);
   window.crypto.getRandomValues(array);
   return Array.from(array, dec2hex).join("");
 }
@@ -81,7 +81,7 @@ export async function registerMcpClient(
   registrationUrl: string,
   redirectUri: string,
   scope?: string
-): Promise<string> {
+): Promise<{ clientId: string; clientSecret?: string }> {
   try {
     const res = await fetch('/api/mcp/discover', {
       method: 'POST',
@@ -104,7 +104,10 @@ export async function registerMcpClient(
       throw new Error('Server registration response missing client_id.');
     }
 
-    return data.client_id;
+    return {
+      clientId: data.client_id,
+      clientSecret: data.client_secret
+    };
   } catch (err: any) {
     console.error('[OAuth Registration Error]:', err);
     throw new Error(`Failed to dynamically register OAuth client: ${err.message}`);

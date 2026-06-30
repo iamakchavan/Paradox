@@ -205,7 +205,10 @@ export async function POST(req: Request) {
       }
 
       const data = await res.json();
-      return NextResponse.json({ client_id: data.client_id });
+      return NextResponse.json({ 
+        client_id: data.client_id,
+        client_secret: data.client_secret
+      });
     }
 
     // 3. Perform Token Exchange Proxy (Bypasses Browser CORS limits)

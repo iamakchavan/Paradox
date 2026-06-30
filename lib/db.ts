@@ -62,6 +62,7 @@ export interface MCPIntegration {
     inputSchema: any;     // Cached arguments validator schema
   }>;
   lastToolSync: number;   // Epoch timestamp of last successful sync
+  scope?: string;         // Custom authorization scopes
   createdAt: number;
 }
 

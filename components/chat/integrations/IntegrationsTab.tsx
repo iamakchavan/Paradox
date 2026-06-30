@@ -50,7 +50,14 @@ const PROVIDER_SCOPES: Record<string, string> = {
   cal: 'EVENT_TYPE_READ EVENT_TYPE_WRITE BOOKING_READ BOOKING_WRITE SCHEDULE_READ SCHEDULE_WRITE APPS_READ APPS_WRITE PROFILE_READ PROFILE_WRITE ORG_BOOKING_READ TEAM_BOOKING_READ ORG_MEMBERSHIP_READ ORG_MEMBERSHIP_WRITE ORG_ROUTING_FORM_READ',
   notion: '',
   vercel: '',
-  canva: ''
+  canva: '',
+  linear: '',
+  jira: '',
+  asana: '',
+  airtable: 'data.records:read schema.bases:read',
+  cryptocom: '',
+  godaddy: '',
+  parallel: ''
 };
 
 const GitHubLogo = (props: React.SVGProps<SVGSVGElement>) => (
@@ -79,9 +86,97 @@ const VercelLogo = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 const CanvaLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg" className={props.className} style={props.style}>
+    <path d="M45 85C67.0914 85 85 67.0914 85 45C85 22.9086 67.0914 5 45 5C22.9086 5 5 22.9086 5 45C5 67.0914 22.9086 85 45 85Z" fill="#7D2AE7"/>
+    <path d="M45 85C67.0914 85 85 67.0914 85 45C85 22.9086 67.0914 5 45 5C22.9086 5 5 22.9086 5 45C5 67.0914 22.9086 85 45 85Z" fill="url(#paint0_radial_825_3566)"/>
+    <path d="M45 85C67.0914 85 85 67.0914 85 45C85 22.9086 67.0914 5 45 5C22.9086 5 5 22.9086 5 45C5 67.0914 22.9086 85 45 85Z" fill="url(#paint1_radial_825_3566)"/>
+    <path d="M45 85C67.0914 85 85 67.0914 85 45C85 22.9086 67.0914 5 45 5C22.9086 5 5 22.9086 5 45C5 67.0914 22.9086 85 45 85Z" fill="url(#paint2_radial_825_3566)"/>
+    <path d="M45 85C67.0914 85 85 67.0914 85 45C85 22.9086 67.0914 5 45 5C22.9086 5 5 22.9086 5 45C5 67.0914 22.9086 85 45 85Z" fill="url(#paint3_radial_825_3566)"/>
+    <path d="M62.2686 53.2057C61.9385 53.2057 61.648 53.4845 61.3457 54.0933C57.9318 61.0158 52.0354 65.9139 45.212 65.9139C37.3223 65.9139 32.4365 58.7918 32.4365 48.9527C32.4365 32.286 41.7227 22.6496 49.8791 22.6496C53.6905 22.6496 56.0181 25.0448 56.0181 28.8564C56.0181 33.3801 53.448 35.7753 53.448 37.3707C53.448 38.0869 53.8935 38.5205 54.7768 38.5205C58.3259 38.5205 62.4914 34.4424 62.4914 28.6813C62.4914 23.0952 57.6295 18.9893 49.4733 18.9893C35.9935 18.9893 24.0137 31.4863 24.0137 48.7775C24.0137 62.1619 31.6567 71.0066 43.4495 71.0066C55.9663 71.0066 63.2038 58.5531 63.2038 54.511C63.2038 53.6158 62.7461 53.2057 62.2686 53.2057Z" fill="white"/>
+    <defs>
+      <radialGradient id="paint0_radial_825_3566" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(20.453 75.9057) rotate(-49.416) scale(61.8733)">
+        <stop stopColor="#6420FF"/>
+        <stop offset="1" stopColor="#6420FF" stopOpacity="0"/>
+      </radialGradient>
+      <radialGradient id="paint1_radial_825_3566" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(26.1788 14.0946) rotate(54.703) scale(69.7735)">
+        <stop stopColor="#00C4CC"/>
+        <stop offset="1" stopColor="#00C4CC" stopOpacity="0"/>
+      </radialGradient>
+      <radialGradient id="paint2_radial_825_3566" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(20.4526 75.9053) rotate(-45.1954) scale(61.1242 28.1118)">
+        <stop stopColor="#6420FF"/>
+        <stop offset="1" stopColor="#6420FF" stopOpacity="0"/>
+      </radialGradient>
+      <radialGradient id="paint3_radial_825_3566" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(37.7158 15.7789) rotate(66.5198) scale(62.9836 105.512)">
+        <stop stopColor="#00C4CC" stopOpacity="0.725916"/>
+        <stop offset="0.0001" stopColor="#00C4CC"/>
+        <stop offset="1" stopColor="#00C4CC" stopOpacity="0"/>
+      </radialGradient>
+    </defs>
+  </svg>
+);
+
+const LinearLogo = (props: React.SVGProps<SVGSVGElement> & React.ImgHTMLAttributes<HTMLImageElement>) => (
+  <img src="/logo/linear-logo.svg" className={props.className} style={props.style} alt="Linear" />
+);
+
+const JiraLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg" className={props.className} style={props.style}>
+    <path d="M82.3799 42.79L47.9054 8.31493L44.5905 5L18.7346 30.8563L6.91159 42.6797C5.69614 43.895 5.69614 45.884 6.91159 47.21L30.5577 70.8563L44.5905 85L70.4464 59.1437L70.8884 58.7017L82.3799 47.21C83.5956 45.9943 83.5956 44.0057 82.3799 42.79ZM44.5905 56.8233L32.7676 45L44.5905 33.1767L56.4136 45L44.5905 56.8233Z" fill="#2684FF"/>
+    <path d="M44.5915 33.1767C36.8569 25.442 36.8569 12.8452 44.4811 5.11035L18.625 30.9667L32.658 45L44.5915 33.1767Z" fill="url(#paint0_linear_874_4152)"/>
+    <path d="M56.4169 45L44.5938 56.8233C52.3283 64.558 52.3283 77.1547 44.5938 85L70.56 59.033L56.4169 45Z" fill="url(#paint1_linear_874_4152)"/>
+    <defs>
+      <linearGradient id="paint0_linear_874_4152" x1="42.4825" y1="21.1981" x2="25.9705" y2="37.7098" gradientUnits="userSpaceOnUse">
+        <stop offset="0.176" stopColor="#0052CC"/>
+        <stop offset="1" stopColor="#2684FF"/>
+      </linearGradient>
+      <linearGradient id="paint1_linear_874_4152" x1="46.8551" y1="68.6307" x2="63.3341" y2="52.1522" gradientUnits="userSpaceOnUse">
+        <stop offset="0.176" stopColor="#0052CC"/>
+        <stop offset="1" stopColor="#2684FF"/>
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+const AsanaLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg" className={props.className} style={props.style}>
+    <path d="M62.3962 25.3994C62.3962 35.0047 54.6084 42.799 45.003 42.799C35.3916 42.799 27.6035 35.0107 27.6035 25.3994C27.6035 15.7881 35.3916 8 45.003 8C54.6084 8 62.3962 15.7881 62.3962 25.3994ZM22.3994 47.1455C12.7941 47.1455 5 54.9336 5 64.5391C5 74.1445 12.7881 81.9384 22.3994 81.9384C32.0107 81.9384 39.7988 74.1502 39.7988 64.5391C39.7988 54.9336 32.0107 47.1455 22.3994 47.1455ZM67.6003 47.1455C57.9892 47.1455 50.201 54.9336 50.201 64.5451C50.201 74.1563 57.9892 81.9445 67.6003 81.9445C77.2058 81.9445 85 74.1563 85 64.5451C85 54.9336 77.2119 47.1455 67.6003 47.1455Z" fill="#F06A6A"/>
+  </svg>
+);
+
+const AirtableLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg" className={props.className} style={props.style}>
+    <path d="M40.7211 12.8449L10.8943 25.186C9.23566 25.8724 9.25284 28.2286 10.9219 28.8902L40.8731 40.7669C43.5046 41.8105 46.4353 41.8105 49.0669 40.7669L79.0185 28.8897C80.6871 28.2286 80.7052 25.8728 79.0457 25.1864L49.2197 12.8444C46.4986 11.7185 43.4418 11.7185 40.7207 12.8444" fill="#FCB400"/>
+    <path d="M47.6289 47.2503V76.9204C47.6289 78.3311 49.052 79.2979 50.3638 78.7779L83.7386 65.8241C84.1108 65.6766 84.4301 65.4206 84.6551 65.0894C84.88 64.7582 85.0003 64.367 85.0002 63.9666V34.297C85.0002 32.8858 83.5771 31.9195 82.2653 32.4395L48.8905 45.3933C48.5184 45.5409 48.1991 45.7969 47.9742 46.1281C47.7492 46.4593 47.6289 46.8504 47.6289 47.2508" fill="#18BFFF"/>
+    <path d="M39.8363 48.7828L29.9314 53.565L28.9257 54.051L8.01705 64.0689C6.69212 64.7082 5 63.7424 5 62.2701V34.4228C5 33.8901 5.27313 33.4303 5.6394 33.0844C5.78967 32.9347 5.96014 32.8069 6.14586 32.7045C6.64509 32.4047 7.35775 32.3247 7.96369 32.5644L39.6699 45.1266C41.2815 45.7659 41.4081 48.0241 39.8363 48.7833" fill="#F82B60"/>
+    <path d="M39.8336 48.7838L29.9287 53.5659L5.63672 33.0849C5.78701 32.9354 5.95749 32.8077 6.14318 32.7055C6.6424 32.4057 7.35506 32.3257 7.96101 32.5653L39.6672 45.1275C41.2788 45.7669 41.4054 48.025 39.8336 48.7842" fill="#BA1E45"/>
+  </svg>
+);
+
+const GrantedAiLogo = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className={props.className} fill="currentColor" style={props.style}>
     <circle cx="256" cy="256" r="240" fill="none" stroke="currentColor" strokeWidth="32" />
-    <path d="M190 200 C190 150, 322 150, 322 200 M190 312 C190 362, 322 362, 322 312" stroke="currentColor" strokeWidth="32" strokeLinecap="round" fill="none" />
+    <path d="M256 128l128 256H128z" />
+  </svg>
+);
+
+const CryptoLogo = (props: React.SVGProps<SVGSVGElement> & React.ImgHTMLAttributes<HTMLImageElement>) => (
+  <img src="/logo/crypto.com.svg" className={props.className} style={props.style} alt="Crypto.com" />
+);
+
+const GoDaddyLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="none" className={props.className} style={props.style}>
+    <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+    <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+    <g id="SVGRepo_iconCarrier">
+      <circle cx="512" cy="512" r="512" fill="#1bdbdb" />
+      <path d="M697.6 315.9c-53.2-33.2-123.3-25.3-185.6 13.9-62.4-39.3-132.4-47.2-185.6-13.9-84.1 52.5-94.3 187.8-22.8 302.2 52.7 84.3 135.1 133.7 208.4 132.8 73.3.9 155.7-48.5 208.4-132.8 71.5-114.4 61.3-249.7-22.8-302.2M342.2 594c-15-24.1-26.1-49.5-33-75.5-6.5-24.5-8.9-48.5-7.1-71.2 3.2-42.3 20.4-75.2 48.4-92.7s65.2-18.6 104.5-2.9c5.9 2.4 11.8 5.1 17.6 8.1-21 19-40.3 41.9-56.7 68.1-43.4 69.5-56.6 146.7-41.5 208.4-11.8-12.8-22.6-27-32.2-42.3m372.6-75.6c-6.9 26.1-17.9 51.5-33 75.5-9.6 15.4-20.4 29.5-32.3 42.3 13.5-55.2 4.4-122.9-28.9-186.3-2.3-4.5-7.7-5.9-12-3.3l-103.5 64.7c-4 2.5-5.2 7.7-2.7 11.7l15.2 24.3c2.5 4 7.7 5.2 11.7 2.7l67.1-41.9c2.2 6.4 4.3 12.9 6 19.5 6.5 24.5 8.9 48.5 7.1 71.2-3.2 42.3-20.4 75.2-48.4 92.7-14 8.8-30.3 13.4-48 13.9h-2.2c-17.7-.5-34-5.1-48-13.9-28-17.5-45.2-50.4-48.4-92.7-1.7-22.7.7-46.7 7.1-71.2 6.8-26.1 17.9-51.5 33-75.5 15-24.1 33-45.2 53.4-62.8 19.2-16.6 39.7-29.2 60.9-37.6 39.4-15.7 76.5-14.6 104.5 2.9s45.2 50.4 48.4 92.7c1.8 22.6-.6 46.6-7 71.1" fill="#ffffff" />
+    </g>
+  </svg>
+);
+
+const ParallelSearchLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="28" height="28" viewBox="0 0 16 16" fill="currentColor" style={{ ...props.style, position: 'relative', minHeight: '28px', minWidth: '28px', top: '0' }} className={props.className}>
+    <path fill="currentColor" d="M12.513 14.611A8 8 0 0 1 8.015 16h-.047a8 8 0 0 1-3.679-.9h2.788a10 10 0 0 1-.238-.279h2.305-.001l.167-.21zm2.101-2.087a8 8 0 0 1-1.216 1.393H9.81l.134-.209h-3.91a12 12 0 0 1-.169-.278H2.092a9 9 0 0 1-.362-.418h3.904a9 9 0 0 1-.143-.279h4.998l.1-.209zm1.029-2.087a8 8 0 0 1-.598 1.392h-4.162l.077-.209H5.02l-.095-.278H.69a9 9 0 0 1-.177-.418h4.285a9 9 0 0 1-.075-.278h6.534l.05-.21h4.335Zm.356-1.866q-.044.6-.17 1.17h-4.385l.032-.21H4.502a8 8 0 0 1-.036-.278H.056A8 8 0 0 1 0 8.835h4.426a8 8 0 0 1-.019-.277h7.163l.01-.21h4.419zm-.17-2.31q.126.57.17 1.169v.222h-4.42l-.009-.209H4.407q.008-.138.019-.277H0q.023-.211.056-.418h4.41q.016-.139.036-.278h6.974l-.032-.21h4.384Zm-.784-2.09q.363.663.598 1.393h-4.335l-.05-.209H4.724q.036-.14.075-.278H.514q.083-.213.177-.418h4.234q.045-.14.095-.278h5.94l-.077-.21zm-1.647-2.086c.457.415.865.883 1.216 1.393H10.59l-.1-.21H5.491q.07-.139.143-.278H1.73a7 7 0 0 1 .362-.418h3.774l.17-.278h3.91l-.135-.209zM8.015 0a8 8 0 0 1 4.498 1.389H9.31l-.167-.21H6.838q.118-.14.24-.278h-2.79A8 8 0 0 1 7.968 0z" xmlns="http://www.w3.org/2000/svg" />
   </svg>
 );
 
@@ -90,7 +185,14 @@ const PROVIDER_TEMPLATES = [
   { id: 'notion', name: 'Notion', desc: 'Search and sync workspace pages, databases, and lists.', icon: NotionLogo, type: 'oauth', url: 'https://mcp.notion.com/mcp', category: 'Featured' },
   { id: 'cal', name: 'Cal.com', desc: 'Read calendars, check availability, and schedule meetings.', icon: CalLogo, type: 'oauth', url: 'https://mcp.cal.com/mcp', category: 'Featured' },
   { id: 'vercel', name: 'Vercel', desc: 'Deploy projects, manage domains, list deployments, and trigger builds.', icon: VercelLogo, type: 'oauth', url: 'https://mcp.vercel.com', category: 'Featured' },
-  { id: 'canva', name: 'Canva', desc: 'Search designs, manage folders, upload assets, and export work.', icon: CanvaLogo, type: 'oauth', url: 'https://mcp.canva.com/mcp', category: 'Featured' }
+  { id: 'canva', name: 'Canva', desc: 'Search designs, manage folders, upload assets, and export work.', icon: CanvaLogo, type: 'oauth', url: 'https://mcp.canva.com/mcp', category: 'Featured' },
+  { id: 'linear', name: 'Linear', desc: 'Search issues, list teams, create tickets, and manage project workflows.', icon: LinearLogo, type: 'oauth', url: 'https://mcp.linear.app/mcp', category: 'Featured' },
+  { id: 'jira', name: 'Jira', desc: 'Search Jira tickets, manage projects, link issues, and track sprints.', icon: JiraLogo, type: 'oauth', url: 'https://mcp.atlassian.com/v1/mcp/authv2', category: 'Featured' },
+  { id: 'asana', name: 'Asana', desc: 'Manage tasks, create projects, assign work, and track milestones.', icon: AsanaLogo, type: 'oauth', url: 'https://mcp.asana.com/sse', category: 'Featured' },
+  { id: 'airtable', name: 'Airtable', desc: 'Read and write base records, search tables, and inspect schemas.', icon: AirtableLogo, type: 'oauth', url: 'https://mcp.airtable.com/mcp', category: 'Featured' },
+  { id: 'cryptocom', name: 'Crypto.com', desc: 'Retrieve real-time market data, check coin rates, and track digital assets.', icon: CryptoLogo, type: 'oauth', url: 'https://mcp.crypto.com/market-data/mcp', category: 'Featured' },
+  { id: 'godaddy', name: 'GoDaddy', desc: 'Search domain availability, register domains, and manage DNS settings.', icon: GoDaddyLogo, type: 'oauth', url: 'https://api.godaddy.com/v1/domains/mcp', category: 'Featured' },
+  { id: 'parallel', name: 'Parallel Search', desc: 'Execute high-performance web searches and aggregate web results.', icon: ParallelSearchLogo, type: 'oauth', url: 'https://search.parallel.ai/mcp', category: 'Featured' }
 ];
 
 export function IntegrationsTab() {
@@ -136,6 +238,7 @@ export function IntegrationsTab() {
   const [customMode, setCustomMode] = useState<'auto' | 'direct' | 'proxy'>('auto');
   const [customAuthType, setCustomAuthType] = useState<'none' | 'apiKey' | 'oauth'>('none');
   const [customAccessToken, setCustomAccessToken] = useState('');
+  const [customScopes, setCustomScopes] = useState('');
 
   const [detectingAuth, setDetectingAuth] = useState(false);
   const [detectedAuthResult, setDetectedAuthResult] = useState<'oauth' | 'apiKey' | 'none' | null>(null);
@@ -216,6 +319,7 @@ export function IntegrationsTab() {
     setCustomMode('auto');
     setCustomAuthType('none');
     setCustomAccessToken('');
+    setCustomScopes('');
     setDetectingAuth(false);
     setDetectedAuthResult(null);
     setIsConnecting(false);
@@ -224,7 +328,7 @@ export function IntegrationsTab() {
     }
   };
 
-  const triggerOAuthFlow = async (provider: string, remoteUrl: string) => {
+  const triggerOAuthFlow = async (provider: string, remoteUrl: string, customScopeOverride?: string) => {
     try {
       showToast({
         title: 'Authorizing App',
@@ -242,18 +346,25 @@ export function IntegrationsTab() {
       const isMobile = window.innerWidth < 768;
       const { origin } = window.location;
       const redirectUri = `${origin}/auth/callback`;
-      const scope = PROVIDER_SCOPES[provider] || '';
+      const scope = customScopeOverride || PROVIDER_SCOPES[provider] || '';
 
       const stateId = Math.random().toString(36).substring(2, 15);
       const csrf = Math.random().toString(36).substring(2, 15);
 
       // 2. Register OAuth Client dynamically if supported
       let clientId = '';
+      let clientSecret: string | undefined = undefined;
       if (metadata.registration_endpoint) {
         localStorage.removeItem(`mcp_oauth_client_${provider}`);
+        localStorage.removeItem(`mcp_oauth_secret_${provider}`);
         try {
-          clientId = await registerMcpClient(metadata.registration_endpoint, redirectUri, scope);
+          const reg = await registerMcpClient(metadata.registration_endpoint, redirectUri, scope);
+          clientId = reg.clientId;
+          clientSecret = reg.clientSecret;
           localStorage.setItem(`mcp_oauth_client_${provider}`, clientId);
+          if (clientSecret) {
+            localStorage.setItem(`mcp_oauth_secret_${provider}`, clientSecret);
+          }
         } catch (regErr) {
           console.warn('[OAuth Flow] Dynamic client registration failed, falling back to paradox-local client ID:', regErr);
           clientId = 'paradox-local';
@@ -269,6 +380,9 @@ export function IntegrationsTab() {
       localStorage.setItem(`oauth_csrf_${provider}_${stateId}`, csrf);
       localStorage.setItem(`oauth_verifier_${provider}_${stateId}`, codeVerifier);
       localStorage.setItem(`oauth_client_${provider}_${stateId}`, clientId);
+      if (clientSecret) {
+        localStorage.setItem(`oauth_secret_${provider}_${stateId}`, clientSecret);
+      }
       localStorage.setItem(`oauth_token_endpoint_${provider}_${stateId}`, metadata.token_endpoint);
 
       const state = encodeURIComponent(JSON.stringify({ 
@@ -280,7 +394,10 @@ export function IntegrationsTab() {
       }));
 
       // 4. Formulate the official Authorize URL redirecting to the remote gateway
-      const authorizeUrl = `${metadata.authorization_endpoint}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256&response_type=code`;
+      let authorizeUrl = `${metadata.authorization_endpoint}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256&response_type=code`;
+      if (scope) {
+        authorizeUrl += `&scope=${encodeURIComponent(scope)}`;
+      }
 
       if (isMobile) {
         localStorage.setItem('mcp_oauth_restore_state', JSON.stringify({ provider }));
@@ -329,7 +446,48 @@ export function IntegrationsTab() {
         mode: 'capsule'
       });
 
-      const name = provider.charAt(0).toUpperCase() + provider.slice(1);
+      // 1. Probe remote server OAuth capability
+      let supportsOAuth = false;
+      try {
+        const metadata = await discoverOAuthMetadata(remoteUrl);
+        if (metadata && metadata.authorization_endpoint && metadata.token_endpoint) {
+          supportsOAuth = true;
+        }
+      } catch (err) {
+        console.log('[OAuth Probe] Remote server does not support OAuth, registering as public:', err);
+      }
+
+      const existing = await db.mcpIntegrations.get(provider);
+      const tmpl = PROVIDER_TEMPLATES.find(t => t.id === provider);
+      const name = tmpl?.name || provider.charAt(0).toUpperCase() + provider.slice(1);
+      const scopeToUse = existing?.scope || undefined;
+
+      if (!supportsOAuth) {
+        // Register as No Auth / Public
+        await db.mcpIntegrations.put({
+          id: provider,
+          name,
+          url: remoteUrl,
+          connectionMode: 'auto',
+          authType: 'none',
+          isEnabled: true,
+          status: 'connected',
+          cachedTools: [],
+          lastToolSync: 0,
+          createdAt: Date.now()
+        });
+
+        showToast({
+          title: 'Connected',
+          message: `${name} connected successfully!`,
+          type: 'success',
+          mode: 'capsule'
+        });
+
+        // Sync tools in background
+        await syncTools(provider);
+        return;
+      }
       
       await db.mcpIntegrations.put({
         id: provider,
@@ -339,13 +497,14 @@ export function IntegrationsTab() {
         authType: 'oauth',
         isEnabled: true,
         status: 'disconnected',
+        scope: scopeToUse,
         cachedTools: [],
         lastToolSync: 0,
         createdAt: Date.now()
       });
 
       // Launch dynamic client registration and PKCE flow immediately
-      await triggerOAuthFlow(provider, remoteUrl);
+      await triggerOAuthFlow(provider, remoteUrl, scopeToUse);
     } catch (e: any) {
       showToast({
         title: 'Connection Failed',
@@ -416,6 +575,7 @@ export function IntegrationsTab() {
           authType: 'oauth',
           isEnabled: true,
           status: 'disconnected',
+          scope: customScopes || undefined,
           cachedTools: [],
           lastToolSync: 0,
           createdAt: Date.now()
@@ -429,12 +589,13 @@ export function IntegrationsTab() {
         });
 
         const urlToRegister = customUrl;
+        const scopesToRegister = customScopes;
         setIsRegisteringCustom(false);
         setShowAdvanced(false);
         resetCustomForm();
 
         // Launch PKCE authorization flow immediately
-        await triggerOAuthFlow(id, urlToRegister);
+        await triggerOAuthFlow(id, urlToRegister, scopesToRegister);
         return;
       }
 
@@ -836,8 +997,8 @@ export function IntegrationsTab() {
                 if (featured.length === 0) return null;
                 return (
                   <div>
-                    <h4 className="text-xs font-bold text-muted-foreground/60 tracking-wider uppercase mb-3">Featured</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    <h4 className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 tracking-widest uppercase mb-3">Featured</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {featured.map(tmpl => {
                         const matchedConn = integrations.find(i => i.id === tmpl.id);
                         const isConnected = matchedConn && matchedConn.status === 'connected';
@@ -846,22 +1007,22 @@ export function IntegrationsTab() {
                           <div
                             key={tmpl.id}
                             onClick={() => handleTemplateClick(tmpl)}
-                            className="flex items-center gap-4 p-5 bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-200 dark:border-border hover:bg-zinc-100/50 dark:hover:bg-muted/40 rounded-xl transition-colors cursor-pointer"
+                            className="group flex items-center gap-3.5 px-4 py-3.5 bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60 border border-transparent hover:border-zinc-200/80 dark:hover:border-zinc-800/80 rounded-xl transition-all duration-150 cursor-pointer"
                           >
-                            <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-border/60 shrink-0 shadow-sm">
-                              <TmplIcon className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
+                            <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                              <TmplIcon className="w-7 h-7" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-sm font-bold text-foreground leading-none mb-1.5 block truncate">
+                              <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-none block truncate">
                                 {tmpl.name}
                               </span>
                               {isConnected ? (
-                                <div className="flex items-center gap-1.5 mt-0.5">
+                                <div className="flex items-center gap-1.5 mt-1">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                  <span className="text-[10px] text-muted-foreground font-medium">Connected</span>
+                                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Connected</span>
                                 </div>
                               ) : (
-                                <span className="text-xs text-muted-foreground/90 line-clamp-1 leading-normal">
+                                <span className="text-[11.5px] text-zinc-400 dark:text-zinc-500 line-clamp-1 leading-normal mt-0.5 block">
                                   {tmpl.desc}
                                 </span>
                               )}
@@ -880,8 +1041,8 @@ export function IntegrationsTab() {
                 if (finance.length === 0) return null;
                 return (
                   <div>
-                    <h4 className="text-xs font-bold text-muted-foreground/60 tracking-wider uppercase mb-3">Finance</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    <h4 className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 tracking-widest uppercase mb-3">Finance</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {finance.map(tmpl => {
                         const isConnected = integrations.some(i => i.id === tmpl.id);
                         const TmplIcon = tmpl.icon;
@@ -889,22 +1050,22 @@ export function IntegrationsTab() {
                           <div
                             key={tmpl.id}
                             onClick={() => handleTemplateClick(tmpl)}
-                            className="flex items-center gap-4 p-5 bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-200 dark:border-border hover:bg-zinc-100/50 dark:hover:bg-muted/40 rounded-xl transition-colors cursor-pointer"
+                            className="group flex items-center gap-3.5 px-4 py-3.5 bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60 border border-transparent hover:border-zinc-200/80 dark:hover:border-zinc-800/80 rounded-xl transition-all duration-150 cursor-pointer"
                           >
-                            <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-border/60 shrink-0 shadow-sm">
-                              <TmplIcon className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
+                            <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                              <TmplIcon className="w-7 h-7" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-sm font-bold text-foreground leading-none mb-1.5 block truncate">
+                              <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-none block truncate">
                                 {tmpl.name}
                               </span>
                               {isConnected ? (
-                                <div className="flex items-center gap-1.5 mt-0.5">
+                                <div className="flex items-center gap-1.5 mt-1">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                  <span className="text-[10px] text-muted-foreground font-medium">Connected</span>
+                                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Connected</span>
                                 </div>
                               ) : (
-                                <span className="text-xs text-muted-foreground/90 line-clamp-1 leading-normal">
+                                <span className="text-[11.5px] text-zinc-400 dark:text-zinc-500 line-clamp-1 leading-normal mt-0.5 block">
                                   {tmpl.desc}
                                 </span>
                               )}
@@ -923,8 +1084,8 @@ export function IntegrationsTab() {
                 if (productivity.length === 0) return null;
                 return (
                   <div>
-                    <h4 className="text-xs font-bold text-muted-foreground/60 tracking-wider uppercase mb-3">Productivity</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    <h4 className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 tracking-widest uppercase mb-3">Productivity</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {productivity.map(tmpl => {
                         const isConnected = integrations.some(i => i.id === tmpl.id);
                         const TmplIcon = tmpl.icon;
@@ -932,22 +1093,22 @@ export function IntegrationsTab() {
                           <div
                             key={tmpl.id}
                             onClick={() => handleTemplateClick(tmpl)}
-                            className="flex items-center gap-4 p-5 bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-200 dark:border-border hover:bg-zinc-100/50 dark:hover:bg-muted/40 rounded-xl transition-colors cursor-pointer"
+                            className="group flex items-center gap-3.5 px-4 py-3.5 bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60 border border-transparent hover:border-zinc-200/80 dark:hover:border-zinc-800/80 rounded-xl transition-all duration-150 cursor-pointer"
                           >
-                            <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-border/60 shrink-0 shadow-sm">
-                              <TmplIcon className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
+                            <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                              <TmplIcon className="w-7 h-7" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-sm font-bold text-foreground leading-none mb-1.5 block truncate">
+                              <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-none block truncate">
                                 {tmpl.name}
                               </span>
                               {isConnected ? (
-                                <div className="flex items-center gap-1.5 mt-0.5">
+                                <div className="flex items-center gap-1.5 mt-1">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                  <span className="text-[10px] text-muted-foreground font-medium">Connected</span>
+                                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Connected</span>
                                 </div>
                               ) : (
-                                <span className="text-xs text-muted-foreground/90 line-clamp-1 leading-normal">
+                                <span className="text-[11.5px] text-zinc-400 dark:text-zinc-500 line-clamp-1 leading-normal mt-0.5 block">
                                   {tmpl.desc}
                                 </span>
                               )}
@@ -963,8 +1124,8 @@ export function IntegrationsTab() {
               {/* Custom Connectors Category */}
               {filteredCustomConnectors.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-bold text-muted-foreground/60 tracking-wider uppercase mb-3">Custom Connectors</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <h4 className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 tracking-widest uppercase mb-3">Custom Connectors</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {filteredCustomConnectors.map(conn => {
                       const customTmpl = {
                         id: conn.id,
@@ -978,21 +1139,24 @@ export function IntegrationsTab() {
                         <div
                           key={conn.id}
                           onClick={() => handleTemplateClick(customTmpl)}
-                          className="flex items-center gap-4 p-5 bg-zinc-50/50 dark:bg-zinc-950/20 border border-zinc-200 dark:border-border hover:bg-zinc-100/50 dark:hover:bg-muted/40 rounded-xl transition-colors cursor-pointer"
+                          className="group flex items-center gap-3.5 px-4 py-3.5 bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60 border border-transparent hover:border-zinc-200/80 dark:hover:border-zinc-800/80 rounded-xl transition-all duration-150 cursor-pointer"
                         >
-                          <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-border/60 shrink-0 shadow-sm">
-                            <Puzzle className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
+                          <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                            <Puzzle className="w-5 h-5 text-zinc-400 dark:text-zinc-500" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <span className="text-sm font-bold text-foreground leading-none mb-1.5 block truncate">
+                            <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-none block truncate">
                               {conn.name}
                             </span>
-                            <div className="flex items-center gap-1.5 mt-0.5">
+                            <div className="flex items-center gap-1.5 mt-1">
                               <span className={cn(
                                 "w-1.5 h-1.5 rounded-full",
                                 conn.status === 'connected' ? "bg-emerald-500" : "bg-amber-500"
                               )} />
-                              <span className="text-[10px] text-muted-foreground font-medium">
+                              <span className={cn(
+                                "text-[10px] font-medium",
+                                conn.status === 'connected' ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
+                              )}>
                                 {conn.status === 'connected' ? 'Connected' : 'Disconnected'}
                               </span>
                             </div>
@@ -1169,6 +1333,29 @@ export function IntegrationsTab() {
                       className="h-8 px-4 rounded-full text-xs font-bold bg-red-600 hover:bg-red-750 dark:bg-red-650 dark:hover:bg-red-550 text-white cursor-pointer transition-all active:scale-[0.98]"
                     >
                       Disconnect
+                    </Button>
+                  </>
+                );
+              } else if (conn) {
+                return (
+                  <>
+                    <Button
+                      onClick={() => {
+                        handleDeleteIntegration(conn.id);
+                        setActiveTmplModal(null);
+                      }}
+                      className="h-8 px-4 rounded-full text-xs font-bold bg-red-600 hover:bg-red-750 dark:bg-red-650 dark:hover:bg-red-550 text-white cursor-pointer transition-all active:scale-[0.98]"
+                    >
+                      Remove
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        handleConnectOAuth(activeTmplModal.id, activeTmplModal.url);
+                        setActiveTmplModal(null);
+                      }}
+                      className="h-8 px-5 rounded-full text-xs font-bold bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-[0.98]"
+                    >
+                      Connect
                     </Button>
                   </>
                 );
@@ -1369,6 +1556,18 @@ export function IntegrationsTab() {
                             value={customAccessToken}
                             onChange={(e) => setCustomAccessToken(e.target.value)}
                             placeholder="Enter authentication token"
+                            className="h-9 px-3 rounded-xl text-xs bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 focus-visible:ring-cyan-500/20 focus-visible:border-cyan-500"
+                          />
+                        </div>
+                      )}
+
+                      {customAuthType === 'oauth' && (
+                        <div className="flex flex-col gap-1.5 pt-1">
+                          <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-left font-sans">Scopes (space-separated)</label>
+                          <Input
+                            value={customScopes}
+                            onChange={(e) => setCustomScopes(e.target.value)}
+                            placeholder="e.g. data.records:read schema.bases:read"
                             className="h-9 px-3 rounded-xl text-xs bg-zinc-50/50 dark:bg-zinc-900/30 border border-zinc-200 dark:border-zinc-800 focus-visible:ring-cyan-500/20 focus-visible:border-cyan-500"
                           />
                         </div>
