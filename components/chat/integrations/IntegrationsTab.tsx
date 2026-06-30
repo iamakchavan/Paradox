@@ -57,7 +57,8 @@ const PROVIDER_SCOPES: Record<string, string> = {
   airtable: 'data.records:read schema.bases:read',
   cryptocom: '',
   godaddy: '',
-  parallel: ''
+  parallel: '',
+  supabase: ''
 };
 
 const GitHubLogo = (props: React.SVGProps<SVGSVGElement>) => (
@@ -180,6 +181,29 @@ const ParallelSearchLogo = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+const SupabaseLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width="97" height="100" viewBox="0 0 97 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={props.className} style={props.style}>
+    <g clipPath="url(#clip0_1351_254)">
+      <path d="M56.3796 97.5965C53.8491 100.783 48.7182 99.0372 48.6572 94.9682L47.7656 35.4537H87.7831C95.0313 35.4537 99.0738 43.8255 94.5667 49.5021L56.3796 97.5965Z" fill="url(#paint0_linear_1351_254)"/>
+      <path d="M56.3796 97.5965C53.8491 100.783 48.7182 99.0372 48.6572 94.9682L47.7656 35.4537H87.7831C95.0313 35.4537 99.0738 43.8255 94.5667 49.5021L56.3796 97.5965Z" fill="url(#paint1_linear_1351_254)" fillOpacity="0.2"/>
+      <path d="M40.1052 1.83277C42.6357 -1.35431 47.7667 0.391984 47.8276 4.46107L48.2183 63.9754H8.70173C1.45328 63.9754 -2.58931 55.6036 1.91799 49.927L40.1052 1.83277Z" fill="#3ECF8E"/>
+    </g>
+    <defs>
+      <linearGradient id="paint0_linear_1351_254" x1="47.7656" y1="48.6496" x2="83.3317" y2="63.5659" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#249361"/>
+        <stop offset="1" stopColor="#3ECF8E"/>
+      </linearGradient>
+      <linearGradient id="paint1_linear_1351_254" x1="31.9975" y1="27.0602" x2="48.2175" y2="57.5935" gradientUnits="userSpaceOnUse">
+        <stop/>
+        <stop offset="1" stopOpacity="0"/>
+      </linearGradient>
+      <clipPath id="clip0_1351_254">
+        <rect width="96.4602" height="100" fill="white"/>
+      </clipPath>
+    </defs>
+  </svg>
+);
+
 const PROVIDER_TEMPLATES = [
   { id: 'github', name: 'GitHub', desc: 'Read code, search files, manage repos, and commit work.', icon: GitHubLogo, type: 'oauth', url: 'https://mcp.github.com/mcp', category: 'Featured' },
   { id: 'notion', name: 'Notion', desc: 'Search and sync workspace pages, databases, and lists.', icon: NotionLogo, type: 'oauth', url: 'https://mcp.notion.com/mcp', category: 'Featured' },
@@ -192,7 +216,8 @@ const PROVIDER_TEMPLATES = [
   { id: 'airtable', name: 'Airtable', desc: 'Read and write base records, search tables, and inspect schemas.', icon: AirtableLogo, type: 'oauth', url: 'https://mcp.airtable.com/mcp', category: 'Featured' },
   { id: 'cryptocom', name: 'Crypto.com', desc: 'Retrieve real-time market data, check coin rates, and track digital assets.', icon: CryptoLogo, type: 'oauth', url: 'https://mcp.crypto.com/market-data/mcp', category: 'Featured' },
   { id: 'godaddy', name: 'GoDaddy', desc: 'Search domain availability, register domains, and manage DNS settings.', icon: GoDaddyLogo, type: 'oauth', url: 'https://api.godaddy.com/v1/domains/mcp', category: 'Featured' },
-  { id: 'parallel', name: 'Parallel Search', desc: 'Execute high-performance web searches and aggregate web results.', icon: ParallelSearchLogo, type: 'oauth', url: 'https://search.parallel.ai/mcp', category: 'Featured' }
+  { id: 'parallel', name: 'Parallel Search', desc: 'Execute high-performance web searches and aggregate web results.', icon: ParallelSearchLogo, type: 'oauth', url: 'https://search.parallel.ai/mcp', category: 'Featured' },
+  { id: 'supabase', name: 'Supabase', desc: 'Manage Supabase projects, databases, storage buckets, and edge functions.', icon: SupabaseLogo, type: 'oauth', url: 'https://mcp.supabase.com/mcp', category: 'Featured' }
 ];
 
 export function IntegrationsTab() {
@@ -905,17 +930,17 @@ export function IntegrationsTab() {
         {/* Right side: Search + New Connector */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative w-full sm:w-56">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground/60" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
-              className="h-8.5 pl-8 pr-3 text-xs bg-zinc-100/60 dark:bg-zinc-950/20 border-zinc-200 dark:border-border rounded-lg focus-visible:ring-cyan-500/20"
+              className="h-9 pl-8.5 pr-4 text-xs bg-zinc-100/60 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 rounded-full focus-visible:ring-1 focus-visible:ring-cyan-500/30"
             />
           </div>
           <Button
             onClick={() => setIsRegisteringCustom(true)}
-            className="h-8.5 px-4 rounded-lg text-xs font-semibold bg-white text-black hover:bg-zinc-100 border border-zinc-200 dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-800 cursor-pointer shadow-sm active:scale-[0.98] transition-all shrink-0"
+            className="h-9 px-5 rounded-full text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer active:scale-[0.97] transition-all shrink-0 shadow-none border-0"
           >
             New Connector
           </Button>
