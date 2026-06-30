@@ -48,7 +48,9 @@ const formatToolName = (name: string) => {
 const PROVIDER_SCOPES: Record<string, string> = {
   github: 'repo',
   cal: 'EVENT_TYPE_READ EVENT_TYPE_WRITE BOOKING_READ BOOKING_WRITE SCHEDULE_READ SCHEDULE_WRITE APPS_READ APPS_WRITE PROFILE_READ PROFILE_WRITE ORG_BOOKING_READ TEAM_BOOKING_READ ORG_MEMBERSHIP_READ ORG_MEMBERSHIP_WRITE ORG_ROUTING_FORM_READ',
-  notion: ''
+  notion: '',
+  vercel: '',
+  canva: ''
 };
 
 const GitHubLogo = (props: React.SVGProps<SVGSVGElement>) => (
@@ -70,10 +72,25 @@ const CalLogo = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+const VercelLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className={props.className} fill="currentColor" style={props.style}>
+    <path d="M256 0L512 443.4H0L256 0z" />
+  </svg>
+);
+
+const CanvaLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className={props.className} fill="currentColor" style={props.style}>
+    <circle cx="256" cy="256" r="240" fill="none" stroke="currentColor" strokeWidth="32" />
+    <path d="M190 200 C190 150, 322 150, 322 200 M190 312 C190 362, 322 362, 322 312" stroke="currentColor" strokeWidth="32" strokeLinecap="round" fill="none" />
+  </svg>
+);
+
 const PROVIDER_TEMPLATES = [
   { id: 'github', name: 'GitHub', desc: 'Read code, search files, manage repos, and commit work.', icon: GitHubLogo, type: 'oauth', url: 'https://mcp.github.com/mcp', category: 'Featured' },
   { id: 'notion', name: 'Notion', desc: 'Search and sync workspace pages, databases, and lists.', icon: NotionLogo, type: 'oauth', url: 'https://mcp.notion.com/mcp', category: 'Featured' },
-  { id: 'cal', name: 'Cal.com', desc: 'Read calendars, check availability, and schedule meetings.', icon: CalLogo, type: 'oauth', url: 'https://mcp.cal.com/mcp', category: 'Featured' }
+  { id: 'cal', name: 'Cal.com', desc: 'Read calendars, check availability, and schedule meetings.', icon: CalLogo, type: 'oauth', url: 'https://mcp.cal.com/mcp', category: 'Featured' },
+  { id: 'vercel', name: 'Vercel', desc: 'Deploy projects, manage domains, list deployments, and trigger builds.', icon: VercelLogo, type: 'oauth', url: 'https://mcp.vercel.com', category: 'Featured' },
+  { id: 'canva', name: 'Canva', desc: 'Search designs, manage folders, upload assets, and export work.', icon: CanvaLogo, type: 'oauth', url: 'https://mcp.canva.com/mcp', category: 'Featured' }
 ];
 
 export function IntegrationsTab() {
@@ -1105,10 +1122,17 @@ export function IntegrationsTab() {
                 )}
 
                 {/* Status indicator if connected */}
-                {conn && (
+                {conn && conn.status === 'connected' && (
                   <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium pt-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span>Currently Connected</span>
+                    <span>Connected</span>
+                  </div>
+                )}
+
+                {conn && conn.status !== 'connected' && (
+                  <div className="flex items-center gap-2 text-xs text-amber-500 font-medium pt-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                    <span>Disconnected (Click Connect)</span>
                   </div>
                 )}
 
@@ -1124,7 +1148,7 @@ export function IntegrationsTab() {
           <div className="px-6 py-4 flex justify-end items-center gap-2 bg-zinc-50/50 dark:bg-zinc-900/10 border-t border-zinc-100 dark:border-zinc-900">
             {activeTmplModal && (() => {
               const conn = integrations.find(i => i.id === activeTmplModal.id);
-              if (conn) {
+              if (conn && conn.status === 'connected') {
                 return (
                   <>
                     <Button

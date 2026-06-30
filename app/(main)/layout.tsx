@@ -48,7 +48,7 @@ export default function MainLayout({
 
   // Dismiss search & settings view when navigating, or restore settings state on chat load
   useEffect(() => {
-    const isValidChatPath = pathname === '/chat' || pathname.startsWith('/chat/') || pathname === '/';
+    const isValidChatPath = pathname === '/chat' || pathname.startsWith('/chat/') || pathname === '/' || pathname === '/apps';
     
     if (isValidChatPath) {
       const restore = localStorage.getItem('mcp_oauth_restore_state');
@@ -57,20 +57,19 @@ export default function MainLayout({
         try {
           const parsed = JSON.parse(restore);
           if (parsed.provider) {
-            sessionStorage.setItem('settings-default-tab', 'integrations');
             sessionStorage.setItem('settings-restore-provider', parsed.provider);
           }
         } catch (e) {
-          sessionStorage.setItem('settings-default-tab', 'integrations');
+          console.error('[OAuth Restore View Error]:', e);
         }
-        setIsSettingsActive(true);
+        router.push('/apps');
       }
     } else {
       // Navigated away from chat entirely (e.g. /library or /auth/callback) — close search and settings
       setIsSearchActive(false);
       setIsSettingsActive(false);
     }
-  }, [pathname]);
+  }, [pathname, router]);
 
   // Keyboard shortcut Ctrl+B or Cmd+B to toggle sidebar
   useEffect(() => {
@@ -155,14 +154,11 @@ export default function MainLayout({
             setIsSettingsActive(!isSettingsActive);
             setIsSearchActive(false);
           }}
-          isIntegrationsActive={isSettingsActive && sessionStorage.getItem('settings-default-tab') === 'integrations'}
+          isIntegrationsActive={pathname === '/apps'}
           onIntegrationsClick={() => {
-            if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
-              router.push('/chat');
-            }
-            sessionStorage.setItem('settings-default-tab', 'integrations');
-            setIsSettingsActive(true);
             setIsSearchActive(false);
+            setIsSettingsActive(false);
+            router.push('/apps');
           }}
           className={cn(
             "fixed top-0 bottom-0 left-0 z-50 h-dvh hidden md:flex",

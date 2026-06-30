@@ -240,12 +240,16 @@ export default function ChatPage() {
   }, [setIsLoadingState]);
 
   const [isInitialView, setIsInitialView] = useState(() => !chatIdParam);
-  const [settingsDefaultTab, setSettingsDefaultTab] = useState<'ai-providers' | 'search-scraping' | 'appearance' | 'integrations'>('appearance');
+  const [settingsDefaultTab, setSettingsDefaultTab] = useState<'ai-providers' | 'search-scraping' | 'appearance'>('appearance');
   
   const handleOpenSettingsTab = useCallback((tab: 'ai-providers' | 'search-scraping' | 'appearance' | 'integrations') => {
-    setSettingsDefaultTab(tab);
-    setIsSettingsActive(true);
-  }, [setIsSettingsActive]);
+    if (tab === 'integrations') {
+      router.push('/apps');
+    } else {
+      setSettingsDefaultTab(tab);
+      setIsSettingsActive(true);
+    }
+  }, [setIsSettingsActive, router]);
 
   const { setTheme, theme } = useTheme();
   const [expandedThinking, setExpandedThinking] = useState<number[]>([]);
