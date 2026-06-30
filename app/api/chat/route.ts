@@ -265,51 +265,6 @@ export async function POST(req: Request) {
     const canUseTools = modelConfig.provider !== 'perplexity' && hasSearchKeys && searchEnabled;
     console.log(`[CHAT] canUseTools=${canUseTools}, hasSearchKeys=${hasSearchKeys}, searchEnabled=${searchEnabled}, provider=${modelConfig.provider}`);
 
-    let finalSystemPrompt = systemPrompt || '';
-    const dateInstruction = `Today's date is ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit', weekday: 'short' })}. Use this date to inform temporal reasoning and to construct accurate, current search queries (e.g., when asked about "this year", "recent events", or "latest releases").`;
-    finalSystemPrompt = (dateInstruction + '\n' + finalSystemPrompt).trim();
-
-    if (modelConfig.id === 'nvidia/nemotron-nano-12b-v2-vl') {
-      const hasVideo = false;
-      const mediaSystemPrompt = hasVideo ? '/no_think' : '/think';
-      finalSystemPrompt = (mediaSystemPrompt + '\n' + finalSystemPrompt).trim();
-    }
-
-    if (canUseTools) {
-      const searchInstruction = `
-You have access to separate tools to gather external knowledge:
-- 'webSearch': Search the web for real-time information, current events, or factual answers.
-- 'browsePage': Read the full markdown contents of a specific web page URL (e.g. documentation, articles, blog posts). Use this when the user provides a specific URL or when you need to read a target page's detailed text.
-- 'mapWebsite': Discover and map the subpages and links of a website or base URL. Use this if the user asks you to find other pages or map a website.
-
-IMPORTANT RULES:
-- Always provide proper non-empty inputs to tools.
-- After receiving results, you MUST synthesize the information into a comprehensive, well-structured answer with inline citations.
-- Format citations as standard Markdown links with the domain name as link text (e.g., [nytimes.com](https://www.nytimes.com/article)).
-- Do NOT output raw URLs, footnotes, or repeated domain names in text.
-- If multiple sources support a claim, cite them sequentially: [source1.com](url1) [source2.com](url2).
-- CONTEXT CHECK: Look at the conversation history before calling any tool. If a list of links (e.g. from a previous mapWebsite or scrape result) is already present in the history, and the user asks a question about a specific page or section (e.g. "what does their privacy page say?", "check their terms"), do NOT perform a general web search or map the site again. Instead, identify the specific URL from the history context and call 'browsePage' directly on that URL.
-- If the user asks to "scrape all pages" or "read all pages" from the mapped list, you can execute 'browsePage' on multiple mapped links sequentially (this system supports multi-step execution).
-`;
-      finalSystemPrompt = (finalSystemPrompt + '\n' + searchInstruction).trim();
-    }
-
-    const activeIntegrations = mcpServers?.filter((server: any) => 
-      server.isEnabled
-    ) || [];
-
-    if (activeIntegrations.length > 0) {
-      const namesList = activeIntegrations.map((s: any) => s.name).join(', ');
-      const mcpInstruction = `
-You currently have the following active MCP App Integrations connected and loaded for this request: ${namesList}.
-- You MUST be proactive: if the user asks a question about their schedule, bookings, repositories, pages, or tasks, ALWAYS call the corresponding tools first to fetch information.
-- DO NOT lazily refuse or ask the user for specific IDs or UIDs (like event type IDs, repository names, page/database IDs, or booking UIDs) if list/search tools are available.
-- Always call listing or searching tools (e.g., listing upcoming bookings, searching files, listing pages) first to discover the relevant items and IDs yourself, and then filter them to answer the user's question.
-- If you encounter an error, explain it clearly to the user rather than giving up.
-`;
-      finalSystemPrompt = (finalSystemPrompt + '\n' + mcpInstruction).trim();
-    }
-
     const searchKeysObj = {
       tavilyKey: tavilyKey || process.env.TAVILY_API_KEY,
       exaKey: exaKey || process.env.EXA_API_KEY,
@@ -328,10 +283,11 @@ You currently have the following active MCP App Integrations connected and loade
       tools.mapWebsite = mapToolInstance!;
     }
 
+    const successfullyBoundServers: string[] = [];
+
     if (mcpServers && mcpServers.length > 0) {
       for (const server of mcpServers) {
         if (!server.isEnabled) continue;
-
 
         if (server.connectionMode === 'direct') {
           // CLIENT-SIDE DIRECT TOOLS: Omit 'execute' method.
@@ -347,6 +303,7 @@ You currently have the following active MCP App Integrations connected and loade
               }
             };
           }
+          successfullyBoundServers.push(server.name);
         } else {
           // SERVER-SIDE PROXY TOOLS: Contains 'execute' method.
           // Executed immediately on Next.js server.
@@ -397,11 +354,53 @@ You currently have the following active MCP App Integrations connected and loade
                 }
               };
             }
+            successfullyBoundServers.push(server.name);
           } catch (err) {
             console.error(`[MCP Bind Error] ${server.name}:`, err);
           }
         }
       }
+    }
+
+    let finalSystemPrompt = systemPrompt || '';
+    const dateInstruction = `Today's date is ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit', weekday: 'short' })}. Use this date to inform temporal reasoning and to construct accurate, current search queries (e.g., when asked about "this year", "recent events", or "latest releases").`;
+    finalSystemPrompt = (dateInstruction + '\n' + finalSystemPrompt).trim();
+
+    if (modelConfig.id === 'nvidia/nemotron-nano-12b-v2-vl') {
+      const hasVideo = false;
+      const mediaSystemPrompt = hasVideo ? '/no_think' : '/think';
+      finalSystemPrompt = (mediaSystemPrompt + '\n' + finalSystemPrompt).trim();
+    }
+
+    if (canUseTools) {
+      const searchInstruction = `
+You have access to separate tools to gather external knowledge:
+- 'webSearch': Search the web for real-time information, current events, or factual answers.
+- 'browsePage': Read the full markdown contents of a specific web page URL (e.g. documentation, articles, blog posts). Use this when the user provides a specific URL or when you need to read a target page's detailed text.
+- 'mapWebsite': Discover and map the subpages and links of a website or base URL. Use this if the user asks you to find other pages or map a website.
+
+IMPORTANT RULES:
+- Always provide proper non-empty inputs to tools.
+- After receiving results, you MUST synthesize the information into a comprehensive, well-structured answer with inline citations.
+- Format citations as standard Markdown links with the domain name as link text (e.g., [nytimes.com](https://www.nytimes.com/article)).
+- Do NOT output raw URLs, footnotes, or repeated domain names in text.
+- If multiple sources support a claim, cite them sequentially: [source1.com](url1) [source2.com](url2).
+- CONTEXT CHECK: Look at the conversation history before calling any tool. If a list of links (e.g. from a previous mapWebsite or scrape result) is already present in the history, and the user asks a question about a specific page or section (e.g. "what does their privacy page say?", "check their terms"), do NOT perform a general web search or map the site again. Instead, identify the specific URL from the history context and call 'browsePage' directly on that URL.
+- If the user asks to "scrape all pages" or "read all pages" from the mapped list, you can execute 'browsePage' on multiple mapped links sequentially (this system supports multi-step execution).
+`;
+      finalSystemPrompt = (finalSystemPrompt + '\n' + searchInstruction).trim();
+    }
+
+    if (successfullyBoundServers.length > 0) {
+      const namesList = successfullyBoundServers.join(', ');
+      const mcpInstruction = `
+You currently have the following active MCP App Integrations connected and loaded for this request: ${namesList}.
+- You MUST be proactive: if the user asks a question about their schedule, bookings, repositories, pages, or tasks, ALWAYS call the corresponding tools first to fetch information.
+- DO NOT lazily refuse or ask the user for specific IDs or UIDs (like event type IDs, repository names, page/database IDs, or booking UIDs) if list/search tools are available.
+- Always call listing or searching tools (e.g., listing upcoming bookings, searching files, listing pages) first to discover the relevant items and IDs yourself, and then filter them to answer the user's question.
+- If you encounter an error, explain it clearly to the user rather than giving up.
+`;
+      finalSystemPrompt = (finalSystemPrompt + '\n' + mcpInstruction).trim();
     }
 
     const toolsConfig = Object.keys(tools).length > 0 ? {

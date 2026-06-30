@@ -102,12 +102,20 @@ export async function preflightRefreshIntegrations(): Promise<void> {
 
           // 2. Fallback to server-side refresh endpoint if browser-direct attempt failed
           if (!refreshedData) {
+            const metadata = await discoverOAuthMetadata(app.url);
+            const tokenEndpoint = metadata?.token_endpoint;
+            const clientId = localStorage.getItem(`mcp_oauth_client_${app.id}`) || 'paradox-local';
+            const clientSecret = localStorage.getItem(`mcp_oauth_secret_${app.id}`) || undefined;
+
             const res = await fetch('/api/auth/refresh', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 refreshToken: app.refreshToken,
-                provider: app.id
+                provider: app.id,
+                tokenEndpoint,
+                clientId,
+                clientSecret
               })
             });
 

@@ -718,7 +718,7 @@ export default function ChatPage() {
               }
             }
           }
-          return list.filter(s => s.isEnabled && selectedIds.includes(s.id));
+          return list.filter(s => s.isEnabled && s.status === 'connected' && selectedIds.includes(s.id));
         });
 
       let hasDirectToolCall = false;

@@ -144,7 +144,7 @@ export const ChatInput = ({
   const [localMessage, setLocalMessage] = useState(message || '');
   
   const mcpServers = useLiveQuery(() => db.mcpIntegrations.toArray()) || [];
-  const activeApps = mcpServers.filter(s => s.isEnabled);
+  const activeApps = mcpServers.filter(s => s.isEnabled && s.status === 'connected');
 
   // Synchronize external resets
   useEffect(() => {
