@@ -192,10 +192,10 @@ export const ChatInput = ({
 
   const isExpandedVisual = useMemo(() => {
     if (isMobile) {
-      return (isFocused && localMessage.length > 0) || selectedImages.length > 0 || selectedPDFs.length > 0 || searchEnabled || researchEnabled || hasActiveApp;
+      return (isFocused && localMessage.length > 0) || selectedImages.length > 0 || selectedPDFs.length > 0 || searchEnabled || researchEnabled;
     }
-    return localMessage.length > 0 || selectedImages.length > 0 || selectedPDFs.length > 0 || searchEnabled || researchEnabled || hasActiveApp;
-  }, [isMobile, isFocused, localMessage.length, selectedImages.length, selectedPDFs.length, searchEnabled, researchEnabled, hasActiveApp]);
+    return localMessage.length > 0 || selectedImages.length > 0 || selectedPDFs.length > 0 || searchEnabled || researchEnabled;
+  }, [isMobile, isFocused, localMessage.length, selectedImages.length, selectedPDFs.length, searchEnabled, researchEnabled]);
 
   useEffect(() => {
     onExpandedChange?.(isExpandedVisual);
@@ -794,34 +794,7 @@ export const ChatInput = ({
                   </button>
                 )}
 
-                {/* Active App Capsules */}
-                {activeApps.map((app) => {
-                  const isSelected = selectedMcpIds.includes(app.id);
-                  if (!isSelected) return null;
 
-                  const iconMap: Record<string, any> = { github: Github, cal: Calendar };
-                  const AppIcon = iconMap[app.id] || Puzzle;
-
-                  // Uniform styling for all integration app capsules
-                  const capsuleColor = 'bg-cyan-500/10 hover:bg-cyan-500/15 border-cyan-500/20 text-cyan-600 dark:text-cyan-400';
-
-                  return (
-                    <button
-                      key={app.id}
-                      type="button"
-                      onClick={() => onToggleMcpId(app.id)}
-                      onMouseDown={(e) => e.preventDefault()}
-                      className={cn(
-                        "flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out select-none border shadow-[0_1px_2px_rgba(0,0,0,0.02)] shrink-0 active:scale-[0.93] active:duration-75",
-                        capsuleColor
-                      )}
-                    >
-                      <X className="w-3.5 h-3.5 opacity-60 hover:opacity-100 transition-opacity shrink-0" />
-                      <AppIcon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.5} />
-                      <span>{app.name}</span>
-                    </button>
-                  );
-                })}
               </div>
 
               {/* Text Area */}
