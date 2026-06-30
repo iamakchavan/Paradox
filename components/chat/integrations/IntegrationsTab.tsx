@@ -930,12 +930,12 @@ export function IntegrationsTab() {
         {/* Right side: Search + New Connector */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <div className="relative w-full sm:w-56">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50 pointer-events-none" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
-              className="h-9 pl-8.5 pr-4 text-xs bg-zinc-100/60 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 rounded-full focus-visible:ring-1 focus-visible:ring-cyan-500/30"
+              className="h-9 pl-9 pr-4 text-xs bg-zinc-100/60 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 rounded-full focus-visible:ring-1 focus-visible:ring-cyan-500/30"
             />
           </div>
           <Button

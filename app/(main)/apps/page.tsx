@@ -45,6 +45,7 @@ export default function AppsPage() {
         isLoading={false}
         apiKeys={apiKeys}
         mounted={mounted}
+        hideModelSelector={true}
       />
 
       <div className="flex-1 w-full pt-24 pb-24 flex flex-col h-full min-h-0 overflow-y-auto chat-scrollbar">

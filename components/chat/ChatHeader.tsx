@@ -22,6 +22,8 @@ interface ChatHeaderProps {
   isLoading: boolean;
   apiKeys: ApiKeys;
   mounted: boolean;
+  /** When true, hides the centre model-selector pill (e.g. on non-chat pages like /apps) */
+  hideModelSelector?: boolean;
 }
 
 export function ChatHeader({
@@ -38,7 +40,8 @@ export function ChatHeader({
   setSelectedModelId,
   isLoading,
   apiKeys,
-  mounted
+  mounted,
+  hideModelSelector = false,
 }: ChatHeaderProps) {
   const { isSearchActive, setIsSearchActive, isSettingsActive, setIsSettingsActive } = useSidebarContext();
 
@@ -160,8 +163,8 @@ export function ChatHeader({
           </Button>
         </div>
 
-        {/* Center Pill: Model Selector */}
-        {!isSearchActive && !isSettingsActive && !isLibraryPageActive && (
+        {/* Center Pill: Model Selector — hidden on non-chat pages */}
+        {!hideModelSelector && !isSearchActive && !isSettingsActive && !isLibraryPageActive && (
           <div className="absolute right-0 left-auto translate-x-0 md:left-1/2 md:-translate-x-1/2 md:right-auto pointer-events-auto flex items-center justify-center rounded-full liquid-glass-dock p-1 h-11 md:h-12">
             <ModelSelector
               selectedModelId={selectedModelId}
