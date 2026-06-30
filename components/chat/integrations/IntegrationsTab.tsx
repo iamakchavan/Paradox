@@ -940,7 +940,7 @@ export function IntegrationsTab() {
           </div>
           <Button
             onClick={() => setIsRegisteringCustom(true)}
-            className="h-9 px-5 rounded-full text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer active:scale-[0.97] transition-all shrink-0 shadow-none border-0"
+            className="h-9 px-5 rounded-full text-xs font-medium bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer active:scale-[0.97] transition-all shrink-0 shadow-none border-0"
           >
             New Connector
           </Button>
@@ -1352,7 +1352,7 @@ export function IntegrationsTab() {
                         handleDeleteIntegration(conn.id);
                         setActiveTmplModal(null);
                       }}
-                      className="h-8 px-4 rounded-full text-xs font-bold bg-red-600 hover:bg-red-750 dark:bg-red-650 dark:hover:bg-red-550 text-white cursor-pointer transition-all active:scale-[0.98]"
+                      className="h-8 px-4 rounded-full text-xs font-medium bg-red-600 hover:bg-red-750 dark:bg-red-650 dark:hover:bg-red-550 text-white cursor-pointer transition-all active:scale-[0.98]"
                     >
                       Disconnect
                     </Button>
@@ -1366,7 +1366,7 @@ export function IntegrationsTab() {
                         handleDeleteIntegration(conn.id);
                         setActiveTmplModal(null);
                       }}
-                      className="h-8 px-4 rounded-full text-xs font-bold bg-red-600 hover:bg-red-750 dark:bg-red-650 dark:hover:bg-red-550 text-white cursor-pointer transition-all active:scale-[0.98]"
+                      className="h-8 px-4 rounded-full text-xs font-medium bg-red-600 hover:bg-red-750 dark:bg-red-650 dark:hover:bg-red-550 text-white cursor-pointer transition-all active:scale-[0.98]"
                     >
                       Remove
                     </Button>
@@ -1375,7 +1375,7 @@ export function IntegrationsTab() {
                         handleConnectOAuth(activeTmplModal.id, activeTmplModal.url);
                         setActiveTmplModal(null);
                       }}
-                      className="h-8 px-5 rounded-full text-xs font-bold bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-[0.98]"
+                      className="h-8 px-5 rounded-full text-xs font-medium bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-[0.98]"
                     >
                       Connect
                     </Button>
@@ -1388,7 +1388,7 @@ export function IntegrationsTab() {
                       handleConnectOAuth(activeTmplModal.id, activeTmplModal.url);
                       setActiveTmplModal(null);
                     }}
-                    className="h-8 px-5 rounded-full text-xs font-bold bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-[0.98]"
+                    className="h-8 px-5 rounded-full text-xs font-medium bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-[0.98]"
                   >
                     Connect
                   </Button>
@@ -1616,7 +1616,7 @@ export function IntegrationsTab() {
               <Button
                 type="submit"
                 disabled={detectingAuth}
-                className="h-8 px-4 rounded-full text-xs font-bold bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="h-8 px-4 rounded-full text-xs font-medium bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {detectingAuth ? 'Checking Server...' : 'Add Connector'}
               </Button>
