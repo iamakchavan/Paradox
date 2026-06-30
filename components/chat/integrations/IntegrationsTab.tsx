@@ -872,17 +872,6 @@ export function IntegrationsTab() {
 
   return (
     <div className="h-full flex flex-col min-h-0 text-foreground font-sans space-y-5">
-      {/* Title & Action Row */}
-      <div className="flex items-center justify-between gap-4 shrink-0">
-        <h2 className="text-xl font-bold tracking-tight text-foreground">Tools and Connectors</h2>
-        <Button
-          onClick={() => setIsRegisteringCustom(true)}
-          className="h-8 px-4 rounded-full text-xs font-semibold bg-white text-black hover:bg-zinc-200 border border-zinc-200 dark:border-zinc-800 dark:hover:bg-zinc-150 cursor-pointer shadow-sm active:scale-[0.98] transition-all"
-        >
-          New Connector
-        </Button>
-      </div>
-
       {/* Tabs & Search Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border shrink-0">
         {/* Switcher tabs */}
@@ -913,15 +902,23 @@ export function IntegrationsTab() {
           </button>
         </div>
 
-        {/* Search */}
-        <div className="relative w-full sm:w-60">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground/60" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search..."
-            className="h-8.5 pl-8 pr-3 text-xs bg-zinc-100/60 dark:bg-zinc-950/20 border-zinc-200 dark:border-border rounded-lg focus-visible:ring-cyan-500/20"
-          />
+        {/* Right side: Search + New Connector */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative w-full sm:w-56">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground/60" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+              className="h-8.5 pl-8 pr-3 text-xs bg-zinc-100/60 dark:bg-zinc-950/20 border-zinc-200 dark:border-border rounded-lg focus-visible:ring-cyan-500/20"
+            />
+          </div>
+          <Button
+            onClick={() => setIsRegisteringCustom(true)}
+            className="h-8.5 px-4 rounded-lg text-xs font-semibold bg-white text-black hover:bg-zinc-100 border border-zinc-200 dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-800 cursor-pointer shadow-sm active:scale-[0.98] transition-all shrink-0"
+          >
+            New Connector
+          </Button>
         </div>
       </div>
 
