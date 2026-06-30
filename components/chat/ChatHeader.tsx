@@ -6,6 +6,7 @@ import { Settings, ChevronLeft, ChevronsLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ApiKeys } from '@/hooks/use-api-keys';
 import { useSidebarContext } from '@/components/chat/SidebarContext';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface ChatHeaderProps {
   isSidebarCollapsed: boolean;
@@ -44,6 +45,8 @@ export function ChatHeader({
   hideModelSelector = false,
 }: ChatHeaderProps) {
   const { isSearchActive, setIsSearchActive, isSettingsActive, setIsSettingsActive } = useSidebarContext();
+  const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <>
@@ -146,6 +149,13 @@ export function ChatHeader({
                     } else {
                       setIsSettingsActive(false);
                     }
+                  }}
+                  isIntegrationsActive={pathname === '/apps'}
+                  onIntegrationsClick={() => {
+                    setIsSearchActive(false);
+                    setIsSettingsActive(false);
+                    setIsMobileSidebarOpen(false);
+                    router.push('/apps');
                   }}
                   className="w-full h-full border-r-0 bg-transparent backdrop-blur-none"
                 />
