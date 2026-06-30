@@ -61,7 +61,12 @@ const PROVIDER_SCOPES: Record<string, string> = {
   supabase: '',
   swiggy_food: '',
   swiggy_dineout: '',
-  swiggy_instamart: ''
+  swiggy_instamart: '',
+  monday: '',
+  cloudflare: '',
+  yahoofinance: '',
+  neon: '',
+  netlify: ''
 };
 
 const GitHubLogo = (props: React.SVGProps<SVGSVGElement>) => (
@@ -213,6 +218,54 @@ const SwiggyLogo = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+const MondayLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 1549 904" xmlns="http://www.w3.org/2000/svg" className={props.className} style={props.style}>
+    <path fill="#fa265d" d="m192.5 902.6c-69.6 0-133.5-37-167.3-94.5-33.9-59.4-32.6-130.9 4.5-188.3l346.1-529.3c35.8-57.5 100.9-91.3 170.6-90 69.6 1.9 133.4 40.2 166 99.6 32.6 58.7 28.1 130.2-10.8 186.4l-346.2 529.3c-33.9 54.3-95.8 86.8-162.9 86.8z"/>
+    <path fill="#ffcc00" d="m782 902.6c-69.6 0-133.5-35.7-167.3-94.5-33.9-59.4-31.3-130.9 4.5-186.4l346.1-529.3c35.8-57.5 100.9-93.2 170.6-91.9 71.5 1.9 134.7 40.2 166 99.6 32.6 60.6 28.1 131.5-12.8 187.7l-344.2 528c-35.8 54.3-95.8 86.8-162.9 86.8z"/>
+    <path fillRule="evenodd" fill="#00c972" d="m1356.8 903.9c-105.9 0-191.6-85.6-191.6-191.5 0-106 85.7-191.6 191.6-191.6 106 0 191.6 85.6 191.6 191.6 0 105.9-85.6 191.5-191.6 191.5z"/>
+  </svg>
+);
+
+const CloudflareLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" aria-label="Cloudflare" viewBox="0 0 512 512" fill="#000000" className={props.className} style={props.style}>
+    <rect width="512" height="512" rx="15%" fill="#ffffff" />
+    <path fill="#f38020" d="M331 326c11-26-4-38-19-38l-148-2c-4 0-4-6 1-7l150-2c17-1 37-15 43-33 0 0 10-21 9-24a97 97 0 0 0-187-11c-38-25-78 9-69 46-48 3-65 46-60 72 0 1 1 2 3 2h274c1 0 3-1 3-3z" />
+    <path fill="#faae40" d="M381 224c-4 0-6-1-7 1l-5 21c-5 16 3 30 20 31l32 2c4 0 4 6-1 7l-33 1c-36 4-46 39-46 39 0 2 0 3 2 3h113l3-2a81 81 0 0 0-78-103" />
+  </svg>
+);
+
+const YahooFinanceLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1079 1000" className={props.className} style={props.style}>
+    <path fill="#6001d1" d="m847 0h231.1q-92.6 223.5-185.1 447c-7.3 17.4-14.2 35.1-21.9 52.4-76.8 0-153.7 0.1-230.6-0.1 2-6 4.7-11.8 7.1-17.7 66.5-160.5 132.8-321.1 199.4-481.6zm-846.9 244.2c69.3-0.1 138.6 0 207.9-0.1 1.3 0.2 3.1-0.3 3.7 1.3 2 4.1 3.3 8.5 5.1 12.8 39.1 100.1 78.3 200.3 117.4 300.4 1.1 2.9 2.1 5.8 3.8 8.3 42.4-107.6 84.8-215.1 127.3-322.6 68.5-0.2 137.1-0.1 205.6-0.1-2.6 7.2-5.8 14.1-8.6 21.2-61.2 147.4-122.3 294.9-183.5 442.4-40.4 97.4-80.9 194.8-121.1 292.2h-206.9c27.7-65.7 55.4-131.3 83.2-197 1-1.9 1.1-4.2 0.1-6.1-78-184.2-156.1-368.4-234-552.7zm689.2 304.1c7.8-0.9 15.6-0.8 23.3 0.1 26.8 2 53 12.9 73.1 30.9 16.4 14.5 28.6 33.7 35.3 54.5 12.7 39.1 6 83.9-18 117.3-11.7 16.5-27.4 30.2-45.5 39.5-40.2 21.1-91.7 19.7-130.1-5-21.1-13.4-37.8-33.4-47.5-56.5-13.4-31.6-13.4-68.5-0.2-100.2 12.7-31.7 38.5-58 70.1-71 12.6-5.3 26-8.6 39.5-9.6z"/>
+  </svg>
+);
+
+const NeonLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 57.5 57" xmlns="http://www.w3.org/2000/svg" className={props.className} style={props.style}>
+    <defs>
+      <linearGradient id="neon_g1" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-50.032,-57.652,62.466,-54.21,57.588,57)">
+        <stop offset="0" stopColor="#2ef51c" stopOpacity="1"/>
+        <stop offset="1" stopColor="#2ef51c" stopOpacity="0"/>
+      </linearGradient>
+      <linearGradient id="neon_g2" x2="1" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-34.011,-13.404,13.812,-35.046,57.461,56.966)">
+        <stop offset="0" stopColor="#000000" stopOpacity=".9"/>
+        <stop offset="1" stopColor="#1a1a1a" stopOpacity="0"/>
+      </linearGradient>
+    </defs>
+    <path fillRule="evenodd" fill="#32c0ed" d="m0 9.8c0-5.4 4.4-9.8 9.9-9.8h37.7c5.4 0 9.9 4.4 9.9 9.8v31.8c0 5.6-7.2 8-10.7 3.6l-10.8-13.9v16.9c0 4.8-4 8.8-9 8.8h-17.1c-5.5 0-9.9-4.4-9.9-9.8zm9.9-2c-1.1 0-2 0.9-2 2v37.3c0 1.1 0.9 2 2 2h17.4c0.6 0 0.7-0.5 0.7-1v-22.5c0-5.7 7.2-8.1 10.7-3.7l10.8 13.9v-26c0-1.1 0.1-2-1-2z"/>
+    <path fillRule="evenodd" fill="url(#neon_g1)" d="m0 9.8c0-5.4 4.4-9.8 9.9-9.8h37.7c5.4 0 9.9 4.4 9.9 9.8v31.8c0 5.6-7.2 8-10.7 3.6l-10.8-13.9v16.9c0 4.8-4 8.8-9 8.8h-17.1c-5.5 0-9.9-4.4-9.9-9.8zm9.9-2c-1.1 0-2 0.9-2 2v37.3c0 1.1 0.9 2 2 2h17.4c0.6 0 0.7-0.5 0.7-1v-22.5c0-5.7 7.2-8.1 10.7-3.7l10.8 13.9v-26c0-1.1 0.1-2-1-2z"/>
+    <path fillRule="evenodd" fill="url(#neon_g2)" opacity="0.3" d="m0 9.8c0-5.4 4.4-9.8 9.9-9.8h37.7c5.4 0 9.9 4.4 9.9 9.8v31.8c0 5.6-7.2 8-10.7 3.6l-10.8-13.9v16.9c0 4.8-4 8.8-9 8.8h-17.1c-5.5 0-9.9-4.4-9.9-9.8zm9.9-2c-1.1 0-2 0.9-2 2v37.3c0 1.1 0.9 2 2 2h17.4c0.6 0 0.7-0.5 0.7-1v-22.5c0-5.7 7.2-8.1 10.7-3.7l10.8 13.9v-26c0-1.1 0.1-2-1-2z"/>
+    <path fill="#63f655" d="m47.6 0c5.4 0 9.9 4.4 9.9 9.8v31.8c0 5.6-7.2 8-10.7 3.6l-10.8-13.9v16.9c0 4.8-4 8.8-9 8.8 0.6 0 1-0.4 1-1v-30.4c0-5.6 7.2-8 10.7-3.6l10.8 13.9v-33.9c0-1.1-0.9-2-1.9-2z"/>
+  </svg>
+);
+
+
+const NetlifyLogo = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="#00C7B7" viewBox="0 0 24 24" className={props.className} style={props.style}>
+    <path d="M6.49 19.04h-.23L5.13 17.9v-.23l1.73-1.71h1.2l.15.15v1.2L6.5 19.04ZM5.13 6.31V6.1l1.13-1.13h.23L8.2 6.68v1.2l-.15.15h-1.2zm9.96 9.09h-1.65l-.14-.13v-3.83c0-.68-.27-1.2-1.1-1.23-.42 0-.9 0-1.43.02l-.07.08v4.96l-.14.14H8.9l-.13-.14V8.73l.13-.14h3.7a2.6 2.6 0 0 1 2.61 2.6v4.08l-.13.14Zm-8.37-2.44H.14L0 12.82v-1.64l.14-.14h6.58l.14.14v1.64zm17.14 0h-6.58l-.14-.14v-1.64l.14-.14h6.58l.14.14v1.64zM11.05 6.55V1.64l.14-.14h1.65l.14.14v4.9l-.14.14h-1.65zm0 15.81v-4.9l.14-.14h1.65l.14.13v4.91l-.14.14h-1.65z"/>
+  </svg>
+);
+
 const PROVIDER_TEMPLATES = [
   { id: 'github', name: 'GitHub', desc: 'Read code, search files, manage repos, and commit work.', icon: GitHubLogo, type: 'oauth', url: 'https://mcp.github.com/mcp', category: 'Featured' },
   { id: 'notion', name: 'Notion', desc: 'Search and sync workspace pages, databases, and lists.', icon: NotionLogo, type: 'oauth', url: 'https://mcp.notion.com/mcp', category: 'Featured' },
@@ -229,7 +282,12 @@ const PROVIDER_TEMPLATES = [
   { id: 'supabase', name: 'Supabase', desc: 'Manage Supabase projects, databases, storage buckets, and edge functions.', icon: SupabaseLogo, type: 'oauth', url: 'https://mcp.supabase.com/mcp', category: 'Featured' },
   { id: 'swiggy_food', name: 'Swiggy Food', desc: 'Order food online from restaurants near you, search menus, and manage your cart.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/food', category: 'Featured' },
   { id: 'swiggy_dineout', name: 'Swiggy Dineout', desc: 'Find nearby restaurants, reserve tables, and book dining experiences.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/dineout', category: 'Featured' },
-  { id: 'swiggy_instamart', name: 'Swiggy Instamart', desc: 'Order groceries, fresh food, and household essentials for quick delivery.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/im', category: 'Featured' }
+  { id: 'swiggy_instamart', name: 'Swiggy Instamart', desc: 'Order groceries, fresh food, and household essentials for quick delivery.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/im', category: 'Featured' },
+  { id: 'monday', name: 'Monday.com', desc: 'Manage boards, track tasks, update items, and automate collaborative workflows.', icon: MondayLogo, type: 'oauth', url: 'https://mcp.monday.com/mcp', category: 'Featured' },
+  { id: 'cloudflare', name: 'Cloudflare', desc: 'Inspect zones, manage DNS records, check traffic data, and purge cache.', icon: CloudflareLogo, type: 'oauth', url: 'https://mcp.cloudflare.com/mcp', category: 'Featured' },
+  { id: 'yahoofinance', name: 'Yahoo Finance', desc: 'Query stock quotes, search ticker details, retrieve historical prices, and fetch financial news.', icon: YahooFinanceLogo, type: 'oauth', url: 'https://gateway.mcpservers.org/yahoo-finance/mcp', category: 'Featured' },
+  { id: 'neon', name: 'Neon', desc: 'Manage Neon serverless Postgres projects, branches, endpoints, and databases.', icon: NeonLogo, type: 'oauth', url: 'https://mcp.neon.tech/mcp', category: 'Featured' },
+  { id: 'netlify', name: 'Netlify', desc: 'Manage Netlify sites, deployments, configure environment variables, and sync web projects.', icon: NetlifyLogo, type: 'oauth', url: 'https://netlify-mcp.netlify.app/mcp', category: 'Featured' }
 ];
 
 export const PROVIDER_LOGOS: Record<string, React.ComponentType<any>> = {
@@ -248,7 +306,12 @@ export const PROVIDER_LOGOS: Record<string, React.ComponentType<any>> = {
   supabase: SupabaseLogo,
   swiggy_food: SwiggyLogo,
   swiggy_dineout: SwiggyLogo,
-  swiggy_instamart: SwiggyLogo
+  swiggy_instamart: SwiggyLogo,
+  monday: MondayLogo,
+  cloudflare: CloudflareLogo,
+  yahoofinance: YahooFinanceLogo,
+  neon: NeonLogo,
+  netlify: NetlifyLogo
 };
 
 export function IntegrationsTab() {
@@ -450,7 +513,8 @@ export function IntegrationsTab() {
       }));
 
       // 4. Formulate the official Authorize URL redirecting to the remote gateway
-      let authorizeUrl = `${metadata.authorization_endpoint}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256&response_type=code`;
+      const hasQuery = metadata.authorization_endpoint.includes('?');
+      let authorizeUrl = `${metadata.authorization_endpoint}${hasQuery ? '&' : '?'}client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=S256&response_type=code`;
       if (scope) {
         authorizeUrl += `&scope=${encodeURIComponent(scope)}`;
       }

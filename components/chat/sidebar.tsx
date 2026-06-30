@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type ChatSession } from '@/lib/db';
 import { deleteChatSession, renameChatSession } from '@/hooks/use-chat-history';
-import { Trash2, Edit3, Settings, Search, Folder, MoreVertical, ChevronDown, ChevronsLeft, Grid } from 'lucide-react';
+import { Trash2, Edit3, Settings, Search, Folder, MoreVertical, ChevronDown, ChevronsLeft, Puzzle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { RenameConfirmModal } from './RenameConfirmModal';
@@ -305,7 +305,7 @@ export function Sidebar({
               : "text-foreground/75 hover:text-foreground hover:bg-foreground/[0.05]"
           )}
         >
-          <Grid className="w-[17px] h-[17px] flex-shrink-0" strokeWidth={2} />
+          <Puzzle className="w-[17px] h-[17px] flex-shrink-0" strokeWidth={2} />
           <span>Apps & Tools</span>
         </button>
       </div>

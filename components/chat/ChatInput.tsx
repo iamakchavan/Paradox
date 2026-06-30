@@ -660,7 +660,7 @@ export const ChatInput = ({
                             )}
                           >
                             <div className="flex items-center gap-3">
-                              <Grid className="w-4 h-4 text-foreground/60 group-hover:text-foreground/80 transition-colors duration-150 shrink-0" strokeWidth={1.5} />
+                              <Puzzle className="w-4 h-4 text-foreground/60 group-hover:text-foreground/80 transition-colors duration-150 shrink-0" strokeWidth={1.5} />
                               <span className="transition-colors duration-150">Apps</span>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
