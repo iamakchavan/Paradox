@@ -1035,7 +1035,7 @@ export function IntegrationsTab() {
                               <TmplIcon className="w-7 h-7" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-none block truncate">
+                              <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-snug block truncate">
                                 {tmpl.name}
                               </span>
                               {isConnected ? (
@@ -1078,7 +1078,7 @@ export function IntegrationsTab() {
                               <TmplIcon className="w-7 h-7" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-none block truncate">
+                              <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-snug block truncate">
                                 {tmpl.name}
                               </span>
                               {isConnected ? (
@@ -1121,7 +1121,7 @@ export function IntegrationsTab() {
                               <TmplIcon className="w-7 h-7" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-none block truncate">
+                              <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-snug block truncate">
                                 {tmpl.name}
                               </span>
                               {isConnected ? (
@@ -1167,7 +1167,7 @@ export function IntegrationsTab() {
                             <Puzzle className="w-5 h-5 text-zinc-400 dark:text-zinc-500" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-none block truncate">
+                            <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-snug block truncate">
                               {conn.name}
                             </span>
                             <div className="flex items-center gap-1.5 mt-1">
@@ -1211,7 +1211,7 @@ export function IntegrationsTab() {
               </div>
               <div className="flex flex-col min-w-0 gap-0.5 text-left">
                 <DialogTitle className="text-sm sm:text-base font-semibold text-zinc-800 dark:text-zinc-200 leading-tight">{activeTmplModal?.name}</DialogTitle>
-                <DialogDescription className="text-xs text-zinc-400 dark:text-zinc-500 leading-none">MCP Connector</DialogDescription>
+                <DialogDescription className="text-xs text-zinc-400 dark:text-zinc-500 leading-snug">MCP Connector</DialogDescription>
               </div>
             </div>
             <button
@@ -1414,7 +1414,7 @@ export function IntegrationsTab() {
           <div className="flex items-center justify-between gap-4 px-6 pt-6 pb-4 w-full text-left">
             <div className="flex flex-col min-w-0 gap-0.5 text-left">
               <DialogTitle className="text-sm sm:text-base font-semibold text-zinc-800 dark:text-zinc-200 leading-tight">Custom Connector</DialogTitle>
-              <DialogDescription className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 leading-none">
+              <DialogDescription className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5 leading-snug">
                 Register a custom MCP server
               </DialogDescription>
             </div>
