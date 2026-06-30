@@ -1066,7 +1066,7 @@ export function IntegrationsTab() {
 
                 return Object.entries(grouped).map(([integrationName, tools]) => (
                   <div key={integrationName} className="space-y-3">
-                    <h4 className="text-xs font-bold text-muted-foreground/60 tracking-wider uppercase mb-1">
+                    <h4 className="text-xs font-medium text-muted-foreground/60 mb-1">
                       {integrationName} Tools ({tools.length})
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -1114,7 +1114,7 @@ export function IntegrationsTab() {
                 if (featured.length === 0) return null;
                 return (
                   <div>
-                    <h4 className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 tracking-widest uppercase mb-3">Featured</h4>
+                    <h4 className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 mb-3">Featured</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {featured.map(tmpl => {
                         const matchedConn = integrations.find(i => i.id === tmpl.id);
@@ -1158,7 +1158,7 @@ export function IntegrationsTab() {
                 if (finance.length === 0) return null;
                 return (
                   <div>
-                    <h4 className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 tracking-widest uppercase mb-3">Finance</h4>
+                    <h4 className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 mb-3">Finance</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {finance.map(tmpl => {
                         const isConnected = integrations.some(i => i.id === tmpl.id);
@@ -1201,7 +1201,7 @@ export function IntegrationsTab() {
                 if (productivity.length === 0) return null;
                 return (
                   <div>
-                    <h4 className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 tracking-widest uppercase mb-3">Productivity</h4>
+                    <h4 className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 mb-3">Productivity</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {productivity.map(tmpl => {
                         const isConnected = integrations.some(i => i.id === tmpl.id);
@@ -1241,7 +1241,7 @@ export function IntegrationsTab() {
               {/* Custom Connectors Category */}
               {filteredCustomConnectors.length > 0 && (
                 <div>
-                  <h4 className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 tracking-widest uppercase mb-3">Custom Connectors</h4>
+                  <h4 className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 mb-3">Custom Connectors</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {filteredCustomConnectors.map(conn => {
                       const customTmpl = {
@@ -1329,7 +1329,7 @@ export function IntegrationsTab() {
 
                 {/* Server URL */}
                 <div className="space-y-2.5">
-                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">Server Endpoint URL</span>
+                  <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 block">Server Endpoint URL</span>
                   <div className="text-xs font-mono text-zinc-700 dark:text-zinc-350 break-all select-all leading-normal bg-zinc-50 dark:bg-zinc-900/50 px-3 py-2 rounded-xl border border-zinc-200/65 dark:border-zinc-800/80">
                     {activeTmplModal.url}
                   </div>
@@ -1338,7 +1338,7 @@ export function IntegrationsTab() {
                 {/* Scopes if connected */}
                 {conn && PROVIDER_SCOPES[activeTmplModal.id] && (
                   <div className="space-y-2.5">
-                    <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">Authorized Scopes</span>
+                    <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 block">Authorized Scopes</span>
                     <div className="text-xs font-mono text-zinc-700 dark:text-zinc-350 break-all leading-normal bg-zinc-50 dark:bg-zinc-900/50 px-3 py-2 rounded-xl border border-zinc-200/65 dark:border-zinc-800/80">
                       {PROVIDER_SCOPES[activeTmplModal.id]}
                     </div>
@@ -1349,7 +1349,7 @@ export function IntegrationsTab() {
                 {conn && (
                   <div className="space-y-3 pt-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                      <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
                         All tools enabled
                       </span>
                       <button
@@ -1529,7 +1529,7 @@ export function IntegrationsTab() {
             <div className="px-6 pb-6 space-y-4">
               {/* Connector Name */}
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="custom-name" className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-left">Connector Name</label>
+                <label htmlFor="custom-name" className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 text-left">Connector Name</label>
                 <Input
                   id="custom-name"
                   value={customName}
@@ -1542,7 +1542,7 @@ export function IntegrationsTab() {
 
               {/* Server URL */}
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="custom-url" className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-left">Server Endpoint URL</label>
+                <label htmlFor="custom-url" className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 text-left">Server Endpoint URL</label>
                 <Input
                   id="custom-url"
                   value={customUrl}
@@ -1615,7 +1615,7 @@ export function IntegrationsTab() {
                   onClick={() => setShowAdvanced(!showAdvanced)}
                   className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center justify-between w-full cursor-pointer select-none"
                 >
-                  <span className="uppercase tracking-wider text-[10px] text-zinc-400 dark:text-zinc-500 font-bold">Advanced Settings</span>
+                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">Advanced Settings</span>
                   <div className="flex items-center gap-1">
                     <span className="text-[11px]">{showAdvanced ? 'Hide' : 'Show'}</span>
                     <ChevronRight className={cn("w-3.5 h-3.5 transition-transform", showAdvanced && "transform rotate-90")} />
@@ -1632,7 +1632,7 @@ export function IntegrationsTab() {
                     >
                       <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-left">Execution Strategy</label>
+                          <label className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 text-left">Execution Strategy</label>
                           <Select 
                             value={customMode} 
                             onValueChange={(val: any) => setCustomMode(val)}
@@ -1648,7 +1648,7 @@ export function IntegrationsTab() {
                           </Select>
                         </div>
                         <div className="flex flex-col gap-1.5">
-                          <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-left">Auth Type</label>
+                          <label className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 text-left">Auth Type</label>
                           <Select 
                             value={customAuthType} 
                             onValueChange={(val: any) => setCustomAuthType(val)}
@@ -1667,7 +1667,7 @@ export function IntegrationsTab() {
 
                       {customAuthType === 'apiKey' && (
                         <div className="flex flex-col gap-1.5 pt-1">
-                          <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-left">Bearer Access Token</label>
+                          <label className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 text-left">Bearer Access Token</label>
                           <Input
                             type="password"
                             value={customAccessToken}
@@ -1680,7 +1680,7 @@ export function IntegrationsTab() {
 
                       {customAuthType === 'oauth' && (
                         <div className="flex flex-col gap-1.5 pt-1">
-                          <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-left font-sans">Scopes (space-separated)</label>
+                          <label className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 text-left font-sans">Scopes (space-separated)</label>
                           <Input
                             value={customScopes}
                             onChange={(e) => setCustomScopes(e.target.value)}
@@ -1742,7 +1742,7 @@ export function IntegrationsTab() {
 
           <div className="mt-5 space-y-4 max-h-[50vh] overflow-y-auto pr-1 no-scrollbar text-left">
             <div className="space-y-1.5">
-              <span className="text-[10px] font-bold text-zinc-450 dark:text-zinc-500 uppercase tracking-wider block">Description</span>
+              <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 block">Description</span>
               <p className="text-xs sm:text-sm text-zinc-650 dark:text-zinc-300 leading-relaxed font-normal">
                 {selectedSkill?.description}
               </p>
@@ -1750,7 +1750,7 @@ export function IntegrationsTab() {
 
             {selectedSkill?.inputSchema && Object.keys(selectedSkill.inputSchema.properties || {}).length > 0 && (
               <div className="space-y-2">
-                <span className="text-[10px] font-bold text-zinc-450 dark:text-zinc-550 uppercase tracking-wider block">Input Parameters</span>
+                <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 block">Input Parameters</span>
                 <div className="text-[11px] font-mono text-zinc-700 dark:text-zinc-350 bg-zinc-50 dark:bg-zinc-900/50 p-4.5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/80 overflow-x-auto">
                   <pre className="whitespace-pre-wrap leading-relaxed font-mono">
                     {JSON.stringify(selectedSkill.inputSchema.properties, null, 2)}
