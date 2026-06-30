@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { MODELS_REGISTRY } from '@/lib/models';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PROVIDER_LOGOS } from '@/components/chat/integrations/IntegrationsTab';
 
 const AttachFileIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -691,9 +692,9 @@ export const ChatInput = ({
                                       Toggle Tools
                                     </div>
                                     {activeApps.map((app) => {
-                                      const iconMap: Record<string, any> = { github: Github, cal: Calendar };
-                                      const AppIcon = iconMap[app.id] || Puzzle;
+                                      const AppIcon = PROVIDER_LOGOS[app.id] || Puzzle;
                                       const isSelected = selectedMcpIds.includes(app.id);
+                                      const isCustom = !PROVIDER_LOGOS[app.id];
                                       return (
                                         <button
                                           key={app.id}
@@ -707,7 +708,11 @@ export const ChatInput = ({
                                           )}
                                         >
                                           <div className="flex items-center gap-2 max-w-[130px] truncate">
-                                            <AppIcon className={cn("w-3.5 h-3.5 shrink-0 transition-colors duration-150", isSelected ? "text-cyan-500" : "text-foreground/60 group-hover:text-foreground/80")} strokeWidth={1.5} />
+                                            {isCustom ? (
+                                              <AppIcon className={cn("w-3.5 h-3.5 shrink-0 transition-colors duration-150", isSelected ? "text-cyan-500" : "text-foreground/60 group-hover:text-foreground/80")} strokeWidth={1.5} />
+                                            ) : (
+                                              <AppIcon className="w-3.5 h-3.5 shrink-0" />
+                                            )}
                                             <span className="truncate">{app.name}</span>
                                           </div>
                                           {isSelected && (

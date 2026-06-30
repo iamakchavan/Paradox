@@ -179,7 +179,7 @@ const GoDaddyLogo = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 const ParallelSearchLogo = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg width="28" height="28" viewBox="0 0 16 16" fill="currentColor" style={{ ...props.style, position: 'relative', minHeight: '28px', minWidth: '28px', top: '0' }} className={props.className}>
+  <svg viewBox="0 0 16 16" fill="currentColor" style={props.style} className={props.className}>
     <path fill="currentColor" d="M12.513 14.611A8 8 0 0 1 8.015 16h-.047a8 8 0 0 1-3.679-.9h2.788a10 10 0 0 1-.238-.279h2.305-.001l.167-.21zm2.101-2.087a8 8 0 0 1-1.216 1.393H9.81l.134-.209h-3.91a12 12 0 0 1-.169-.278H2.092a9 9 0 0 1-.362-.418h3.904a9 9 0 0 1-.143-.279h4.998l.1-.209zm1.029-2.087a8 8 0 0 1-.598 1.392h-4.162l.077-.209H5.02l-.095-.278H.69a9 9 0 0 1-.177-.418h4.285a9 9 0 0 1-.075-.278h6.534l.05-.21h4.335Zm.356-1.866q-.044.6-.17 1.17h-4.385l.032-.21H4.502a8 8 0 0 1-.036-.278H.056A8 8 0 0 1 0 8.835h4.426a8 8 0 0 1-.019-.277h7.163l.01-.21h4.419zm-.17-2.31q.126.57.17 1.169v.222h-4.42l-.009-.209H4.407q.008-.138.019-.277H0q.023-.211.056-.418h4.41q.016-.139.036-.278h6.974l-.032-.21h4.384Zm-.784-2.09q.363.663.598 1.393h-4.335l-.05-.209H4.724q.036-.14.075-.278H.514q.083-.213.177-.418h4.234q.045-.14.095-.278h5.94l-.077-.21zm-1.647-2.086c.457.415.865.883 1.216 1.393H10.59l-.1-.21H5.491q.07-.139.143-.278H1.73a7 7 0 0 1 .362-.418h3.774l.17-.278h3.91l-.135-.209zM8.015 0a8 8 0 0 1 4.498 1.389H9.31l-.167-.21H6.838q.118-.14.24-.278h-2.79A8 8 0 0 1 7.968 0z" xmlns="http://www.w3.org/2000/svg" />
   </svg>
 );
@@ -231,6 +231,25 @@ const PROVIDER_TEMPLATES = [
   { id: 'swiggy_dineout', name: 'Swiggy Dineout', desc: 'Find nearby restaurants, reserve tables, and book dining experiences.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/dineout', category: 'Featured' },
   { id: 'swiggy_instamart', name: 'Swiggy Instamart', desc: 'Order groceries, fresh food, and household essentials for quick delivery.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/im', category: 'Featured' }
 ];
+
+export const PROVIDER_LOGOS: Record<string, React.ComponentType<any>> = {
+  github: GitHubLogo,
+  notion: NotionLogo,
+  cal: CalLogo,
+  vercel: VercelLogo,
+  canva: CanvaLogo,
+  linear: LinearLogo,
+  jira: JiraLogo,
+  asana: AsanaLogo,
+  airtable: AirtableLogo,
+  cryptocom: CryptoLogo,
+  godaddy: GoDaddyLogo,
+  parallel: ParallelSearchLogo,
+  supabase: SupabaseLogo,
+  swiggy_food: SwiggyLogo,
+  swiggy_dineout: SwiggyLogo,
+  swiggy_instamart: SwiggyLogo
+};
 
 export function IntegrationsTab() {
   const { showToast } = useCustomToast();
