@@ -400,8 +400,49 @@ You currently have the following active MCP App Integrations connected and loade
 - Always call listing or searching tools (e.g., listing upcoming bookings, searching files, listing pages) first to discover the relevant items and IDs yourself, and then filter them to answer the user's question.
 - If you encounter an error, explain it clearly to the user rather than giving up.
 `;
-      finalSystemPrompt = (finalSystemPrompt + '\n' + mcpInstruction).trim();
     }
+
+    // Inject Generative UI prompt specifications
+    const generativeUiInstruction = `
+GENERATIVE UI INSTRUCTIONS:
+You are equipped with a live Generative UI rendering system. 
+
+When presenting stock quotes, stock information, or stock ticker details, instead of presenting them in raw text or table lists, you MUST compose your output using the custom '[StockQuote]' layout component:
+- Format: [StockQuote symbol="TICKER" name="Company Name" price="Current Price" change="Price Change" changePercent="Percent Change" isPositive="true/false" /]
+- Ensure 'isPositive' is "true" if the change is positive/zero, and "false" if negative.
+
+When presenting current weather info, forecasts, or temperature updates, instead of raw text, you MUST compose your output using the custom '[WeatherCard]' layout component:
+- Format: [WeatherCard location="City Name" temp="Temperature" condition="Condition Text" humidity="Humidity%" wind="Wind Speed" /]
+
+When presenting upcoming meetings, bookings, or scheduled events, instead of raw lists, you MUST compose your output using the custom '[MeetingCard]' layout component:
+- Format: [MeetingCard title="Meeting Title" host="Organizer Name" time="Date/Time (e.g. Tomorrow at 3:00 PM)" duration="Duration (e.g. 30 mins)" status="confirmed/pending" link="Meeting URL/Conference Link" /]
+
+When presenting calendar event templates or booking types that the user can choose from, you MUST compose your output using the custom '[EventCard]' layout component:
+- Format: [EventCard title="Event Type Title" description="Brief description" duration="Duration (e.g. 15 mins)" slug="booking-slug" link="Cal.com Booking URL" /]
+
+General Rules:
+- Do NOT output layout tags if the query is a general text discussion, an analysis essay, or coding. Only use them when directly returning structured quotes, weather, meetings, or booking types.
+- Never output markdown inside the parameters of the tags. Keep the parameters clean of any markdown tags.
+
+Example usages:
+User: "What is Apple stock price?"
+Assistant: "Here is the current Apple Inc. quote:
+[StockQuote symbol="AAPL" name="Apple Inc." price="182.52" change="+2.30" changePercent="+1.28%" isPositive="true" /]"
+
+User: "What is the weather in Paris?"
+Assistant: "Here is the current Paris forecast:
+[WeatherCard location="Paris" temp="18" condition="Partly Cloudy" humidity="65%" wind="10km/h" /]"
+
+User: "What upcoming meetings do I have?"
+Assistant: "Here are your scheduled bookings:
+[MeetingCard title="Paradox Intro" host="John Doe" time="Tomorrow at 4:00 PM" duration="30 mins" status="confirmed" link="https://meet.google.com/xyz-abc" /]"
+
+User: "What booking links are available?"
+Assistant: "You can book using these links:
+[EventCard title="15 Min Discovery" description="A quick chat" duration="15 mins" slug="discovery" link="https://cal.com/user/discovery" /]
+[EventCard title="60 Min Strategy" description="Deep dive consultation" duration="60 mins" slug="strategy" link="https://cal.com/user/strategy" /]"
+`;
+    finalSystemPrompt = (finalSystemPrompt + '\n' + generativeUiInstruction).trim();
 
     const toolsConfig = Object.keys(tools).length > 0 ? {
       tools,

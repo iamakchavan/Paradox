@@ -18,6 +18,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { parseResearchStream, ResearchStep } from '@/lib/research/parser';
 import { ResearchTimeline } from './ResearchTimeline';
 import { getIntegrationFromToolName } from '@/utils/mcp-helpers';
+import { parseGenerativeUIContent } from '@/utils/generative-ui-parser';
+import { GenerativeUIRegistry } from './generative-ui/registry';
 import {
   Tooltip,
   TooltipTrigger,
@@ -1634,14 +1636,69 @@ const MessageComponent = ({
         )}
 
         <MessageContext.Provider value={contextValue}>
-          <ReactMarkdown 
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-            className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 break-words"
-            components={markdownComponents}
-          >
-            {processedContent}
-          </ReactMarkdown>
+          {(() => {
+            const { blocks } = parseGenerativeUIContent(processedContent);
+            
+            // Group consecutive components so they can be rendered side-by-side
+            const groupedBlocks: Array<
+              | { type: 'markdown'; content: string }
+              | { type: 'components'; items: Array<{ componentName: string; props: any }> }
+            > = [];
+
+            blocks.forEach((block) => {
+              if (block.type === 'component' && block.componentName) {
+                const lastGroup = groupedBlocks[groupedBlocks.length - 1];
+                if (lastGroup && lastGroup.type === 'components') {
+                  lastGroup.items.push({
+                    componentName: block.componentName,
+                    props: block.props,
+                  });
+                } else {
+                  groupedBlocks.push({
+                    type: 'components',
+                    items: [{ componentName: block.componentName, props: block.props }],
+                  });
+                }
+              } else {
+                // Ignore purely whitespace text blocks (like newlines between cards) to prevent breaking the flex group
+                if (block.content && block.content.trim() === '') {
+                  return;
+                }
+                groupedBlocks.push({
+                  type: 'markdown',
+                  content: block.content,
+                });
+              }
+            });
+
+            return groupedBlocks.map((group, idx) => {
+              if (group.type === 'components') {
+                return (
+                  <div key={idx} className="flex flex-wrap gap-3.5 items-stretch my-4 animate-in fade-in-50 duration-200">
+                    {group.items.map((item, subIdx) => {
+                      const Component = GenerativeUIRegistry[item.componentName as keyof typeof GenerativeUIRegistry] as React.ComponentType<any>;
+                      if (Component) {
+                        return <Component key={subIdx} {...item.props} />;
+                      }
+                      return null;
+                    })}
+                  </div>
+                );
+              }
+
+              return (
+                <ReactMarkdown 
+                  key={idx}
+                  remarkPlugins={[remarkGfm, remarkMath]}
+                  rehypePlugins={[rehypeKatex]}
+                  className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 break-words"
+                  components={markdownComponents}
+                >
+                  {group.content}
+                </ReactMarkdown>
+              );
+            });
+          })()}
         </MessageContext.Provider>
 
         {!isStreaming && mainContent && (
