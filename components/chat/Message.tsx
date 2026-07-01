@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, memo, createContext, useContext, Children, isValidElement } from 'react';
-import { ChevronDown, FileText, Globe, Search, ShieldAlert, Loader2, ChevronLeft, ChevronRight, ExternalLink, ArrowUpRight, Check, Cpu, Network, Terminal } from 'lucide-react';
+import { ChevronDown, FileText, Globe, Search, ShieldAlert, Loader2, ChevronLeft, ChevronRight, ExternalLink, ArrowUpRight, Check, Cpu, Network, Terminal, Puzzle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -14,8 +14,10 @@ import { db } from '@/lib/db';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
 import { useCustomToast } from '@/components/ui/custom-toast';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { parseResearchStream, ResearchStep } from '@/lib/research/parser';
 import { ResearchTimeline } from './ResearchTimeline';
+import { getIntegrationFromToolName } from '@/utils/mcp-helpers';
 import {
   Tooltip,
   TooltipTrigger,
@@ -1014,109 +1016,201 @@ interface ParadoxTaskTimelineProps {
 const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelineProps) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
+  // Auto-expand the task timeline when it starts streaming tool calls
+  useEffect(() => {
+    if (isStreaming) {
+      setIsCollapsed(false);
+    }
+  }, [isStreaming]);
+
+  const integrations = useLiveQuery(() => db.mcpIntegrations.toArray()) || [];
+
+  const toolToIntegrationMap = useMemo(() => {
+    const map = new Map<string, any>();
+    for (const integration of integrations) {
+      if (integration.cachedTools && Array.isArray(integration.cachedTools)) {
+        for (const tool of integration.cachedTools) {
+          const cleanName = tool.name.replace(/:/g, '_');
+          map.set(cleanName.toLowerCase().replace(/[^a-z0-9]/g, ''), integration);
+          
+          const prefix = `${integration.id.toLowerCase()}_`;
+          if (cleanName.startsWith(prefix)) {
+            const originalName = cleanName.substring(prefix.length);
+            map.set(originalName.toLowerCase().replace(/[^a-z0-9]/g, ''), integration);
+          }
+        }
+      }
+    }
+    return map;
+  }, [integrations]);
+
   if (!steps || steps.length === 0) return null;
 
   const lastStepIndex = steps.length - 1;
 
+  const groupedSteps = useMemo(() => {
+    interface GroupedStep {
+      type: 'integration' | 'web' | 'read' | 'map' | 'other';
+      integrationId?: string;
+      name?: string;
+      logo?: any;
+      label: string;
+      subActions: string[];
+      isItemLoading: boolean;
+      isStepCompleted: boolean;
+    }
+
+    const grouped: GroupedStep[] = [];
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+      const isItemLoading = isStreaming && i === lastStepIndex;
+      const isStepCompleted = !isStreaming || i < lastStepIndex;
+
+      const integration = getIntegrationFromToolName(step, toolToIntegrationMap);
+
+      if (integration) {
+        const lastGrouped = grouped[grouped.length - 1];
+        if (lastGrouped && lastGrouped.type === 'integration' && lastGrouped.integrationId === integration.id) {
+          if (!lastGrouped.subActions.includes(integration.action)) {
+            lastGrouped.subActions.push(integration.action);
+          }
+          if (isItemLoading) lastGrouped.isItemLoading = true;
+          if (!isStepCompleted) lastGrouped.isStepCompleted = false;
+        } else {
+          grouped.push({
+            type: 'integration',
+            integrationId: integration.id,
+            name: integration.name,
+            logo: integration.logo,
+            label: `Using ${integration.name}`,
+            subActions: [integration.action],
+            isItemLoading,
+            isStepCompleted
+          });
+        }
+      } else {
+        let stepLabel = step;
+        let type: GroupedStep['type'] = 'other';
+
+        if (step.startsWith('Reading ')) {
+          stepLabel = `Reading page: ${step.replace('Reading ', '')}`;
+          type = 'read';
+        } else if (step.startsWith('Mapping ')) {
+          stepLabel = `Mapping site: ${step.replace('Mapping ', '')}`;
+          type = 'map';
+        } else if (step === 'Searching web...') {
+          stepLabel = 'Searching the web';
+          type = 'web';
+        }
+
+        grouped.push({
+          type,
+          label: stepLabel,
+          subActions: [],
+          isItemLoading,
+          isStepCompleted
+        });
+      }
+    }
+    return grouped;
+  }, [steps, isStreaming, lastStepIndex, toolToIntegrationMap]);
+
   return (
-    <div className="w-full mb-5 rounded-2xl border border-zinc-200/85 dark:border-zinc-800/90 bg-white/40 dark:bg-zinc-950/40 backdrop-blur-md p-3.5 shadow-3xs overflow-hidden">
-      {/* Header */}
+    <div className="w-full mb-6 mt-1.5 select-none">
+      {/* Inline Accordion Header */}
       <button
         type="button"
         onClick={() => setIsCollapsed(prev => !prev)}
-        className="w-full flex items-center justify-between text-left cursor-pointer focus:outline-hidden group select-none"
+        className="flex items-center gap-2 text-left cursor-pointer focus:outline-hidden group"
       >
-        <div className="flex items-center gap-2">
-          {/* Animated/Glowing Pulse or Checkmark based on completion */}
-          {isStreaming ? (
-            <div className="relative w-4 h-4 flex items-center justify-center shrink-0">
-              <motion.div
-                animate={{ scale: [0.8, 1.2, 0.8] }}
-                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                className="absolute w-2 h-2 rounded-full bg-cyan-600 dark:bg-cyan-400"
-              />
-              <svg className="w-4 h-4 text-cyan-600/50 dark:text-cyan-400/50 animate-spin" viewBox="0 0 16 16">
-                <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
-              </svg>
-            </div>
-          ) : (
-            <div className="w-4 h-4 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-              <Check className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" strokeWidth={3} />
-            </div>
-          )}
-          
-          <span className={cn(
-            "text-sm font-semibold transition-all duration-300",
-            isStreaming ? "thinking-shine font-bold text-cyan-600 dark:text-cyan-400" : "text-foreground/90"
-          )}>
-            {isStreaming ? 'Running Paradox Task...' : 'Paradox Task complete'}
+        {isStreaming ? (
+          <div className="relative w-4 h-4 flex items-center justify-center shrink-0">
+            <motion.div
+              animate={{ scale: [0.8, 1.2, 0.8] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              className="absolute w-1.5 h-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400"
+            />
+            <svg className="w-4 h-4 text-zinc-400/60 dark:text-zinc-500/60 animate-spin" viewBox="0 0 16 16">
+              <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
+            </svg>
+          </div>
+        ) : (
+          <div className="w-4 h-4 rounded-full bg-emerald-500/10 border border-emerald-500/35 flex items-center justify-center shrink-0">
+            <Check className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" strokeWidth={3} />
+          </div>
+        )}
+        
+        <span className={cn(
+          "text-xs font-medium tracking-tight transition-all duration-300 flex items-center gap-1.5",
+          isStreaming 
+            ? "thinking-shine font-semibold" 
+            : "text-zinc-500 dark:text-zinc-400 hover:text-foreground"
+        )}>
+          {isStreaming ? 'Running Paradox task...' : 'Paradox task complete'}
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-normal">
+            ({steps.length} {steps.length === 1 ? 'action' : 'actions'})
           </span>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-          <span>{steps.length} {steps.length === 1 ? 'action' : 'actions'}</span>
-          <ChevronDown className={cn("w-4 h-4 transition-transform duration-250", !isCollapsed && "rotate-180")} />
-        </div>
+        </span>
+        <ChevronDown className={cn("w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 transition-transform duration-250", !isCollapsed && "rotate-180")} />
       </button>
 
-      {/* Steps List */}
+      {/* Inline Collapsible Steps List */}
       <AnimatePresence initial={false}>
         {!isCollapsed && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.22, ease: "easeInOut" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="pt-3.5 pl-1.5 space-y-3 relative">
-              {steps.map((step, idx) => {
-                const isItemLoading = isStreaming && idx === lastStepIndex;
-                const isStepCompleted = !isStreaming || idx < lastStepIndex;
+            <div className="pt-3 pl-3 space-y-3.5 border-l border-zinc-200 dark:border-zinc-800 ml-[7px] mt-1.5 pb-1">
+              {groupedSteps.map((group, idx) => {
+                let iconNode: React.ReactNode = null;
 
-                let icon = <Terminal className="w-3.5 h-3.5 text-zinc-500 dark:text-zinc-400 shrink-0" />;
-                let label = step;
-
-                if (step.startsWith('Executing ')) {
-                  label = `Executing app tool: ${step.replace('Executing ', '').replace('...', '')}`;
-                  icon = <Cpu className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0" />;
-                } else if (step.startsWith('Reading ')) {
-                  label = `Reading web page: ${step.replace('Reading ', '')}`;
-                  icon = <Globe className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 shrink-0" />;
-                } else if (step.startsWith('Mapping ')) {
-                  label = `Mapping site: ${step.replace('Mapping ', '')}`;
-                  icon = <Network className="w-3.5 h-3.5 text-teal-500 dark:text-teal-400 shrink-0" />;
-                } else if (step === 'Searching web...') {
-                  label = 'Searching web';
-                  icon = <Search className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 shrink-0" />;
+                if (group.type === 'integration') {
+                  const AppIcon = group.logo;
+                  iconNode = (
+                    <div className="w-4 h-4 shrink-0 flex items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-350">
+                      <AppIcon className="w-3.5 h-3.5" />
+                    </div>
+                  );
+                } else {
+                  let LucideIcon = Terminal;
+                  if (group.type === 'read') {
+                    LucideIcon = Globe;
+                  } else if (group.type === 'map') {
+                    LucideIcon = Network;
+                  } else if (group.type === 'web') {
+                    LucideIcon = Search;
+                  }
+                  iconNode = <LucideIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />;
                 }
 
                 return (
-                  <div key={idx} className="relative flex items-start gap-3">
-                    {/* Vertical connector line */}
-                    {idx < steps.length - 1 && (
-                      <div className="absolute left-[9px] -translate-x-1/2 top-[22px] bottom-[-14px] w-[1.5px] bg-zinc-200 dark:bg-zinc-800/80 rounded-full" />
-                    )}
-
-                    {/* Step Icon with outline */}
-                    <div className="w-5 h-5 flex items-center justify-center shrink-0 z-10 select-none bg-background rounded-full border border-border/60">
-                      {isItemLoading ? (
-                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                      ) : isStepCompleted ? (
-                        <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" strokeWidth={3} />
-                      ) : (
-                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                      )}
+                  <div key={idx} className="flex items-start gap-2.5 relative group">
+                    <div className="pt-0.5 select-none">
+                      {iconNode}
                     </div>
 
-                    {/* Detail Card */}
-                    <div className="flex-1 min-w-0 flex items-center gap-2 pt-0.5">
-                      {icon}
+                    <div className="flex-1 min-w-0 flex flex-col pt-0.5">
                       <span className={cn(
-                        "text-[11px] font-medium leading-none truncate",
-                        isItemLoading ? "thinking-shine font-semibold text-foreground" : "text-muted-foreground"
+                        "text-[11px] font-medium leading-tight truncate",
+                        group.isItemLoading 
+                          ? "thinking-shine font-semibold" 
+                          : "text-zinc-600 dark:text-zinc-400"
                       )}>
-                        {label}
+                        {group.label}
                       </span>
+                      {group.subActions.length > 0 && (
+                        <div className="flex flex-col gap-0.5 mt-0.5 pl-0.5">
+                          {group.subActions.map((subAction, sIdx) => (
+                            <span key={sIdx} className="text-[9.5px] text-zinc-400 dark:text-zinc-500 font-mono font-medium leading-none">
+                              {subAction}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

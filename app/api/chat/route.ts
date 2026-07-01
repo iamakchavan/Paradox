@@ -477,7 +477,7 @@ You currently have the following active MCP App Integrations connected and loade
         };
 
         // Force immediate header flush — prevents proxy/middleware buffering
-        safeEnqueue(encoder.encode(' '.repeat(2048)));
+        safeEnqueue(encoder.encode(' '.repeat(4096)));
 
         // Heartbeat: keeps the mobile/desktop connection alive during tool calls
         // (web search + browsePage can take 5–15s each, enough for browsers/proxies
