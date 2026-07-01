@@ -1314,6 +1314,8 @@ const MessageComponent = ({
     (modelMode.startsWith('gemini') && modelMode.toLowerCase().includes('pro')) || 
     modelMode.toLowerCase().includes('reasoning') ||
     modelMode.toLowerCase().includes('gpt-oss') ||
+    modelMode.toLowerCase().includes('step-') ||
+    modelMode.toLowerCase().includes('stepfun') ||
     (modelMode.toLowerCase().includes('nemotron') && (modelMode.includes('super') || modelMode.includes('ultra')))
   ));
 
@@ -1440,22 +1442,24 @@ const MessageComponent = ({
       mainContent = mainContent.replace(/<researchTime>[\d\.]+<\/researchTime>/g, '');
     }
 
-    const isDeepResearch = mainContent.includes('<research-step');
+    const isDeepResearch = message.content.includes('<research-step');
     let parsedSteps: ResearchStep[] = [];
     let searchLoadingQuery: string | null = null;
     let parsedSearchData: SearchData | null = null;
     let parsedToolSteps: string[] = [];
 
     if (isDeepResearch) {
-      const parsed = parseResearchStream(mainContent);
+      const parsed = parseResearchStream(message.content);
       parsedSteps = parsed.steps;
-      mainContent = parsed.cleanContent;
+      const cleanData = parseResearchStream(mainContent);
+      mainContent = cleanData.cleanContent;
     } else {
-      const parsed = extractSearchData(mainContent);
+      const parsed = extractSearchData(message.content);
       searchLoadingQuery = parsed.searchLoadingQuery;
       parsedSearchData = parsed.searchData;
       parsedToolSteps = parsed.toolSteps;
-      mainContent = parsed.cleanContent;
+      const cleanData = extractSearchData(mainContent);
+      mainContent = cleanData.cleanContent;
     }
 
     // Stabilize steps array and items referentially
@@ -1485,7 +1489,7 @@ const MessageComponent = ({
       mainContent,
       researchTime
     };
-  }, [rawMainContent]);
+  }, [rawMainContent, message.content]);
   
   // Aggregate all search results across standard search and deep research
   const allSearchResults = useMemo(() => {

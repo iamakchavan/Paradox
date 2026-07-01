@@ -427,7 +427,7 @@ You currently have the following active MCP App Integrations connected and loade
     }
 
     if (modelConfig.provider === 'zenmux' || modelConfig.provider === 'nvidia') {
-      const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron');
+      const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron') || model.includes('step-') || model.includes('stepfun');
       
       let extraBody: Record<string, any> = {};
       if (model === 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning') {
