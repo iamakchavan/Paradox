@@ -164,7 +164,10 @@ export const streamChatContent = async (
     }
   } catch (err: any) {
     // Re-throw AbortError so the caller can distinguish user-stop from errors
-    if (err?.name === 'AbortError' || err?.message === 'Aborted') throw err;
+    const isAbort = err?.name === 'AbortError' || 
+      err?.message === 'Aborted' || 
+      String(err?.message || '').toLowerCase().includes('abort');
+    if (isAbort) throw err;
     console.error('Error reading chat stream:', err);
     throw err;
   } finally {

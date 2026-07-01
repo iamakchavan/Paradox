@@ -893,7 +893,10 @@ export default function ChatPage() {
       }
 
     } catch (error: any) {
-      if (error?.message === 'Aborted' || error?.name === 'AbortError') {
+      const isAbort = error?.name === 'AbortError' || 
+        error?.message === 'Aborted' || 
+        String(error?.message || '').toLowerCase().includes('abort');
+      if (isAbort) {
         if (isInternalAbort) return; // swallow internal loop aborts
         console.log('Stream stopped by user');
         return;

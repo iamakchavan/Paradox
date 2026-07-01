@@ -76,7 +76,7 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
       return null;
     }
     return (
-      <div className="absolute top-[5px] right-2 flex items-center gap-1.5 opacity-0 group-hover/table:opacity-100 max-md:opacity-100 transition-opacity duration-200 z-10">
+      <div className="absolute top-full right-0 mt-1.5 flex items-center gap-1.5 opacity-0 group-hover/table:opacity-100 max-md:opacity-100 transition-opacity duration-200 z-10">
         <button
           onClick={handleCopy}
           className="p-1 bg-background/95 hover:bg-secondary border border-border/50 rounded-lg shadow-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none"
