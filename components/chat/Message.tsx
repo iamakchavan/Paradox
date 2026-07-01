@@ -1171,7 +1171,7 @@ const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelinePro
                 if (group.type === 'integration') {
                   const AppIcon = group.logo;
                   iconNode = (
-                    <div className="w-4 h-4 shrink-0 flex items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-350">
+                    <div className="w-4 h-4 shrink-0 flex items-center justify-center text-foreground">
                       <AppIcon className="w-3.5 h-3.5" />
                     </div>
                   );
