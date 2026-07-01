@@ -50,7 +50,7 @@ export default function EventCard({
         </div>
 
         {hasDuration && (
-          <span className="text-[9.5px] font-mono font-bold bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/60 text-muted-foreground px-1.5 py-0.5 rounded-md shrink-0">
+          <span className="text-[11px] font-mono font-medium text-zinc-500 dark:text-zinc-400 shrink-0">
             {durationText}
           </span>
         )}

@@ -870,8 +870,15 @@ When presenting upcoming meetings, bookings, or scheduled events, instead of raw
 When presenting calendar event templates or booking types that the user can choose from, you MUST compose your output using the custom '[EventCard]' layout component:
 - Format: [EventCard title="Event Type Title" description="Brief description" duration="Duration (e.g. 15 mins)" slug="booking-slug" link="Cal.com Booking URL" /]
 
+When presenting Linear issues, task details, lists of tickets, or single issues, instead of presenting them in raw text, list bullets, or table lists, you MUST compose your output using one or more custom '[LinearIssue]' layout components:
+- Format: [LinearIssue id="ISSUE-ID" title="Issue Title" project="Project Name" status="backlog/todo/in_progress/done/canceled" priority="urgent/high/medium/low/none" assignee="username" cycle="Cycle Name" link="Linear Issue Link" /]
+
+When presenting Linear projects, milestones, or roadmaps, instead of raw text, you MUST compose your output using the custom '[LinearProject]' layout component:
+- Format: [LinearProject name="Project Name" status="planned/started/completed" progress="Percent Complete (e.g. 68)" lead="username" targetDate="Due Date" completedIssues="Completed Count" totalIssues="Total Count" link="Project Link" /]
+
 General Rules:
-- Do NOT output layout tags if the query is a general text discussion, an analysis essay, or coding. Only use them when directly returning structured quotes, weather, meetings, or booking types.
+- Do NOT output layout tags if the query is a general text discussion, an analysis essay, or coding. Only use them when directly returning structured quotes, weather, meetings, booking templates, or Linear tasks.
+- You MUST still output the custom card component first (e.g. [StockQuote], [WeatherCard], [LinearIssue], etc.), even if you gather the information from a web search (e.g. via the web_search tool) or other text documents, and even if you choose to write additional details or auxiliary metrics below or above it.
 - Never output markdown inside the parameters of the tags. Keep the parameters clean of any markdown tags.
 
 Example usages:
@@ -891,6 +898,27 @@ User: "What booking links are available?"
 Assistant: "You can book using these links:
 [EventCard title="15 Min Discovery" description="A quick chat" duration="15 mins" slug="discovery" link="https://cal.com/user/discovery" /]
 [EventCard title="60 Min Strategy" description="Deep dive consultation" duration="60 mins" slug="strategy" link="https://cal.com/user/strategy" /]"
+
+User: "list my open issues"
+Assistant: "Here are your open issues:
+[LinearIssue id="AKS-17" title="Fix OAuth Token Exchange Failures" project="Paradox App" status="backlog" priority="urgent" assignee="chavan" cycle="Cycle 12" link="https://linear.app/paradox/issue/AKS-17" /]
+[LinearIssue id="AKS-16" title="Fix OAuth and Token Exchange for MCP" project="Paradox App" status="backlog" priority="urgent" assignee="chavan" cycle="Cycle 12" link="https://linear.app/paradox/issue/AKS-16" /]"
+
+User: "Show details of issue PAR-101"
+Assistant: "Here is the issue description:
+[LinearIssue id="PAR-101" title="Fix Cal.com token refresh mismatch" project="Paradox Engine" status="in_progress" priority="high" assignee="chavan" cycle="Cycle 12" link="https://linear.app/paradox/issue/PAR-101" /]"
+
+User: "What is the status of the Mobile Launch project?"
+Assistant: "Here is the roadmap progress:
+[LinearProject name="Mobile Release V1" status="started" progress="70" lead="chavan" targetDate="Jan 30" completedIssues="14" totalIssues="20" link="https://linear.app/paradox/project/mobile-v1" /]"
+
+User: "Show details of issue PAR-101"
+Assistant: "Here is the issue description:
+[LinearIssue id="PAR-101" title="Fix Cal.com token refresh mismatch" project="Paradox Engine" status="in_progress" priority="high" assignee="chavan" cycle="Cycle 12" link="https://linear.app/paradox/issue/PAR-101" /]"
+
+User: "What is the status of the Mobile Launch project?"
+Assistant: "Here is the roadmap progress:
+[LinearProject name="Mobile Release V1" status="started" progress="70" lead="chavan" targetDate="Jan 30" completedIssues="14" totalIssues="20" link="https://linear.app/paradox/project/mobile-v1" /]"
 `;
 
             const synthesisMessages = [
@@ -937,8 +965,15 @@ When presenting upcoming meetings, bookings, or scheduled events, instead of raw
 When presenting calendar event templates or booking types that the user can choose from, you MUST compose your output using the custom '[EventCard]' layout component:
 - Format: [EventCard title="Event Type Title" description="Brief description" duration="Duration (e.g. 15 mins)" slug="booking-slug" link="Cal.com Booking URL" /]
 
+When presenting Linear issues, task details, lists of tickets, or single issues, instead of presenting them in raw text, list bullets, or table lists, you MUST compose your output using one or more custom '[LinearIssue]' layout components:
+- Format: [LinearIssue id="ISSUE-ID" title="Issue Title" project="Project Name" status="backlog/todo/in_progress/done/canceled" priority="urgent/high/medium/low/none" assignee="username" cycle="Cycle Name" link="Linear Issue Link" /]
+
+When presenting Linear projects, milestones, or roadmaps, instead of raw text, you MUST compose your output using the custom '[LinearProject]' layout component:
+- Format: [LinearProject name="Project Name" status="planned/started/completed" progress="Percent Complete (e.g. 68)" lead="username" targetDate="Due Date" completedIssues="Completed Count" totalIssues="Total Count" link="Project Link" /]
+
 General Rules:
-- Do NOT output layout tags if the query is a general text discussion, an analysis essay, or coding. Only use them when directly returning structured quotes, weather, meetings, or booking types.
+- Do NOT output layout tags if the query is a general text discussion, an analysis essay, or coding. Only use them when directly returning structured quotes, weather, meetings, booking templates, or Linear tasks.
+- You MUST still output the custom card component first (e.g. [StockQuote], [WeatherCard], [LinearIssue], etc.), even if you gather the information from a web search (e.g. via the web_search tool) or other text documents, and even if you choose to write additional details or auxiliary metrics below or above it.
 - Never output markdown inside the parameters of the tags. Keep the parameters clean of any markdown tags.
 
 Example usages:
@@ -958,6 +993,14 @@ User: "What booking links are available?"
 Assistant: "You can book using these links:
 [EventCard title="15 Min Discovery" description="A quick chat" duration="15 mins" slug="discovery" link="https://cal.com/user/discovery" /]
 [EventCard title="60 Min Strategy" description="Deep dive consultation" duration="60 mins" slug="strategy" link="https://cal.com/user/strategy" /]"
+
+User: "Show details of issue PAR-101"
+Assistant: "Here is the issue description:
+[LinearIssue id="PAR-101" title="Fix Cal.com token refresh mismatch" project="Paradox Engine" status="in_progress" priority="high" assignee="chavan" cycle="Cycle 12" link="https://linear.app/paradox/issue/PAR-101" /]"
+
+User: "What is the status of the Mobile Launch project?"
+Assistant: "Here is the roadmap progress:
+[LinearProject name="Mobile Release V1" status="started" progress="70" lead="chavan" targetDate="Jan 30" completedIssues="14" totalIssues="20" link="https://linear.app/paradox/project/mobile-v1" /]"
 `.trim();
 
             result = streamText({
