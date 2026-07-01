@@ -105,9 +105,9 @@ export default function LinearIssue({
           </div>
 
           {/* Right: Status Badge */}
-          <div className="flex items-center gap-1.5 shrink-0 bg-zinc-50 dark:bg-zinc-900 border border-zinc-150 dark:border-zinc-800/60 px-2 py-1 rounded-lg">
+          <div className="flex items-center gap-1.5 shrink-0 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
             {statusInfo.icon}
-            <span className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 leading-none">
+            <span className="leading-none">
               {statusInfo.label}
             </span>
           </div>
@@ -135,7 +135,7 @@ export default function LinearIssue({
           <span className="text-[13px] font-medium text-zinc-800 dark:text-zinc-200 tracking-tight leading-tight truncate">
             Open Issue in Linear
           </span>
-          <span className="text-[10.5px] font-mono text-muted-foreground mt-1 leading-none truncate">
+          <span className="text-[10.5px] font-mono text-muted-foreground mt-1 leading-normal truncate">
             {id.toUpperCase()} • {cleanAssignee}
           </span>
         </div>

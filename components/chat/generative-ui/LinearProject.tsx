@@ -102,7 +102,7 @@ export default function LinearProject({
           <span className="text-[13px] font-medium text-zinc-800 dark:text-zinc-200 tracking-tight leading-tight truncate">
             View Project Roadmap
           </span>
-          <span className="text-[10.5px] font-mono text-muted-foreground mt-1 leading-none truncate">
+          <span className="text-[10.5px] font-mono text-muted-foreground mt-1 leading-normal truncate">
             {completed} completed • {remaining} remaining • {total} total
           </span>
         </div>

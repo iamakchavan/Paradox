@@ -426,6 +426,9 @@ When presenting Linear issues, task details, lists of tickets, or single issues,
 When presenting Linear projects, milestones, or roadmaps, instead of raw text, you MUST compose your output using the custom '[LinearProject]' layout component:
 - Format: [LinearProject name="Project Name" status="planned/started/completed" progress="Percent Complete (e.g. 68)" lead="username" targetDate="Due Date" completedIssues="Completed Count" totalIssues="Total Count" link="Project Link" /]
 
+When presenting Vercel deployments, build logs, or deployment status, instead of raw text, you MUST compose your output using the custom '[VercelDeployment]' layout component:
+- Format: [VercelDeployment projectName="Project Name" status="ready/building/error/canceled" branch="Branch Name" commitMessage="Commit details" creator="username" duration="Build duration (e.g. 45s)" deploymentUrl="Deployment Preview Link" /]
+
 General Rules:
 - Do NOT output layout tags if the query is a general text discussion, an analysis essay, or coding. Only use them when directly returning structured quotes, weather, meetings, booking templates, or Linear tasks.
 - You MUST still output the custom card component first (e.g. [StockQuote], [WeatherCard], [LinearIssue], etc.), even if you gather the information from a web search (e.g. via the web_search tool) or other text documents, and even if you choose to write additional details or auxiliary metrics below or above it.
@@ -461,6 +464,10 @@ Assistant: "Here is the issue description:
 User: "What is the status of the Mobile Launch project?"
 Assistant: "Here is the roadmap progress:
 [LinearProject name="Mobile Release V1" status="started" progress="70" lead="chavan" targetDate="Jan 30" completedIssues="14" totalIssues="20" link="https://linear.app/paradox/project/mobile-v1" /]"
+
+User: "how is my latest vercel deployment doing?"
+Assistant: "Here is the latest status for your web app project:
+[VercelDeployment projectName="Paradox App" status="ready" branch="cosmos" commitMessage="upgrade Next.js to v16.2.10" creator="chavan" duration="28s" deploymentUrl="https://paradox-cosmos.vercel.app" /]"
 `;
     finalSystemPrompt = (finalSystemPrompt + '\n' + generativeUiInstruction).trim();
 
