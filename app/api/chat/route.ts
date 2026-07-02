@@ -429,9 +429,13 @@ When presenting Linear projects, milestones, or roadmaps, instead of raw text, y
 When presenting Vercel deployments, build logs, or deployment status, instead of raw text, you MUST compose your output using the custom '[VercelDeployment]' layout component:
 - Format: [VercelDeployment projectName="Project Name" status="ready/building/error/canceled" branch="Branch Name" commitMessage="Commit details" creator="username" duration="Build duration (e.g. 45s)" deploymentUrl="Deployment Preview Link" /]
 
+When presenting cryptocurrency prices, ticker data, quotes, or market updates (such as from Crypto.com tools), instead of raw text, you MUST compose your output using the custom '[CryptoQuote]' layout component:
+- Format: [CryptoQuote symbol="COIN_PAIR" name="Cryptocurrency Name" price="Current Price (e.g. $61,697.17)" change="Price Change (e.g. +$1,542.18)" changePercent="Percent Change (e.g. +2.51%)" isPositive="true/false" high24h="24h High (e.g. $62,210.80)" low24h="24h Low (e.g. $59,584.45)" volume24h="24h Volume" markPrice="Mark Price" /]
+- Ensure 'isPositive' is "true" if the change is positive/zero, and "false" if negative.
+
 General Rules:
 - Do NOT output layout tags if the query is a general text discussion, an analysis essay, or coding. Only use them when directly returning structured quotes, weather, meetings, booking templates, or Linear tasks.
-- You MUST still output the custom card component first (e.g. [StockQuote], [WeatherCard], [LinearIssue], etc.), even if you gather the information from a web search (e.g. via the web_search tool) or other text documents, and even if you choose to write additional details or auxiliary metrics below or above it.
+- You MUST still output the custom card component first (e.g. [StockQuote], [WeatherCard], [LinearIssue], [CryptoQuote], etc.), even if you gather the information from a web search (e.g. via the web_search tool) or other text documents, and even if you choose to write additional details or auxiliary metrics below or above it.
 - Never output markdown inside the parameters of the tags. Keep the parameters clean of any markdown tags.
 
 Example usages:
@@ -468,6 +472,10 @@ Assistant: "Here is the roadmap progress:
 User: "how is my latest vercel deployment doing?"
 Assistant: "Here is the latest status for your web app project:
 [VercelDeployment projectName="Paradox App" status="ready" branch="cosmos" commitMessage="upgrade Next.js to v16.2.10" creator="chavan" duration="28s" deploymentUrl="https://paradox-cosmos.vercel.app" /]"
+
+User: "What is Bitcoin price?"
+Assistant: "Here is the latest market data for Bitcoin:
+[CryptoQuote symbol="BTC_USDT" name="Bitcoin" price="$61,697.17" change="+$1,542.18" changePercent="+2.51%" isPositive="true" high24h="$62,210.80" low24h="$59,584.45" volume24h="3,055.20 BTC" markPrice="$61,648.61" /]"
 `;
     finalSystemPrompt = (finalSystemPrompt + '\n' + generativeUiInstruction).trim();
 

@@ -8,6 +8,7 @@ export const GenerativeUIRegistry = {
   LinearIssue: dynamic(() => import('./LinearIssue'), { ssr: false }),
   LinearProject: dynamic(() => import('./LinearProject'), { ssr: false }),
   VercelDeployment: dynamic(() => import('./VercelDeployment'), { ssr: false }),
+  CryptoQuote: dynamic(() => import('./CryptoQuote'), { ssr: false }),
 };
 
 export type GenerativeUIComponentType = keyof typeof GenerativeUIRegistry;
