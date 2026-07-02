@@ -127,20 +127,28 @@ export function ChatHeader({
                   onCollapse={() => setIsMobileSidebarOpen(false)}
                   isSearchActive={isSearchActive}
                   onSearchClick={() => {
-                    setIsSearchActive(!isSearchActive);
                     setIsMobileSidebarOpen(false);
+                    if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
+                      router.push('/chat');
+                    }
+                    setIsSearchActive(!isSearchActive);
+                    setIsSettingsActive(false);
                   }}
                   isLibraryActive={isLibraryPageActive}
                   onLibraryClick={() => {
-                    setIsLibraryPageActive(!isLibraryPageActive);
                     setIsSearchActive(false);
+                    setIsSettingsActive(false);
                     setIsMobileSidebarOpen(false);
+                    router.push('/library');
                   }}
                   isSettingsActive={isSettingsActive}
                   onSettingsClick={() => {
                     const nextVal = !isSettingsActive;
                     setIsSearchActive(false);
                     setIsMobileSidebarOpen(false);
+                    if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
+                      router.push('/chat');
+                    }
                     if (nextVal) {
                       // Delay opening settings so the sidebar drawer slide-out completes smoothly first
                       setTimeout(() => {
