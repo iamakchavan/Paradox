@@ -20,6 +20,26 @@ function extractTitleFromMarkdown(markdown: string, fallback: string): string {
   return fallback;
 }
 
+function cleanMcpToolOutput(obj: any): any {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj === 'string') {
+    return obj
+      .replace(/⚠️?\s*A rich UI widget is being shown[\s\S]*?what they'd like to do next\.?/gi, '')
+      .trim();
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => cleanMcpToolOutput(item));
+  }
+  if (typeof obj === 'object') {
+    const cleaned: Record<string, any> = {};
+    for (const [key, val] of Object.entries(obj)) {
+      cleaned[key] = cleanMcpToolOutput(val);
+    }
+    return cleaned;
+  }
+  return obj;
+}
+
 function getFriendlyTitleFromUrl(urlStr: string): string {
   try {
     const url = new URL(urlStr);
@@ -337,17 +357,18 @@ export async function POST(req: Request) {
                       const textContent = (rawResult as any).content.find((c: any) => c.type === 'text');
                       if (textContent && typeof textContent.text === 'string') {
                         try {
-                          return JSON.parse(textContent.text);
+                          const parsed = JSON.parse(textContent.text);
+                          return cleanMcpToolOutput(parsed);
                         } catch {
-                          return { result: textContent.text };
+                          return cleanMcpToolOutput({ result: textContent.text });
                         }
                       }
                     }
 
                     if (typeof rawResult !== 'object' || rawResult === null) {
-                      return { result: String(rawResult) };
+                      return cleanMcpToolOutput({ result: String(rawResult) });
                     }
-                    return rawResult;
+                    return cleanMcpToolOutput(rawResult);
                   } catch (err: any) {
                     return { error: err.message };
                   }
