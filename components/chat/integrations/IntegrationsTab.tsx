@@ -1726,16 +1726,16 @@ export function IntegrationsTab() {
         onOpenChange={(open) => setSelectedSkill(open ? selectedSkill : null)}
       >
         <DialogContent className="w-[92%] max-w-lg bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-900 text-foreground font-sans rounded-[20px] p-6 [&>button]:hidden focus:outline-none focus-visible:outline-none animate-in fade-in-50 zoom-in-95 duration-200">
-          <div className="flex items-center justify-between gap-4 pb-3.5 border-b border-zinc-100 dark:border-zinc-900/60 w-full text-left">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-3.5 border-b border-zinc-100 dark:border-zinc-900/60 w-full text-left">
             <div className="flex flex-col min-w-0">
-              <DialogTitle className="text-base font-bold text-zinc-800 dark:text-zinc-200 truncate">
+              <DialogTitle className="text-base font-bold text-zinc-800 dark:text-zinc-200 break-words pr-2">
                 {selectedSkill ? formatToolName(selectedSkill.name) : ''}
               </DialogTitle>
-              <DialogDescription className="text-xs font-mono text-zinc-400 dark:text-zinc-550 mt-1.5 truncate">
+              <DialogDescription className="text-xs font-mono text-zinc-400 dark:text-zinc-550 mt-1.5 break-all">
                 {selectedSkill?.name}
               </DialogDescription>
             </div>
-            <span className="text-[10px] bg-zinc-50 dark:bg-zinc-900 text-zinc-550 dark:text-zinc-400 px-2.5 py-0.5 rounded-md font-semibold shrink-0 border border-zinc-200/60 dark:border-zinc-800 select-none">
+            <span className="self-start sm:self-center text-[10px] bg-zinc-50 dark:bg-zinc-900 text-zinc-550 dark:text-zinc-400 px-2.5 py-0.5 rounded-md font-semibold shrink-0 border border-zinc-200/60 dark:border-zinc-800 select-none">
               {selectedSkill?.integrationName}
             </span>
           </div>
