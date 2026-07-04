@@ -22,7 +22,8 @@ export async function GET(req: Request) {
     const stateId = searchParams.get('stateId') || '';
     const remoteUrl = searchParams.get('remoteUrl');
 
-    if (!provider || !PROVIDER_AUTH_URLS[provider]) {
+    const ALLOWED_PROVIDERS = ['github', 'notion', 'cal'];
+    if (!provider || !ALLOWED_PROVIDERS.includes(provider)) {
       return new NextResponse('Invalid provider', { status: 400 });
     }
 

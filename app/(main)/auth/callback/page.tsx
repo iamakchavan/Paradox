@@ -4,6 +4,50 @@ import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { db } from '@/lib/db';
 
+function isSafeUrl(urlStr: string): boolean {
+  // In development mode, allow local/private endpoints for developer convenience
+  if (process.env.NODE_ENV === 'development') {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(urlStr);
+    
+    if (parsed.protocol !== 'https:') {
+      return false;
+    }
+    
+    const host = parsed.hostname.toLowerCase();
+    
+    if (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '::1' ||
+      host.endsWith('.local') ||
+      host === 'metadata.google.internal' ||
+      host === 'metadata'
+    ) {
+      return false;
+    }
+    
+    const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+    const match = host.match(ipPattern);
+    if (match) {
+      const [, octet1, octet2] = match.map(Number);
+      if (octet1 === 10) return false;
+      if (octet1 === 192 && octet2 === 168) return false;
+      if (octet1 === 172 && octet2 >= 16 && octet2 <= 31) return false;
+      if (octet1 === 169 && octet2 === 254) return false;
+      if (octet1 === 127) return false;
+      if (octet1 === 0 || octet1 >= 224) return false;
+    }
+    
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -16,9 +60,6 @@ function AuthCallbackContent() {
     hasRunRef.current = true;
     const code = searchParams.get('code');
     const stateStr = searchParams.get('state');
-    const directAccessToken = searchParams.get('access_token');
-    const directRefreshToken = searchParams.get('refresh_token');
-    const directExpiresIn = searchParams.get('expires_in');
 
     if (!stateStr) {
       setStatus('Invalid request parameters. Callback missing state.');
@@ -26,8 +67,8 @@ function AuthCallbackContent() {
       return;
     }
 
-    if (!code && !directAccessToken) {
-      setStatus('Invalid request parameters. Callback missing authorization code or access token.');
+    if (!code) {
+      setStatus('Invalid request parameters. Callback missing authorization code.');
       setErrorOccurred(true);
       return;
     }
@@ -43,11 +84,11 @@ function AuthCallbackContent() {
       }
       const { provider, isMobile, chatId, csrf, stateId, remoteUrl } = parsedState;
 
-      // 1. Retrieve CSRF token from shared localStorage using collision-free key
-      const savedCsrf = localStorage.getItem(`oauth_csrf_${provider}_${stateId}`);
+      // 1. Retrieve CSRF token from shared sessionStorage using static key
+      const savedCsrf = sessionStorage.getItem('oauth_pending_csrf');
 
       // 2. Immediate cleanup to prevent token replay attacks
-      localStorage.removeItem(`oauth_csrf_${provider}_${stateId}`);
+      sessionStorage.removeItem('oauth_pending_csrf');
 
       if (!savedCsrf || savedCsrf !== csrf) {
         setStatus('Security validation failed: CSRF state token mismatch. Connection aborted.');
@@ -60,7 +101,8 @@ function AuthCallbackContent() {
       // 3. Save helper function
       const saveAndRedirect = async (accessToken: string, refreshToken?: string, expiresIn?: number) => {
         const expiresAt = expiresIn ? Date.now() + expiresIn * 1000 : undefined;
-        const targetUrl = remoteUrl || `https://mcp.${provider}.com/mcp`;
+        const defaultUrl = `https://mcp.${provider}.com/mcp`;
+        const targetUrl = (remoteUrl && isSafeUrl(remoteUrl)) ? remoteUrl : defaultUrl;
 
         setStatus('Syncing tools and completing connection...');
 
@@ -123,31 +165,17 @@ function AuthCallbackContent() {
         }
       };
 
-      // 4. Handle direct tokens (Implicit Flow fallback)
-      if (directAccessToken) {
-        saveAndRedirect(
-          directAccessToken, 
-          directRefreshToken || undefined, 
-          directExpiresIn ? parseInt(directExpiresIn) : undefined
-        ).catch(err => {
-          console.error(err);
-          setStatus('Failed to save connection credentials.');
-          setErrorOccurred(true);
-        });
-        return;
-      }
-
-      // 5. Swap code using PKCE if remote OAuth endpoint is set
-      const codeVerifier = localStorage.getItem(`oauth_verifier_${provider}_${stateId}`);
-      const clientId = localStorage.getItem(`oauth_client_${provider}_${stateId}`);
-      const clientSecret = localStorage.getItem(`oauth_secret_${provider}_${stateId}`);
-      const tokenEndpoint = localStorage.getItem(`oauth_token_endpoint_${provider}_${stateId}`);
+      // 4. Swap code using PKCE if remote OAuth endpoint is set
+      const codeVerifier = sessionStorage.getItem('oauth_pending_verifier');
+      const clientId = sessionStorage.getItem('oauth_pending_client');
+      const clientSecret = sessionStorage.getItem('oauth_pending_secret');
+      const tokenEndpoint = sessionStorage.getItem('oauth_pending_token_endpoint');
 
       // Cleanup verifier state
-      localStorage.removeItem(`oauth_verifier_${provider}_${stateId}`);
-      localStorage.removeItem(`oauth_client_${provider}_${stateId}`);
-      localStorage.removeItem(`oauth_secret_${provider}_${stateId}`);
-      localStorage.removeItem(`oauth_token_endpoint_${provider}_${stateId}`);
+      sessionStorage.removeItem('oauth_pending_verifier');
+      sessionStorage.removeItem('oauth_pending_client');
+      sessionStorage.removeItem('oauth_pending_secret');
+      sessionStorage.removeItem('oauth_pending_token_endpoint');
 
       if (tokenEndpoint && codeVerifier) {
         // Direct remote MCP OAuth PKCE exchange

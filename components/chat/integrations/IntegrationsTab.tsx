@@ -496,13 +496,13 @@ export function IntegrationsTab() {
       const codeVerifier = generateCodeVerifier();
       const codeChallenge = await generateCodeChallenge(codeVerifier);
       
-      localStorage.setItem(`oauth_csrf_${provider}_${stateId}`, csrf);
-      localStorage.setItem(`oauth_verifier_${provider}_${stateId}`, codeVerifier);
-      localStorage.setItem(`oauth_client_${provider}_${stateId}`, clientId);
+      sessionStorage.setItem('oauth_pending_csrf', csrf);
+      sessionStorage.setItem('oauth_pending_verifier', codeVerifier);
+      sessionStorage.setItem('oauth_pending_client', clientId);
       if (clientSecret) {
-        localStorage.setItem(`oauth_secret_${provider}_${stateId}`, clientSecret);
+        sessionStorage.setItem('oauth_pending_secret', clientSecret);
       }
-      localStorage.setItem(`oauth_token_endpoint_${provider}_${stateId}`, metadata.token_endpoint);
+      sessionStorage.setItem('oauth_pending_token_endpoint', metadata.token_endpoint);
 
       const state = encodeURIComponent(JSON.stringify({ 
         provider, 

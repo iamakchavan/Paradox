@@ -1,5 +1,49 @@
 import { NextResponse } from 'next/server';
 
+function isSafeUrl(urlStr: string): boolean {
+  // In development mode, allow local/private endpoints for developer convenience
+  if (process.env.NODE_ENV === 'development' || process.env.ALLOW_LOCAL_MCP === 'true') {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(urlStr);
+    
+    if (parsed.protocol !== 'https:') {
+      return false;
+    }
+    
+    const host = parsed.hostname.toLowerCase();
+    
+    if (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '::1' ||
+      host.endsWith('.local') ||
+      host === 'metadata.google.internal' ||
+      host === 'metadata'
+    ) {
+      return false;
+    }
+    
+    const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+    const match = host.match(ipPattern);
+    if (match) {
+      const [, octet1, octet2] = match.map(Number);
+      if (octet1 === 10) return false;
+      if (octet1 === 192 && octet2 === 168) return false;
+      if (octet1 === 172 && octet2 >= 16 && octet2 <= 31) return false;
+      if (octet1 === 169 && octet2 === 254) return false;
+      if (octet1 === 127) return false;
+      if (octet1 === 0 || octet1 >= 224) return false;
+    }
+    
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -14,6 +58,9 @@ export async function POST(req: Request) {
 
     // 1. If dynamic parameters are passed from client storage (custom SSE/OAuth), route directly
     if (tokenEndpoint) {
+      if (!isSafeUrl(tokenEndpoint)) {
+        return NextResponse.json({ error: 'Unsafe token endpoint URL' }, { status: 400 });
+      }
       tokenUrl = tokenEndpoint;
       const bodyParams = new URLSearchParams({
         grant_type: 'refresh_token',
@@ -30,6 +77,13 @@ export async function POST(req: Request) {
       };
     } else {
       // 2. Fall back to pre-configured environment credentials
+      const ALLOWED_PROVIDERS = ['github', 'google', 'cal'];
+      if (!ALLOWED_PROVIDERS.includes(provider)) {
+        return NextResponse.json({ 
+          error: `Provider ${provider} does not support refreshing or is not configured.` 
+        }, { status: 400 });
+      }
+
       const clientId = process.env[`${provider.toUpperCase()}_CLIENT_ID`];
       const clientSecret = process.env[`${provider.toUpperCase()}_CLIENT_SECRET`];
 
