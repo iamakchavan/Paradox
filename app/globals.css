@@ -125,10 +125,26 @@
 
 /* Markdown Styles */
 .prose {
-  @apply text-zinc-700 dark:text-zinc-400;
+  @apply text-zinc-800 dark:text-zinc-400;
+  font-weight: 400;
+  font-size: 15.5px;
+  line-height: 1.75;
+  letter-spacing: 0.015em;
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
+}
+
+@media (min-width: 640px) {
+  .prose {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .prose {
+    font-size: 16.5px;
+  }
 }
 
 .prose pre {
@@ -148,7 +164,7 @@
 }
 
 .prose strong {
-  @apply text-zinc-800 dark:text-zinc-300 font-medium;
+  @apply text-zinc-900 dark:text-zinc-300 font-semibold;
 }
 
 /* Headings and numbered list titles are styled cyan */
@@ -186,7 +202,7 @@
 }
 
 .prose td {
-  @apply px-3 py-2.5 text-left text-sm text-zinc-700 dark:text-zinc-300 align-top leading-normal;
+  @apply px-3 py-2.5 text-left text-sm text-zinc-800 dark:text-zinc-300 align-top leading-normal;
 }
 
 /* Ensure proper cell content wrapping */
@@ -251,19 +267,24 @@
 }
 
 .prose p {
-  @apply mb-4 leading-relaxed;
+  @apply mb-4;
+  line-height: 1.75;
+}
+
+.prose ul, .prose ol {
+  @apply mb-4 pl-6 space-y-1.5;
 }
 
 .prose ul {
-  @apply list-disc mb-4 pl-6;
+  @apply list-disc;
 }
 
 .prose ol {
-  @apply list-decimal mb-4 pl-6;
+  @apply list-decimal;
 }
 
 .prose li {
-  @apply mb-1;
+  line-height: 1.75;
 }
 
 .prose li > p {

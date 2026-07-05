@@ -1306,6 +1306,7 @@ const MessageComponent = ({
   const { showToast } = useCustomToast();
   const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
   const [branchedId, setBranchedId] = useState<string | null>(null);
+  const [isQueryExpanded, setIsQueryExpanded] = useState(false);
   const [thinkingTime, setThinkingTime] = useState(0);
   const [hasFinishedThinking, setHasFinishedThinking] = useState(false);
   const thinkingTimerRef = useRef<number>();
@@ -1545,24 +1546,38 @@ const MessageComponent = ({
 
 
   if (message.role === 'user') {
+    const lines = message.content.split('\n');
+    const CHAR_LIMIT = 280;
+    const LINE_LIMIT = 4;
+    const shouldTruncate = message.content.length > CHAR_LIMIT || lines.length > LINE_LIMIT;
+
+    let displayContent = message.content;
+    if (shouldTruncate && !isQueryExpanded) {
+      if (lines.length > LINE_LIMIT) {
+        displayContent = lines.slice(0, LINE_LIMIT).join('\n') + '...';
+      } else {
+        displayContent = message.content.slice(0, CHAR_LIMIT) + '...';
+      }
+    }
+
     return (
       <div className="flex justify-end mb-12">
-        <div className="bg-cyan-50 dark:bg-cyan-950/50 border border-cyan-100 dark:border-cyan-900/30 rounded-2xl rounded-br-none px-3 sm:px-4 py-2 max-w-[90%] sm:max-w-[85%] text-sm space-y-2">
+        <div className="bg-white dark:bg-[#121214] text-zinc-800 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-800/30 rounded-[28px] rounded-br-[6px] px-5 py-3 sm:px-6 sm:py-3.5 max-w-[85%] sm:max-w-[70%] text-[15px] sm:text-base leading-relaxed space-y-3">
           {message.images && message.images.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
+            <div className="flex flex-wrap gap-2 mb-2.5">
               {message.images.map((img, imgIndex) => (
                 <div key={imgIndex} className="relative w-20 h-20">
-                  <img
-                    src={img}
-                    alt={`Uploaded ${imgIndex + 1}`}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
+                   <img
+                     src={img}
+                     alt={`Uploaded ${imgIndex + 1}`}
+                     className="w-full h-full object-cover rounded-lg"
+                   />
                 </div>
               ))}
             </div>
           )}
           {message.pdfs && message.pdfs.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
+            <div className="flex flex-wrap gap-2 mb-2.5">
               {message.pdfs.map((pdf, pdfIndex) => (
                 <div key={pdfIndex} className="flex items-center gap-2 bg-secondary/20 rounded-lg p-3 border border-border/50">
                   <div className="w-8 h-8 flex items-center justify-center">
@@ -1576,9 +1591,18 @@ const MessageComponent = ({
               ))}
             </div>
           )}
-          <div className="whitespace-pre-wrap break-words">
-            {message.content}
+          <div className="whitespace-pre-wrap break-words leading-relaxed">
+            {displayContent}
           </div>
+          {shouldTruncate && (
+            <button
+              onClick={() => setIsQueryExpanded(!isQueryExpanded)}
+              className="text-[12px] font-semibold text-zinc-500/90 dark:text-zinc-400/90 hover:text-zinc-800 dark:hover:text-zinc-100 flex items-center gap-0.5 mt-1 select-none transition-colors duration-150 active:scale-95 origin-left"
+            >
+              <span>{isQueryExpanded ? 'See less' : 'See more'}</span>
+              <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isQueryExpanded && "rotate-180")} />
+            </button>
+          )}
         </div>
       </div>
     );
@@ -1691,7 +1715,7 @@ const MessageComponent = ({
                   key={idx}
                   remarkPlugins={[remarkGfm, remarkMath]}
                   rehypePlugins={[rehypeKatex]}
-                  className="prose dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:p-0 break-words"
+                  className="prose dark:prose-invert max-w-none prose-pre:p-0 break-words"
                   components={markdownComponents}
                 >
                   {group.content}
@@ -1753,11 +1777,11 @@ const MessageComponent = ({
                 </button>
               </TooltipTrigger>
               <TooltipContent
-                side="bottom"
-                className="z-50 overflow-hidden rounded-xl border border-cyan-200 bg-cyan-50 px-3.5 py-1.5 text-xs font-semibold text-cyan-950 select-none animate-in fade-in-0 zoom-in-95"
+                side="top"
+                className="z-50 overflow-hidden rounded-lg border border-zinc-950/10 dark:border-zinc-800/50 bg-zinc-900 dark:bg-zinc-950 px-2.5 py-1 text-[11px] font-medium text-zinc-50 dark:text-zinc-200 select-none shadow-md animate-in fade-in-0 zoom-in-95"
               >
                 {copiedBlockId === `${index}-${mainContent}` ? "Copied!" : "Copy"}
-                <TooltipArrow className="fill-cyan-50" />
+                <TooltipArrow className="fill-zinc-900 dark:fill-zinc-950" />
               </TooltipContent>
             </Tooltip>
 
@@ -1805,7 +1829,7 @@ const MessageComponent = ({
                         viewBox="0 0 24 24"
                         fill="none"
                         className={cn(
-                          "absolute inset-0 w-4 h-4 text-cyan-500 transition-all duration-200",
+                          "absolute inset-0 w-4 h-4 text-green-500 transition-all duration-200",
                           branchedId === `branch-${index}` ? "opacity-100 scale-100" : "opacity-0 scale-75"
                         )}
                       >
@@ -1821,11 +1845,11 @@ const MessageComponent = ({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent
-                  side="bottom"
-                  className="z-50 overflow-hidden rounded-xl border border-cyan-200 bg-cyan-50 px-3.5 py-1.5 text-xs font-semibold text-cyan-950 select-none animate-in fade-in-0 zoom-in-95"
+                  side="top"
+                  className="z-50 overflow-hidden rounded-lg border border-zinc-950/10 dark:border-zinc-800/50 bg-zinc-900 dark:bg-zinc-950 px-2.5 py-1 text-[11px] font-medium text-zinc-50 dark:text-zinc-200 select-none shadow-md animate-in fade-in-0 zoom-in-95"
                 >
                   {branchedId === `branch-${index}` ? "Branched!" : "Branch off"}
-                  <TooltipArrow className="fill-cyan-50" />
+                  <TooltipArrow className="fill-zinc-900 dark:fill-zinc-950" />
                 </TooltipContent>
               </Tooltip>
             )}
