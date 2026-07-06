@@ -81,6 +81,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   const { showToast } = useCustomToast();
   const historyEntryRef = useRef<string | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const onCloseRef = useRef(onClose);
   const mobileViewRef = useRef<TabId | null>(null);
   const mobileViewHistoryEntryRef = useRef<string | null>(null);
   const closedByHistoryRef = useRef(false);
@@ -88,6 +89,10 @@ export function SettingsModal({ isOpen, onClose }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>('appearance');
   // Mobile only: null = tab list view, TabId = tab content view
   const [mobileView, setMobileView] = useState<TabId | null>(null);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     mobileViewRef.current = mobileView;
@@ -153,7 +158,10 @@ export function SettingsModal({ isOpen, onClose }: Props) {
 
     const entryId = `settings-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     historyEntryRef.current = entryId;
+    mobileViewRef.current = null;
+    mobileViewHistoryEntryRef.current = null;
     closedByHistoryRef.current = false;
+    setMobileView(null);
 
     window.history.pushState(
       { ...(window.history.state || {}), paradoxModal: entryId },
@@ -161,8 +169,16 @@ export function SettingsModal({ isOpen, onClose }: Props) {
       window.location.href
     );
 
-    const handlePopState = () => {
-      if (mobileViewRef.current) {
+    const handlePopState = (event: PopStateEvent) => {
+      const nextState = event.state || {};
+      const viewEntryId = mobileViewHistoryEntryRef.current;
+
+      if (
+        mobileViewRef.current &&
+        viewEntryId &&
+        nextState.paradoxModal === entryId &&
+        nextState.paradoxModalView !== viewEntryId
+      ) {
         mobileViewHistoryEntryRef.current = null;
         setMobileView(null);
         return;
@@ -171,7 +187,9 @@ export function SettingsModal({ isOpen, onClose }: Props) {
       if (historyEntryRef.current !== entryId) return;
       closedByHistoryRef.current = true;
       historyEntryRef.current = null;
-      onClose();
+      mobileViewHistoryEntryRef.current = null;
+      setMobileView(null);
+      onCloseRef.current();
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -180,14 +198,23 @@ export function SettingsModal({ isOpen, onClose }: Props) {
       window.removeEventListener('popstate', handlePopState);
 
       if (historyEntryRef.current === entryId) {
+        const viewEntryId = mobileViewHistoryEntryRef.current;
+        const state = window.history.state || {};
+
         historyEntryRef.current = null;
         mobileViewHistoryEntryRef.current = null;
-        if (!closedByHistoryRef.current && window.history.state?.paradoxModal === entryId) {
-          window.history.go(window.history.state?.paradoxModalView ? -2 : -1);
+        mobileViewRef.current = null;
+
+        if (!closedByHistoryRef.current) {
+          if (viewEntryId && state.paradoxModalView === viewEntryId) {
+            window.history.go(-2);
+          } else if (state.paradoxModal === entryId) {
+            window.history.go(-1);
+          }
         }
       }
     };
-  }, [isOpen, isMobile, onClose]);
+  }, [isOpen, isMobile]);
 
   useEffect(() => {
     if (!isOpen || !isMobile || !mobileView || typeof window === 'undefined') return;
