@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Sidebar } from '@/components/chat/sidebar';
 import { ModelSelector } from '@/components/chat/ModelSelector';
+import { SettingsModal } from '@/components/chat/settings/SettingsModal';
 import { Settings, ChevronLeft, ChevronsLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ApiKeys } from '@/hooks/use-api-keys';
@@ -89,7 +90,7 @@ export function ChatHeader({
             </Button>
           )}
 
-          {isSettingsActive ? (
+          {isSettingsActive && (
             <Button
               variant="ghost"
               size="icon"
@@ -99,8 +100,10 @@ export function ChatHeader({
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-          ) : (
-            <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+          )}
+
+          <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+            {!isSettingsActive && (
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="inline-flex md:hidden h-9 w-9 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" style={{ color: 'currentColor' }}>
@@ -109,7 +112,8 @@ export function ChatHeader({
                   </svg>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-[270px] border-r-0 bg-background/90 backdrop-blur-lg [&>button]:hidden">
+            )}
+              <SheetContent side="left" className="p-0 w-[305px] max-w-[85vw] border-r-0 bg-background/90 backdrop-blur-lg [&>button]:hidden">
                 <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
                 <SheetDescription className="sr-only">
                   Allows user to switch chats and select options
@@ -143,20 +147,11 @@ export function ChatHeader({
                   }}
                   isSettingsActive={isSettingsActive}
                   onSettingsClick={() => {
-                    const nextVal = !isSettingsActive;
                     setIsSearchActive(false);
-                    setIsMobileSidebarOpen(false);
                     if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
                       router.push('/chat');
                     }
-                    if (nextVal) {
-                      // Delay opening settings so the sidebar drawer slide-out completes smoothly first
-                      setTimeout(() => {
-                        setIsSettingsActive(true);
-                      }, 250);
-                    } else {
-                      setIsSettingsActive(false);
-                    }
+                    setIsSettingsActive(true);
                   }}
                   isIntegrationsActive={pathname === '/apps'}
                   onIntegrationsClick={() => {
@@ -167,9 +162,12 @@ export function ChatHeader({
                   }}
                   className="w-full h-full border-r-0 bg-transparent backdrop-blur-none"
                 />
+                <SettingsModal
+                  isOpen={isSettingsActive}
+                  onClose={() => setIsSettingsActive(false)}
+                />
               </SheetContent>
-            </Sheet>
-          )}
+          </Sheet>
           <Button
             onClick={onNewChat}
             variant="ghost"

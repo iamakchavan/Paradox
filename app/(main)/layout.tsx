@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Sidebar } from '@/components/chat/sidebar';
 import { useRouter, useParams, usePathname } from 'next/navigation';
 import { SidebarContext } from '@/components/chat/SidebarContext';
 import { cn } from '@/lib/utils';
-import { LayoutGroup } from 'framer-motion';
+import { LayoutGroup, AnimatePresence } from 'framer-motion';
+import { CommandPalette } from '@/components/chat/CommandPalette';
+import { SettingsModal } from '@/components/chat/settings/SettingsModal';
 
 export default function MainLayout({
   children,
@@ -21,6 +23,7 @@ export default function MainLayout({
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isSettingsActive, setIsSettingsActive] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('sidebar-collapsed');
@@ -87,6 +90,20 @@ export default function MainLayout({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Keyboard shortcut Ctrl+K or Cmd+K to toggle search command palette (desktop only)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (window.innerWidth < 768) return;
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const activeChatId = useMemo(() => {
     if (!params?.chatId) return null;
     return Array.isArray(params.chatId) ? params.chatId[0] : params.chatId;
@@ -97,6 +114,15 @@ export default function MainLayout({
     setIsSettingsActive(false);
     router.push('/chat');
   };
+
+  const handleOpenSettingsFromCommandPalette = useCallback(() => {
+    if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
+      router.push('/chat');
+    }
+    setIsSearchActive(false);
+    setIsMobileSidebarOpen(false);
+    setIsSettingsActive(true);
+  }, [pathname, router]);
 
   const sidebarContextValue = useMemo(() => ({
     isSidebarCollapsed,
@@ -180,6 +206,17 @@ export default function MainLayout({
           </main>
         </div>
       </div>
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onOpenSettings={handleOpenSettingsFromCommandPalette}
+      />
+      {!(isMobileSidebarOpen && isSettingsActive) && (
+        <SettingsModal
+          isOpen={isSettingsActive}
+          onClose={() => setIsSettingsActive(false)}
+        />
+      )}
     </SidebarContext.Provider>
   );
 }

@@ -37,10 +37,6 @@ import { useCustomToast } from '@/components/ui/custom-toast';
 import { useVisualViewport } from '@/hooks/use-visual-viewport';
 import { Spinner } from '@/components/ui/Spinner';
 
-const SettingsPageContent = dynamic(
-  () => import('@/components/chat/SettingsPageContent').then(mod => mod.SettingsPageContent),
-  { ssr: false }
-);
 
 const SearchPageContent = dynamic(
   () => import('@/components/chat/SearchPageContent').then(mod => mod.SearchPageContent),
@@ -1283,32 +1279,6 @@ export default function ChatPage() {
             />
           ) : (
             <>
-              {/* Settings Page Slide-Over */}
-              <AnimatePresence>
-                {isSettingsActive && (
-                  <motion.div
-                    key="settings-panel"
-                    initial={{ x: "100%" }}
-                    animate={{ x: 0 }}
-                    exit={{ x: "100%" }}
-                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                    style={{ willChange: 'transform' }}
-                    className={cn(
-                      "fixed top-0 bottom-0 right-0 bg-background z-20 flex flex-col overflow-hidden",
-                      mounted && "transition-[left] duration-300 ease-in-out",
-                      isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]"
-                    )}
-                  >
-                    <SettingsPageContent
-                      apiKeys={apiKeys}
-                      updateKey={updateKey}
-                      onClose={() => setIsSettingsActive(false)}
-                      defaultTab={settingsDefaultTab}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
               {isInitialView ? (
             <div className="flex flex-col items-center gap-8 sm:gap-10 px-4 sm:px-0">
               <div className="text-center animate-fade-in-up [animation-delay:200ms] flex flex-col items-center gap-4 sm:gap-5">
