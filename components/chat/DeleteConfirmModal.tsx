@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Trash2, AlertTriangle, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
 
 interface DeleteConfirmModalProps {
   isOpen: boolean;
@@ -31,6 +32,14 @@ export function DeleteConfirmModal({
   entryTitle,
 }: DeleteConfirmModalProps) {
   const isMobile = useIsMobile();
+
+  useMobileBackDismiss({
+    isOpen,
+    isMobile,
+    stateKey: 'paradoxDeleteModal',
+    entryPrefix: 'delete-modal',
+    onDismiss: onClose,
+  });
 
   return (
     <AnimatePresence>

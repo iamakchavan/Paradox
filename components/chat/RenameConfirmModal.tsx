@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Edit3, Check, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
 
 interface RenameConfirmModalProps {
   isOpen: boolean;
@@ -33,6 +34,14 @@ export function RenameConfirmModal({
 }: RenameConfirmModalProps) {
   const isMobile = useIsMobile();
   const [title, setTitle] = useState(currentTitle);
+
+  useMobileBackDismiss({
+    isOpen,
+    isMobile,
+    stateKey: 'paradoxRenameModal',
+    entryPrefix: 'rename-modal',
+    onDismiss: onClose,
+  });
 
   useEffect(() => {
     if (isOpen) {
