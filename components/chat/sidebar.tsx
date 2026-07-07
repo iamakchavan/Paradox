@@ -200,15 +200,19 @@ export function Sidebar({
                 <MoreVertical className="w-3.5 h-3.5" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-28 bg-popover/95 backdrop-blur-md border border-foreground/[0.08] shadow-lg rounded-lg p-1">
+            <DropdownMenuContent
+              align="end"
+              sideOffset={6}
+              className="w-40 rounded-xl border border-foreground/[0.08] bg-popover/98 p-1.5 shadow-[0_12px_36px_rgba(0,0,0,0.12)] backdrop-blur-md dark:shadow-[0_12px_36px_rgba(0,0,0,0.45)]"
+            >
               <DropdownMenuItem
                 onClick={e => {
                   e.stopPropagation();
                   handleStartRename(chat.id, chat.title, e as any);
                 }}
-                className="text-[11px] flex items-center gap-2 cursor-pointer py-1.5 px-2 rounded-md hover:bg-foreground/[0.04] transition-colors font-medium text-foreground/75"
+                className="flex h-9 cursor-pointer items-center gap-3 rounded-lg px-2.5 text-[13px] font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.05] focus:bg-foreground/[0.05]"
               >
-                <Edit3 className="w-3 h-3 text-foreground/50" />
+                <Edit3 className="h-4 w-4 text-foreground/52" strokeWidth={1.9} />
                 <span>Rename</span>
               </DropdownMenuItem>
               <DropdownMenuItem
@@ -216,9 +220,9 @@ export function Sidebar({
                   e.stopPropagation();
                   handleDeleteClick(chat.id, e as any);
                 }}
-                className="text-[11px] flex items-center gap-2 text-red-500 focus:text-red-500 hover:bg-red-500/5 focus:bg-red-500/5 cursor-pointer py-1.5 px-2 rounded-md transition-colors font-medium"
+                className="flex h-9 cursor-pointer items-center gap-3 rounded-lg px-2.5 text-[13px] font-medium text-red-500 transition-colors hover:bg-red-500/[0.08] focus:bg-red-500/[0.08] focus:text-red-500"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="h-4 w-4" strokeWidth={1.9} />
                 <span>Delete</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -384,8 +388,8 @@ export function Sidebar({
         <button
           onClick={onSettingsClick}
           className={cn(
-            "pointer-events-auto h-[34px] px-3.5 rounded-full flex items-center gap-1.5 text-[12.5px] font-medium transition-all duration-150 cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/60 shadow-sm relative z-10 active:scale-[0.96] text-foreground/70 hover:text-foreground",
-            isSettingsActive && "bg-zinc-100 dark:bg-zinc-800 font-semibold text-foreground"
+            "sidebar-footer-pill pointer-events-auto h-[34px] px-3.5 rounded-full liquid-glass-dock flex items-center gap-1.5 text-[12.5px] font-medium cursor-pointer relative z-10 active:scale-[0.96] text-foreground/70 hover:text-foreground",
+            isSettingsActive && "text-foreground ring-1 ring-foreground/10"
           )}
         >
           <Settings className="w-3.5 h-3.5 text-foreground/50 flex-shrink-0" strokeWidth={2.2} />
@@ -394,11 +398,11 @@ export function Sidebar({
 
         <button
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-          className="pointer-events-auto w-[34px] h-[34px] rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/60 shadow-sm relative z-10 active:scale-[0.96] text-foreground/70 hover:text-foreground"
+          className="sidebar-footer-pill pointer-events-auto w-[34px] h-[34px] rounded-full liquid-glass-dock flex items-center justify-center cursor-pointer relative z-10 active:scale-[0.96] text-foreground/70 hover:text-foreground"
           title="Toggle theme"
         >
-          <Sun className="h-[14px] w-[14px] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 flex-shrink-0" strokeWidth={2.2} />
-          <Moon className="absolute h-[14px] w-[14px] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 flex-shrink-0" strokeWidth={2.2} />
+          <Sun className="sidebar-theme-icon h-[14px] w-[14px] flex-shrink-0 opacity-100 dark:opacity-0" strokeWidth={2.2} />
+          <Moon className="sidebar-theme-icon absolute h-[14px] w-[14px] flex-shrink-0 opacity-0 dark:opacity-100" strokeWidth={2.2} />
           <span className="sr-only">Toggle theme</span>
         </button>
       </div>

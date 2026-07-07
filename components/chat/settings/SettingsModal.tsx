@@ -425,7 +425,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                       <DialogPrimitive.Description className="sr-only">Configure your API credentials and appearance preferences</DialogPrimitive.Description>
 
                       {/* Left sidebar */}
-                      <div className="w-[200px] flex-shrink-0 border-r border-zinc-100 dark:border-zinc-800/60 bg-zinc-50/60 dark:bg-zinc-900/40 flex flex-col py-5 px-3 gap-1 select-none">
+                      <div className="w-[200px] flex-shrink-0 border-r border-zinc-200/55 dark:border-zinc-800/70 bg-transparent flex flex-col py-5 px-3 gap-1 select-none">
                         {TABS.map((tab) => {
                           const Icon = tab.icon;
                           const isActive = activeTab === tab.id;
@@ -436,7 +436,7 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                               className={cn(
                                 'w-full h-[36px] px-3 rounded-xl flex items-center gap-2.5 text-[13px] font-medium transition-all duration-150 cursor-pointer text-left',
                                 isActive
-                                  ? 'bg-white dark:bg-zinc-800 text-foreground shadow-sm'
+                                  ? 'bg-foreground/[0.075] text-foreground'
                                   : 'text-foreground/55 hover:text-foreground hover:bg-foreground/[0.04]'
                               )}
                             >
@@ -448,21 +448,22 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                       </div>
 
                       {/* Right content pane */}
-                      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                      <div className="relative flex-1 flex flex-col min-w-0 overflow-hidden">
                         {/* Pane header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800/60 flex-shrink-0">
-                          <h2 className="text-[15px] font-semibold text-foreground tracking-tight">
+                        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-16 items-center justify-between px-6">
+                          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white via-white/95 to-transparent backdrop-blur-xl [mask-image:linear-gradient(to_bottom,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] dark:from-zinc-950 dark:via-zinc-950/95" />
+                          <h2 className="relative z-10 text-[15px] font-semibold text-foreground tracking-tight">
                             {TABS.find(t => t.id === activeTab)?.label}
                           </h2>
                           <DialogPrimitive.Close asChild>
-                            <button className="w-7 h-7 flex items-center justify-center rounded-lg text-foreground/40 hover:text-foreground hover:bg-foreground/[0.05] transition-all cursor-pointer active:scale-[0.93]">
+                            <button className="pointer-events-auto relative z-10 w-7 h-7 flex items-center justify-center rounded-lg text-foreground/40 hover:text-foreground hover:bg-foreground/[0.05] transition-all cursor-pointer active:scale-[0.93]">
                               <X className="w-4 h-4" />
                             </button>
                           </DialogPrimitive.Close>
                         </div>
 
                         {/* Scrollable tab content */}
-                        <div className="flex-1 overflow-y-auto px-6 py-5 sidebar-scroll min-h-0">
+                        <div className="flex-1 overflow-y-auto px-6 pt-20 pb-24 sidebar-scroll min-h-0">
                           <AnimatePresence mode="wait" initial={false}>
                             <motion.div
                               key={activeTab}
@@ -482,15 +483,16 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                         </div>
 
                         {/* Footer */}
-                        <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-zinc-100 dark:border-zinc-800/60 flex-shrink-0">
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 flex items-end justify-end gap-2 px-6 pb-4">
+                          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-xl [mask-image:linear-gradient(to_top,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] dark:from-zinc-950 dark:via-zinc-950/95" />
                           <DialogPrimitive.Close asChild>
-                            <button className="h-8 px-4 rounded-lg text-[12px] font-medium text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05] border border-transparent hover:border-border/40 transition-all cursor-pointer active:scale-[0.97]">
+                            <button className="pointer-events-auto relative z-10 h-8 px-4 rounded-lg text-[12px] font-medium text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05] transition-all cursor-pointer active:scale-[0.97]">
                               Cancel
                             </button>
                           </DialogPrimitive.Close>
                           <button
                             onClick={handleSave}
-                            className="h-8 px-5 rounded-lg text-[12px] font-semibold bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer active:scale-[0.97] shadow-sm"
+                            className="pointer-events-auto relative z-10 h-8 px-5 rounded-lg text-[12px] font-semibold bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer active:scale-[0.97] shadow-sm"
                           >
                             Save Changes
                           </button>

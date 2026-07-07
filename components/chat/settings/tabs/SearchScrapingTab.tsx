@@ -36,7 +36,7 @@ export function SearchScrapingTab({ apiKeys, inputKeys, setInputKeys }: Props) {
 
   return (
     <div className="space-y-2">
-      <p className="text-[11px] font-semibold text-foreground/40 uppercase tracking-widest px-0.5 pb-1">
+      <p className="text-[12px] font-medium text-foreground/45 px-0.5 pb-1">
         Search & Scrape Keys
       </p>
 

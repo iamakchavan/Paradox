@@ -6,6 +6,8 @@ interface UseMobileBackDismissOptions {
   stateKey: string;
   entryPrefix: string;
   onDismiss: () => void;
+  onBeforeDismiss?: (event: PopStateEvent) => boolean;
+  getDismissHistoryDelta?: () => number;
 }
 
 export function useMobileBackDismiss({
@@ -14,14 +16,26 @@ export function useMobileBackDismiss({
   stateKey,
   entryPrefix,
   onDismiss,
+  onBeforeDismiss,
+  getDismissHistoryDelta,
 }: UseMobileBackDismissOptions) {
   const historyEntryRef = useRef<string | null>(null);
   const dismissedByHistoryRef = useRef(false);
   const onDismissRef = useRef(onDismiss);
+  const onBeforeDismissRef = useRef(onBeforeDismiss);
+  const getDismissHistoryDeltaRef = useRef(getDismissHistoryDelta);
 
   useEffect(() => {
     onDismissRef.current = onDismiss;
   }, [onDismiss]);
+
+  useEffect(() => {
+    onBeforeDismissRef.current = onBeforeDismiss;
+  }, [onBeforeDismiss]);
+
+  useEffect(() => {
+    getDismissHistoryDeltaRef.current = getDismissHistoryDelta;
+  }, [getDismissHistoryDelta]);
 
   useEffect(() => {
     if (!isOpen || !isMobile || typeof window === 'undefined') return;
@@ -36,8 +50,13 @@ export function useMobileBackDismiss({
       window.location.href
     );
 
-    const handlePopState = () => {
+    const handlePopState = (event: PopStateEvent) => {
       if (historyEntryRef.current !== entryId) return;
+
+      if (onBeforeDismissRef.current?.(event)) {
+        return;
+      }
+
       dismissedByHistoryRef.current = true;
       historyEntryRef.current = null;
       onDismissRef.current();
@@ -53,7 +72,7 @@ export function useMobileBackDismiss({
         historyEntryRef.current = null;
 
         if (!dismissedByHistoryRef.current && state[stateKey] === entryId) {
-          window.history.go(-1);
+          window.history.go(getDismissHistoryDeltaRef.current?.() ?? -1);
         }
       }
     };

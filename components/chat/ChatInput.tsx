@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { MODELS_REGISTRY } from '@/lib/models';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PROVIDER_LOGOS } from '@/components/chat/integrations/IntegrationsTab';
+import { MobileAttachSheet } from '@/components/chat/MobileAttachSheet';
 
 const AttachFileIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -171,6 +172,7 @@ export const ChatInput = ({
   const dragCounterRef = useRef(0);
   const [isMobile, setIsMobile] = useState(false);
   const [showAttachDropdown, setShowAttachDropdown] = useState(false);
+  const [showMobileAttachSheet, setShowMobileAttachSheet] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
   const handleAttachClick = (type: 'image' | 'pdf' | 'all') => {
@@ -185,6 +187,7 @@ export const ChatInput = ({
       fileInputRef.current.click();
     }
     setShowAttachDropdown(false);
+    setShowMobileAttachSheet(false);
   };
 
   const hasActiveApp = useMemo(() => {
@@ -523,11 +526,14 @@ export const ChatInput = ({
                         variant="ghost"
                         size="icon"
                         className="h-9 w-9 rounded-full hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-center shrink-0 cursor-pointer"
-                        onClick={() => setShowAttachDropdown(!showAttachDropdown)}
+                        onClick={() => {
+                          setShowMobileAttachSheet(true);
+                          setShowAttachDropdown(false);
+                        }}
                         onMouseDown={(e) => e.preventDefault()}
                         disabled={isLoading}
                       >
-                        <Plus className="w-5 h-5 text-foreground/60 transition-transform duration-200" style={{ transform: showAttachDropdown ? 'rotate(45deg)' : 'none' }} />
+                        <Plus className="w-5 h-5 text-foreground/60 transition-transform duration-200" style={{ transform: showMobileAttachSheet ? 'rotate(45deg)' : 'none' }} />
                       </Button>
                     </motion.div>
                   ) : (
@@ -555,7 +561,7 @@ export const ChatInput = ({
                   )}
 
                   <AnimatePresence>
-                    {showAttachDropdown && (
+                    {!isMobile && showAttachDropdown && (
                       <motion.div
                         variants={containerVariants}
                         initial="hidden"
@@ -636,15 +642,19 @@ export const ChatInput = ({
 
                         <div 
                           className="relative"
-                          onMouseEnter={() => setShowAppsSubmenu(true)}
-                          onMouseLeave={() => setShowAppsSubmenu(false)}
+                          onMouseEnter={() => {
+                            if (!isMobileOrTablet()) setShowAppsSubmenu(true);
+                          }}
+                          onMouseLeave={() => {
+                            if (!isMobileOrTablet()) setShowAppsSubmenu(false);
+                          }}
                         >
                           <button
                             type="button"
                             onClick={(e) => {
-                              const isTouch = isMobileOrTablet();
-                              if (isTouch && activeApps.length > 0) {
+                              if (activeApps.length > 0) {
                                 e.stopPropagation();
+                                setShowAttachDropdown(true);
                                 setShowAppsSubmenu(!showAppsSubmenu);
                               } else {
                                 onOpenSettingsTab?.('integrations');
@@ -687,9 +697,9 @@ export const ChatInput = ({
                                     No apps connected. Click settings to manage.
                                   </div>
                                 ) : (
-                                  <div className="flex flex-col gap-0.5">
-                                    <div className="px-2.5 py-1 text-[9.5px] font-bold text-muted-foreground/60 tracking-wider uppercase">
-                                      Toggle Tools
+                                  <div className="flex flex-col gap-0.5 max-h-[260px] overflow-y-auto pr-0.5 sidebar-scroll">
+                                    <div className="px-2.5 py-1 text-[11px] font-semibold text-muted-foreground/65">
+                                      Connectors
                                     </div>
                                     {activeApps.map((app) => {
                                       const AppIcon = PROVIDER_LOGOS[app.id] || Puzzle;
@@ -699,23 +709,40 @@ export const ChatInput = ({
                                         <button
                                           key={app.id}
                                           type="button"
-                                          onClick={() => onToggleMcpId(app.id)}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            onToggleMcpId(app.id);
+                                          }}
                                           className={cn(
-                                            "group w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 text-left cursor-pointer whitespace-nowrap",
+                                            "group w-full flex items-center justify-between gap-3 px-2.5 py-2 rounded-xl text-xs font-medium transition-all duration-150 text-left cursor-pointer whitespace-nowrap",
                                             isSelected
-                                              ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/15"
-                                              : "hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground"
+                                              ? "bg-black/[0.03] dark:bg-white/[0.045] text-foreground"
+                                              : "hover:bg-black/[0.035] dark:hover:bg-white/[0.045] text-foreground/75 hover:text-foreground"
                                           )}
                                         >
-                                          <div className="flex items-center gap-2 max-w-[130px] truncate">
+                                          <div className="flex items-center gap-2 min-w-0">
                                             {isCustom ? (
-                                              <AppIcon className={cn("w-3.5 h-3.5 shrink-0 transition-colors duration-150", isSelected ? "text-cyan-500" : "text-foreground/60 group-hover:text-foreground/80")} strokeWidth={1.5} />
+                                              <AppIcon className="w-3.5 h-3.5 shrink-0 text-foreground/55 group-hover:text-foreground/75 transition-colors duration-150" strokeWidth={1.5} />
                                             ) : (
                                               <AppIcon className="w-3.5 h-3.5 shrink-0" />
                                             )}
                                             <span className="truncate">{app.name}</span>
                                           </div>
-                                          {isSelected && (
+                                          <span
+                                            aria-hidden="true"
+                                            className={cn(
+                                              "relative h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ease-out",
+                                              isSelected ? "bg-foreground" : "bg-zinc-300 dark:bg-zinc-700"
+                                            )}
+                                          >
+                                            <span
+                                              className={cn(
+                                                "absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-background shadow-sm transition-transform duration-200 ease-out",
+                                                isSelected && "translate-x-4"
+                                              )}
+                                            />
+                                          </span>
+                                          {false && isSelected && (
                                             <span className="text-cyan-600 dark:text-cyan-400 font-bold text-[10.5px] mr-0.5">✓</span>
                                           )}
                                         </button>
@@ -734,7 +761,7 @@ export const ChatInput = ({
                                   className="group w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/5 transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
                                 >
                                   <Plus className="w-3.5 h-3.5 shrink-0" />
-                                  <span>Manage apps</span>
+                                  <span>Manage connectors</span>
                                 </button>
                               </motion.div>
                             )}
@@ -743,6 +770,23 @@ export const ChatInput = ({
                       </motion.div>
                     )}
                   </AnimatePresence>
+                  <MobileAttachSheet
+                    isOpen={showMobileAttachSheet}
+                    onClose={() => setShowMobileAttachSheet(false)}
+                    onAttachImage={() => handleAttachClick('image')}
+                    onAttachDocument={() => handleAttachClick('pdf')}
+                    searchEnabled={searchEnabled}
+                    onToggleSearch={onToggleSearch}
+                    researchEnabled={researchEnabled}
+                    onToggleResearch={onToggleResearch}
+                    activeApps={activeApps}
+                    selectedMcpIds={selectedMcpIds}
+                    onToggleMcpId={onToggleMcpId}
+                    onManageConnectors={() => {
+                      onOpenSettingsTab?.('integrations');
+                      setShowMobileAttachSheet(false);
+                    }}
+                  />
                 </div>
 
                 {/* Search Capsule when enabled */}
