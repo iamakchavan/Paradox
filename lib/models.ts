@@ -213,15 +213,6 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     tags: ['Research', 'Autonomous', 'Deep-Search']
   },
   {
-    id: 'openai/gpt-5-mini',
-    name: 'GPT 5 Mini',
-    provider: 'perplexity',
-    description: "OpenAI's efficient mini model, accessed via Perplexity Agent API.",
-    contextWindow: '128k tokens',
-    pricing: { input: '$0.15 / 1M', output: '$0.60 / 1M' },
-    tags: ['Fast', 'Reasoning', 'Cost-Effective']
-  },
-  {
     id: 'anthropic/claude-haiku-4-5',
     name: 'Claude Haiku 4.5',
     provider: 'perplexity',
@@ -292,6 +283,177 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     contextWindow: '128k tokens',
     pricing: { input: '$0.75 / 1M', output: '$3.00 / 1M' },
     tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'xai/grok-4.20-reasoning',
+    name: 'Grok 4.20 Reasoning',
+    provider: 'perplexity',
+    description: "xAI's flagship advanced reasoning model with multi-step search and deep analysis capabilities, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$2.00 / 1M', output: '$10.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Research']
+  },
+  {
+    id: 'xai/grok-4.20-multi-agent',
+    name: 'Grok 4.20 Multi-Agent',
+    provider: 'perplexity',
+    description: "xAI's collaborative multi-agent execution model, designed for complex task delegation and orchestration, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$2.00 / 1M', output: '$10.00 / 1M' },
+    tags: ['Agentic', 'Reasoning', 'Multi-Agent']
+  },
+  {
+    id: 'xai/grok-4.20-non-reasoning',
+    name: 'Grok 4.20',
+    provider: 'perplexity',
+    description: "xAI's fast and direct model, optimized for general conversation and rapid text completions, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$1.00 / 1M', output: '$3.00 / 1M' },
+    tags: ['Fast', 'Coding', 'General']
+  },
+  {
+    id: 'xai/grok-4.3',
+    name: 'Grok 4.3',
+    provider: 'perplexity',
+    description: "xAI's advanced next-generation foundation model, offering state-of-the-art reasoning and performance, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$2.00 / 1M', output: '$10.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'perplexity/glm-5.2',
+    name: 'GLM 5.2',
+    provider: 'perplexity',
+    description: "Zhipu AI's next-generation multilingual chat model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.50 / 1M', output: '$1.50 / 1M' },
+    tags: ['General', 'Multilingual', 'Reasoning']
+  },
+  {
+    id: 'perplexity/kimi-k2.7-code',
+    name: 'Kimi K2.7 Code',
+    provider: 'perplexity',
+    description: "Moonshot AI's specialized programming assistant model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$1.00 / 1M', output: '$3.00 / 1M' },
+    tags: ['Coding', 'Reasoning', 'Technical']
+  },
+  {
+    id: 'google/gemini-3-flash-preview',
+    name: 'Gemini 3 Flash (Preview)',
+    provider: 'perplexity',
+    description: "Google's prototype next-generation lightweight model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.075 / 1M', output: '$0.30 / 1M' },
+    tags: ['Fast', 'Coding', 'Preview']
+  },
+  {
+    id: 'google/gemini-3.1-flash-lite',
+    name: 'Gemini 3.1 Flash Lite',
+    provider: 'perplexity',
+    description: "Google's optimized ultra-lightweight speed model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.075 / 1M', output: '$0.30 / 1M' },
+    tags: ['Fast', 'Cost-Effective']
+  },
+  {
+    id: 'google/gemini-3.1-flash-lite-preview',
+    name: 'Gemini 3.1 Flash Lite (Preview)',
+    provider: 'perplexity',
+    description: "Google's preview edition of the optimized ultra-lightweight speed model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.075 / 1M', output: '$0.30 / 1M' },
+    tags: ['Fast', 'Preview']
+  },
+  {
+    id: 'google/gemini-3.1-pro-preview',
+    name: 'Gemini 3.1 Pro (Preview)',
+    provider: 'perplexity',
+    description: "Google's next-generation flagship reasoning model in preview, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$1.25 / 1M', output: '$5.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Preview']
+  },
+  {
+    id: 'google/gemini-3.5-flash',
+    name: 'Gemini 3.5 Flash',
+    provider: 'perplexity',
+    description: "Google's balanced frontier speed and multimodal model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.075 / 1M', output: '$0.30 / 1M' },
+    tags: ['Fast', 'Multimodal', 'Reasoning']
+  },
+  {
+    id: 'openai/gpt-5',
+    name: 'GPT 5',
+    provider: 'perplexity',
+    description: "OpenAI's flagship next-generation model, offering advanced reasoning and coding capabilities, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'openai/gpt-5.1',
+    name: 'GPT 5.1',
+    provider: 'perplexity',
+    description: "OpenAI's incremental update model 5.1, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'openai/gpt-5.2',
+    name: 'GPT 5.2',
+    provider: 'perplexity',
+    description: "OpenAI's incremental update model 5.2, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'openai/gpt-5.4',
+    name: 'GPT 5.4',
+    provider: 'perplexity',
+    description: "OpenAI's intermediate update model 5.4, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'openai/gpt-5.5',
+    name: 'GPT 5.5',
+    provider: 'perplexity',
+    description: "OpenAI's advanced frontier model version 5.5, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'openai/gpt-5-mini',
+    name: 'GPT 5 Mini',
+    provider: 'perplexity',
+    description: "OpenAI's efficient mini model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.15 / 1M', output: '$0.60 / 1M' },
+    tags: ['Fast', 'Reasoning', 'Cost-Effective']
+  },
+  {
+    id: 'openai/gpt-5.4-mini',
+    name: 'GPT 5.4 Mini',
+    provider: 'perplexity',
+    description: "OpenAI's efficient lightweight model 5.4 Mini, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.15 / 1M', output: '$0.60 / 1M' },
+    tags: ['Fast', 'Cost-Effective']
+  },
+  {
+    id: 'openai/gpt-5.4-nano',
+    name: 'GPT 5.4 Nano',
+    provider: 'perplexity',
+    description: "OpenAI's ultra-fast embedded model 5.4 Nano, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.05 / 1M', output: '$0.20 / 1M' },
+    tags: ['Fast', 'Cost-Effective']
   },
   // --- INCEPTION LABS PROVIDER ---
   {

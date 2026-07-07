@@ -41,7 +41,10 @@ const getProviderLogoUrl = (provider: string, modelId: string | undefined, isDar
     return isDark ? '/logo/moonshot (dark).svg' : '/logo/moonshot.svg';
   }
   if (m.includes('minimax')) return '/logo/minimax-color.svg';
-  if (m.includes('grok') || (m.includes('xai') && !m.includes('minimax'))) {
+  if (m.includes('grok')) {
+    return isDark ? '/logo/grok-dark.svg' : '/logo/grok.svg';
+  }
+  if ((m.includes('xai') || m.startsWith('xai/')) && !m.includes('minimax')) {
     return isDark ? '/logo/xai (dark).svg' : '/logo/xai.svg';
   }
   if (m.includes('openai') || m.includes('gpt')) {
@@ -95,6 +98,9 @@ const getProviderLogoUrl = (provider: string, modelId: string | undefined, isDar
   if (p === 'inception') {
     return isDark ? '/logo/inception (dark).svg' : '/logo/inception.svg';
   }
+  if (p === 'xai') {
+    return isDark ? '/logo/xai (dark).svg' : '/logo/xai.svg';
+  }
 
   return null;
 };
@@ -135,6 +141,7 @@ const getLogicalBrand = (modelId: string, provider: string) => {
   const p = provider.toLowerCase();
 
   // Match model ID prefix families first (so that third-party models on perplexity/zenmux/nvidia are brand-grouped correctly)
+  if (m.startsWith('perplexity/')) return 'perplexity';
   if (m.includes('gemma')) return 'google-deepmind';
   if (m.includes('gemini')) return 'google';
   if (m.includes('mistral') || m.includes('mixtral') || m.includes('pixtral') || m.includes('codestral')) return 'mistral';
@@ -145,6 +152,7 @@ const getLogicalBrand = (modelId: string, provider: string) => {
   if (m.includes('qwen') || m.includes('alibaba')) return 'alibaba';
   if (m.includes('openai') || m.includes('gpt')) return 'openai';
   if (m.includes('claude') || m.includes('anthropic')) return 'anthropic';
+  if (m.includes('grok') || m.startsWith('xai/')) return 'xai';
   if (m.includes('minimax')) return 'minimax';
   if (m.includes('microsoft') || m.includes('phi')) return 'microsoft';
   if (m.includes('sarvam')) return 'sarvam';
@@ -158,6 +166,7 @@ const getLogicalBrand = (modelId: string, provider: string) => {
   if (p === 'nvidia') return 'nvidia';
   if (p === 'zenmux') return 'zenmux';
   if (p === 'inception') return 'inception';
+  if (p === 'xai') return 'xai';
 
   return provider;
 };
@@ -170,6 +179,7 @@ const DISPLAY_BRANDS = [
   'deepseek',
   'mistral',
   'perplexity',
+  'xai',
   'moonshot',
   'zhipu',
   'alibaba',
@@ -323,6 +333,7 @@ export const ModelSelector = ({
     if (tab === 'google-deepmind') return 'Google DeepMind';
     if (tab === 'mistral') return 'Mistral';
     if (tab === 'perplexity') return 'Perplexity';
+    if (tab === 'xai') return 'xAI';
     if (tab === 'zenmux') return 'ZenMux';
     if (tab === 'nvidia') return 'NVIDIA';
     if (tab === 'openai') return 'OpenAI';
