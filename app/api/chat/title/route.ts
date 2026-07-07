@@ -4,6 +4,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
 import { MODELS_REGISTRY } from '@/lib/models';
+import { getPerplexityModel } from '@/lib/perplexity';
 
 export async function POST(req: Request) {
   let fallbackTitle = 'New Chat';
@@ -50,11 +51,7 @@ export async function POST(req: Request) {
         if (!perplexityKey) {
           return new Response(JSON.stringify({ title: fallbackTitle }), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
-        const perplexity = createOpenAI({
-          apiKey: perplexityKey,
-          baseURL: 'https://api.perplexity.ai',
-        });
-        aiModel = perplexity.chat(modelConfig.id);
+        aiModel = getPerplexityModel(perplexityKey, modelConfig.id, 'title');
       } else if (modelConfig.provider === 'zenmux') {
         if (!zenmuxKey) {
           return new Response(JSON.stringify({ title: fallbackTitle }), { status: 200, headers: { 'Content-Type': 'application/json' } });

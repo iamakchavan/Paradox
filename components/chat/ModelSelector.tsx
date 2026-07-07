@@ -83,7 +83,9 @@ const getProviderLogoUrl = (provider: string, modelId: string | undefined, isDar
   }
   if (p === 'stepfun') return '/logo/stepfun-color.svg';
   if (p === 'alibaba' || p === 'qwen') return '/logo/alibaba-color.svg';
-  if (p === 'anthropic' || p === 'claude') return '/logo/claude-color.svg';
+  if (p === 'anthropic' || p === 'claude') {
+    return isDark ? '/logo/anthropic-dark.svg' : '/logo/anthropic.svg';
+  }
   if (p === 'zhipu') return '/logo/zhipu-color.svg';
   if (p === 'zai') return isDark ? '/logo/zai (dark).svg' : '/logo/zai.svg';
   if (p === 'minimax') return '/logo/minimax-color.svg';
@@ -132,23 +134,30 @@ const getLogicalBrand = (modelId: string, provider: string) => {
   const m = modelId.toLowerCase();
   const p = provider.toLowerCase();
 
+  // Match model ID prefix families first (so that third-party models on perplexity/zenmux/nvidia are brand-grouped correctly)
   if (m.includes('gemma')) return 'google-deepmind';
-  if (m.includes('gemini') || p === 'google') return 'google';
-  if (p === 'mistral' || m.includes('mistral') || m.includes('mixtral') || m.includes('pixtral') || m.includes('codestral')) return 'mistral';
-  if (p === 'perplexity') return 'perplexity';
+  if (m.includes('gemini')) return 'google';
+  if (m.includes('mistral') || m.includes('mixtral') || m.includes('pixtral') || m.includes('codestral')) return 'mistral';
   if (m.includes('deepseek')) return 'deepseek';
   if (m.includes('kimi') || m.includes('moonshot')) return 'moonshot';
   if (m.includes('glm') || m.includes('zhipu') || m.includes('z-ai') || m.includes('zai')) return 'zhipu';
   if (m.includes('stepfun') || m.includes('step')) return 'stepfun';
   if (m.includes('qwen') || m.includes('alibaba')) return 'alibaba';
   if (m.includes('openai') || m.includes('gpt')) return 'openai';
+  if (m.includes('claude') || m.includes('anthropic')) return 'anthropic';
   if (m.includes('minimax')) return 'minimax';
   if (m.includes('microsoft') || m.includes('phi')) return 'microsoft';
   if (m.includes('sarvam')) return 'sarvam';
   if (m.includes('bytedance') || m.includes('seed-oss')) return 'bytedance';
+  if (m.includes('mercury')) return 'inception';
+
+  // Fallback to provider brands if model family is not explicitly recognized in model ID
+  if (p === 'perplexity') return 'perplexity';
+  if (p === 'google') return 'google';
+  if (p === 'mistral') return 'mistral';
   if (p === 'nvidia') return 'nvidia';
   if (p === 'zenmux') return 'zenmux';
-  if (m.includes('mercury') || p === 'inception') return 'inception';
+  if (p === 'inception') return 'inception';
 
   return provider;
 };
@@ -157,6 +166,7 @@ const DISPLAY_BRANDS = [
   'google',
   'google-deepmind',
   'openai',
+  'anthropic',
   'deepseek',
   'mistral',
   'perplexity',
@@ -316,6 +326,7 @@ export const ModelSelector = ({
     if (tab === 'zenmux') return 'ZenMux';
     if (tab === 'nvidia') return 'NVIDIA';
     if (tab === 'openai') return 'OpenAI';
+    if (tab === 'anthropic') return 'Anthropic';
     if (tab === 'deepseek') return 'DeepSeek';
     if (tab === 'moonshot') return 'Moonshot AI';
     if (tab === 'zai' || tab === 'zhipu') return 'Zhipu';

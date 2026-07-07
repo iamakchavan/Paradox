@@ -6,6 +6,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, generateText, Output, wrapLanguageModel, extractReasoningMiddleware } from 'ai';
 import { z } from 'zod';
 import { MODELS_REGISTRY } from '@/lib/models';
+import { getPerplexityModel } from '@/lib/perplexity';
 import { executeWebSearch, executeScrapePage, rankUrlRelevance, executeMapPage } from '@/lib/research/client';
 
 async function resolveAndCleanQuery(
@@ -155,10 +156,7 @@ export async function POST(req: Request) {
           return createMistral({ apiKey: keys.mistralKey })(config.id);
         } else if (config.provider === 'perplexity') {
           if (!keys.perplexityKey) throw new Error('Perplexity API key is missing');
-          return createOpenAI({
-            apiKey: keys.perplexityKey,
-            baseURL: 'https://api.perplexity.ai',
-          }).chat(config.id);
+          return getPerplexityModel(keys.perplexityKey, config.id, 'research');
         } else if (config.provider === 'zenmux') {
           if (!keys.zenmuxKey) throw new Error('ZenMux API key is missing');
           return createOpenAI({

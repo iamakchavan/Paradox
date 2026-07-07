@@ -6,6 +6,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { streamText, wrapLanguageModel, extractReasoningMiddleware, stepCountIs } from 'ai';
 import { createMCPClient } from '@ai-sdk/mcp';
 import { MODELS_REGISTRY } from '@/lib/models';
+import { getPerplexityModel } from '@/lib/perplexity';
 import { createWebSearchTool, createBrowsePageTool, createMapWebsiteTool } from '@/lib/tools/web-search';
 
 function extractTitleFromMarkdown(markdown: string, fallback: string): string {
@@ -172,10 +173,7 @@ export async function POST(req: Request) {
           return createMistral({ apiKey: keys.mistralKey })(config!.id);
         } else if (config!.provider === 'perplexity') {
           if (!keys.perplexityKey) throw new Error('Perplexity API key is missing');
-          return createOpenAI({
-            apiKey: keys.perplexityKey,
-            baseURL: 'https://api.perplexity.ai',
-          }).chat(config!.id);
+          return getPerplexityModel(keys.perplexityKey, config!.id, 'chat');
         } else if (config!.provider === 'zenmux') {
           if (!keys.zenmuxKey) throw new Error('ZenMux API key is missing');
           return createOpenAI({
@@ -304,8 +302,10 @@ export async function POST(req: Request) {
     }
 
     const successfullyBoundServers: string[] = [];
+    const isPerplexityAgent = modelConfig.provider === 'perplexity' && modelConfig.id.includes('/');
+    const canUseMcp = modelConfig.provider !== 'perplexity' || isPerplexityAgent;
 
-    if (mcpServers && mcpServers.length > 0) {
+    if (canUseMcp && mcpServers && mcpServers.length > 0) {
       for (const server of mcpServers) {
         if (!server.isEnabled) continue;
 

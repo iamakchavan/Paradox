@@ -212,6 +212,87 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     pricing: { input: '$2.00 / 1M', output: '$8.00 / 1M' },
     tags: ['Research', 'Autonomous', 'Deep-Search']
   },
+  {
+    id: 'openai/gpt-5-mini',
+    name: 'GPT 5 Mini',
+    provider: 'perplexity',
+    description: "OpenAI's efficient mini model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.15 / 1M', output: '$0.60 / 1M' },
+    tags: ['Fast', 'Reasoning', 'Cost-Effective']
+  },
+  {
+    id: 'anthropic/claude-haiku-4-5',
+    name: 'Claude Haiku 4.5',
+    provider: 'perplexity',
+    description: "Anthropic's fastest and most cost-effective reasoning model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.075 / 1M', output: '$0.30 / 1M' },
+    tags: ['Fast', 'Reasoning', 'Cost-Effective']
+  },
+  {
+    id: 'anthropic/claude-opus-4-5',
+    name: 'Claude Opus 4.5',
+    provider: 'perplexity',
+    description: "Anthropic's flagship next-generation reasoning model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'anthropic/claude-opus-4-6',
+    name: 'Claude Opus 4.6',
+    provider: 'perplexity',
+    description: "Anthropic's flagship reasoning model version 4.6, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'anthropic/claude-opus-4-7',
+    name: 'Claude Opus 4.7',
+    provider: 'perplexity',
+    description: "Anthropic's flagship reasoning model version 4.7, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'anthropic/claude-opus-4-8',
+    name: 'Claude Opus 4.8',
+    provider: 'perplexity',
+    description: "Anthropic's flagship reasoning model version 4.8, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'anthropic/claude-sonnet-4-5',
+    name: 'Claude Sonnet 4.5',
+    provider: 'perplexity',
+    description: "Anthropic's balanced next-generation reasoning model version 4.5, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.75 / 1M', output: '$3.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'anthropic/claude-sonnet-4-6',
+    name: 'Claude Sonnet 4.6',
+    provider: 'perplexity',
+    description: "Anthropic's balanced next-generation reasoning model version 4.6, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.75 / 1M', output: '$3.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
+  {
+    id: 'anthropic/claude-sonnet-5',
+    name: 'Claude Sonnet 5',
+    provider: 'perplexity',
+    description: "Anthropic's balanced frontier reasoning model version 5, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.75 / 1M', output: '$3.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
+  },
   // --- INCEPTION LABS PROVIDER ---
   {
     id: 'mercury-2',
