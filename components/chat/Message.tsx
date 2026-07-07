@@ -1313,8 +1313,8 @@ const MessageComponent = ({
 
 
   const isThinkingModel = !!(modelMode && (
-    modelMode.toLowerCase().includes('glm-5.2') || 
-    (modelMode.startsWith('gemini') && modelMode.toLowerCase().includes('pro')) || 
+    modelMode.toLowerCase().includes('glm-') || 
+    (modelMode.startsWith('gemini') && modelMode.toLowerCase().includes('pro')) ||  
     modelMode.toLowerCase().includes('reasoning') ||
     modelMode.toLowerCase().includes('gpt-oss') ||
     modelMode.toLowerCase().includes('step-') ||

@@ -133,6 +133,7 @@ const getLogicalBrand = (modelId: string, provider: string) => {
 
   if (m.includes('gemma')) return 'google-deepmind';
   if (m.includes('gemini') || p === 'google') return 'google';
+  if (m.includes('nemotron')) return 'nvidia';
   if (p === 'mistral' || m.includes('mistral') || m.includes('pixtral') || m.includes('codestral')) return 'mistral';
   if (p === 'perplexity') return 'perplexity';
   if (m.includes('deepseek')) return 'deepseek';
@@ -145,7 +146,7 @@ const getLogicalBrand = (modelId: string, provider: string) => {
   if (m.includes('microsoft') || m.includes('phi')) return 'microsoft';
   if (m.includes('sarvam')) return 'sarvam';
   if (m.includes('bytedance') || m.includes('seed-oss')) return 'bytedance';
-  if (m.includes('nemotron') || p === 'nvidia') return 'nvidia';
+  if (p === 'nvidia') return 'nvidia';
   if (p === 'zenmux') return 'zenmux';
   if (m.includes('mercury') || p === 'inception') return 'inception';
 

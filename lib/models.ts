@@ -188,24 +188,6 @@ export const MODELS_REGISTRY: ModelConfig[] = [
   },
   // --- ZENMUX PROVIDER ---
   {
-    id: 'z-ai/glm-5.2-free',
-    name: 'GLM 5.2 (Free)',
-    provider: 'zenmux',
-    description: "GLM 5.2 model hosted on ZenMux free tier.",
-    contextWindow: '128k tokens',
-    pricing: { input: '$1.40 / 1M', output: '$4.40 / 1M' },
-    tags: ['Fast', 'Generalist', 'Free']
-  },
-  {
-    id: 'glm-5.2-free',
-    name: 'GLM 5.2 Alias (Free)',
-    provider: 'zenmux',
-    description: "GLM 5.2 model alias hosted on ZenMux free tier.",
-    contextWindow: '128k tokens',
-    pricing: { input: '$1.40 / 1M', output: '$4.40 / 1M' },
-    tags: ['Fast', 'Generalist', 'Free']
-  },
-  {
     id: 'moonshotai/kimi-k2.7-code-free',
     name: 'Kimi K2.7 Code (Free)',
     provider: 'zenmux',
@@ -270,11 +252,11 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     tags: ['Coding', 'Reasoning', 'Agentic']
   },
   {
-    id: 'z-ai/glm-5.1',
-    name: 'GLM 5.1',
+    id: 'z-ai/glm-5.2',
+    name: 'GLM 5.2',
     provider: 'nvidia',
-    description: "Zhipu AI's high-performance bilingual model with strong reasoning capabilities.",
-    contextWindow: '200k tokens',
+    description: "Zhipu AI's high-performance bilingual model with strong reasoning capabilities, hosted on NVIDIA NIM.",
+    contextWindow: '128k tokens',
     pricing: { input: '$1.40 / 1M', output: '$4.40 / 1M' },
     tags: ['Bilingual', 'Reasoning', 'Fast']
   },
