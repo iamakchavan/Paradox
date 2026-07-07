@@ -1314,6 +1314,7 @@ const MessageComponent = ({
 
   const isThinkingModel = !!(modelMode && (
     modelMode.toLowerCase().includes('glm-') || 
+    modelMode.toLowerCase().includes('medium-3.5') || 
     (modelMode.startsWith('gemini') && modelMode.toLowerCase().includes('pro')) ||  
     modelMode.toLowerCase().includes('reasoning') ||
     modelMode.toLowerCase().includes('gpt-oss') ||

@@ -263,7 +263,7 @@ export async function POST(req: Request) {
       };
     }
     if (modelConfig.provider === 'zenmux' || modelConfig.provider === 'nvidia') {
-      const isReasoningModel = model.includes('glm-') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron') || model.includes('step-') || model.includes('stepfun');
+      const isReasoningModel = model.includes('glm-') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron') || model.includes('step-') || model.includes('stepfun') || model.includes('medium-3.5');
       
       let extraBody: Record<string, any> = {};
       if (model === 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning') {
@@ -275,6 +275,10 @@ export async function POST(req: Request) {
         extraBody = {
           min_thinking_tokens: 1024,
           max_thinking_tokens: 2048
+        };
+      } else if (model === 'mistralai/mistral-medium-3.5-128b') {
+        extraBody = {
+          reasoning_effort: 'high'
         };
       }
 
@@ -298,7 +302,7 @@ export async function POST(req: Request) {
       };
     }
     if (modelConfig.provider === 'zenmux' || modelConfig.provider === 'nvidia') {
-      const isReasoningModel = model.includes('glm-') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron') || model.includes('step-') || model.includes('stepfun');
+      const isReasoningModel = model.includes('glm-') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron') || model.includes('step-') || model.includes('stepfun') || model.includes('medium-3.5');
 
       let extraBody: Record<string, any> = {};
       if (model === 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning') {
@@ -310,6 +314,10 @@ export async function POST(req: Request) {
         extraBody = {
           min_thinking_tokens: 1024,
           max_thinking_tokens: 2048
+        };
+      } else if (model === 'mistralai/mistral-medium-3.5-128b') {
+        extraBody = {
+          reasoning_effort: 'high'
         };
       }
 

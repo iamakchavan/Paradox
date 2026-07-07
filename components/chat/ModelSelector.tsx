@@ -58,6 +58,7 @@ const getProviderLogoUrl = (provider: string, modelId: string | undefined, isDar
   if (m.includes('bytedance') || m.includes('seed-oss')) {
     return '/logo/bytedance-color.svg';
   }
+  if (m.includes('mistral') || m.includes('mixtral') || m.includes('pixtral') || m.includes('codestral')) return '/logo/mistral-color.svg';
 
   // Provider fallbacks
   if (p === 'google') return '/logo/google-color.svg';
@@ -133,8 +134,7 @@ const getLogicalBrand = (modelId: string, provider: string) => {
 
   if (m.includes('gemma')) return 'google-deepmind';
   if (m.includes('gemini') || p === 'google') return 'google';
-  if (m.includes('nemotron')) return 'nvidia';
-  if (p === 'mistral' || m.includes('mistral') || m.includes('pixtral') || m.includes('codestral')) return 'mistral';
+  if (p === 'mistral' || m.includes('mistral') || m.includes('mixtral') || m.includes('pixtral') || m.includes('codestral')) return 'mistral';
   if (p === 'perplexity') return 'perplexity';
   if (m.includes('deepseek')) return 'deepseek';
   if (m.includes('kimi') || m.includes('moonshot')) return 'moonshot';

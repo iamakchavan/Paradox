@@ -85,6 +85,15 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     tags: ['Reasoning', 'Agentic', 'Generalist']
   },
   {
+    id: 'mistralai/mistral-medium-3.5-128b',
+    name: 'Mistral Medium 3.5 128B',
+    provider: 'nvidia',
+    description: "Mistral's medium model optimized for reasoning, math, and coding, hosted on NVIDIA NIM.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.50 / 1M', output: '$1.50 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Fast']
+  },
+  {
     id: 'mistral-small-latest',
     name: 'Mistral Small 4',
     provider: 'mistral',
@@ -121,6 +130,15 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     tags: ['Vision', 'Fast', 'Multimodal']
   },
   {
+    id: 'mistralai/mixtral-8x7b-instruct-v0.1',
+    name: 'Mixtral 8x7B Instruct',
+    provider: 'nvidia',
+    description: "Mistral's high-quality Mixture-of-Experts sparse model featuring 8x7B parameters, hosted on NVIDIA NIM.",
+    contextWindow: '32k tokens',
+    pricing: { input: '$0.15 / 1M', output: '$0.15 / 1M' },
+    tags: ['Fast', 'Generalist', 'Cost-Effective']
+  },
+  {
     id: 'ministral-8b-latest',
     name: 'Ministral 3 8B',
     provider: 'mistral',
@@ -137,6 +155,24 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     contextWindow: '128k tokens',
     pricing: { input: '$0.04 / 1M', output: '$0.04 / 1M' },
     tags: ['Edge', 'Mobile', 'Fast']
+  },
+  {
+    id: 'mistralai/ministral-14b-instruct-2512',
+    name: 'Ministral 14B',
+    provider: 'nvidia',
+    description: "Mistral's high-performance 14B parameter model, optimized for edge and low-latency instruction following.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.15 / 1M', output: '$0.15 / 1M' },
+    tags: ['Edge', 'Fast', 'Cost-Effective']
+  },
+  {
+    id: 'mistralai/mistral-nemotron',
+    name: 'Mistral Nemotron',
+    provider: 'nvidia',
+    description: "Mistral's model optimized in collaboration with NVIDIA, delivering fast and high-context reasoning.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
+    tags: ['Chat', 'Reasoning', 'Fast']
   },
 
   // --- PERPLEXITY PROVIDER ---
@@ -260,6 +296,7 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     pricing: { input: '$1.40 / 1M', output: '$4.40 / 1M' },
     tags: ['Bilingual', 'Reasoning', 'Fast']
   },
+
   {
     id: 'qwen/qwen3.5-122b-a10b',
     name: 'Qwen 3.5 122B',
@@ -448,15 +485,6 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     contextWindow: '128k tokens',
     pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
     tags: ['Fast', 'Cost-Effective']
-  },
-  {
-    id: 'mistralai/mistral-nemotron',
-    name: 'Mistral Nemotron',
-    provider: 'nvidia',
-    description: "Mistral's model optimized in collaboration with NVIDIA, delivering fast and high-context reasoning.",
-    contextWindow: '128k tokens',
-    pricing: { input: '$0.00 / 1M', output: '$0.00 / 1M' },
-    tags: ['Chat', 'Reasoning', 'Fast']
   },
   {
     id: 'nvidia/nemotron-mini-4b-instruct',
