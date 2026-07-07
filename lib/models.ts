@@ -55,15 +55,6 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     pricing: { input: '$0.10 / 1M', output: '$0.40 / 1M' },
     tags: ['Fast', 'Cost-Effective', 'Multimodal']
   },
-  {
-    id: 'imagen-3.0-generate-002',
-    name: 'Imagen 3.0 Generate',
-    provider: 'google',
-    description: "Google's high-quality image generation model, optimized for detailed photorealistic and artistic outputs.",
-    contextWindow: 'N/A',
-    pricing: { input: 'N/A', output: '$0.04 / image' },
-    tags: ['Image-Generation', 'Art', 'Design']
-  },
 
   // --- MISTRAL PROVIDER ---
   {
