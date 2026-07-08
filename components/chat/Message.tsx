@@ -206,11 +206,11 @@ const CitationPill = memo(({ href, domain, label }: { href: string; domain: stri
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 px-1.5 py-0.5 mx-0.5 text-[11px] font-medium rounded-full bg-secondary/80 hover:bg-secondary border border-border/50 transition-all duration-200 hover:scale-[1.03] select-none shadow-sm cursor-pointer no-underline align-middle"
+      className="inline-flex items-center gap-1 px-1.5 py-px mx-0.5 text-[10px] font-medium rounded-full bg-zinc-200/70 hover:bg-zinc-200/90 dark:bg-white/[0.105] dark:hover:bg-white/[0.15] border border-zinc-950/[0.04] dark:border-white/[0.06] text-foreground/70 dark:text-zinc-200/80 transition-[background-color,color,border-color,transform] duration-200 hover:scale-[1.02] select-none cursor-pointer no-underline align-[0.08em] leading-[1.35]"
       style={{ color: 'unset', textDecoration: 'none' }}
     >
-      <FaviconImage domain={domain} className="w-3 h-3 rounded-sm shrink-0" />
-      <span className="truncate max-w-[100px] font-medium text-foreground/75">{displayLabel}</span>
+      <FaviconImage domain={domain} className="w-2.5 h-2.5 rounded-sm shrink-0" />
+      <span className="truncate max-w-[92px] font-medium">{displayLabel}</span>
     </a>
   );
 });
@@ -323,10 +323,10 @@ const SingleCitationPill = memo(({ item, searchMap }: {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center px-2.5 py-0.5 mx-0.5 text-[11px] font-medium rounded-full bg-secondary/80 hover:bg-secondary border border-border/50 transition-all duration-200 hover:scale-[1.03] select-none shadow-sm cursor-pointer no-underline align-middle"
+      className="inline-flex items-center px-2 py-px mx-0.5 text-[10px] font-medium rounded-full bg-zinc-200/70 hover:bg-zinc-200/90 dark:bg-white/[0.105] dark:hover:bg-white/[0.15] border border-zinc-950/[0.04] dark:border-white/[0.06] text-foreground/70 dark:text-zinc-200/80 transition-[background-color,color,border-color,transform] duration-200 hover:scale-[1.02] select-none cursor-pointer no-underline align-[0.08em] leading-[1.35]"
       style={{ color: 'unset', textDecoration: 'none' }}
     >
-      <span className="truncate max-w-[120px] font-medium text-foreground/75">{displayLabel}</span>
+      <span className="truncate max-w-[104px] font-medium">{displayLabel}</span>
     </a>
   );
 
@@ -444,9 +444,9 @@ const GroupedCitationPill = memo(({ items, searchMap }: {
     <button
       type="button"
       onClick={handlePillClick}
-      className="inline-flex items-center gap-1 px-2.5 py-0.5 mx-0.5 text-[11px] font-medium rounded-full bg-secondary/80 hover:bg-secondary border border-border/50 text-foreground/75 hover:text-foreground transition-all duration-200 hover:scale-[1.03] select-none shadow-sm cursor-pointer align-middle"
+      className="inline-flex items-center gap-1 px-2 py-px mx-0.5 text-[10px] font-medium rounded-full bg-zinc-200/70 hover:bg-zinc-200/90 dark:bg-white/[0.105] dark:hover:bg-white/[0.15] border border-zinc-950/[0.04] dark:border-white/[0.06] text-foreground/70 hover:text-foreground dark:text-zinc-200/80 dark:hover:text-zinc-100 transition-[background-color,color,border-color,transform] duration-200 hover:scale-[1.02] select-none cursor-pointer align-[0.08em] leading-[1.35]"
     >
-      <span className="truncate max-w-[100px] font-medium">{firstSiteName}</span>
+      <span className="truncate max-w-[92px] font-medium">{firstSiteName}</span>
       <span className="text-foreground/50 font-medium leading-none">+{extraCount}</span>
     </button>
   );
@@ -1624,10 +1624,10 @@ const MessageComponent = ({
       isStreaming && "streaming-message"
     )}>
       {isThinkingActive && (
-        <div className="flex items-center gap-2.5 sm:gap-3 mb-4">
-          <div className="w-[20px] h-[20px] sm:w-[23px] sm:h-[23px] flex items-center justify-center overflow-visible">
+        <div className="flex items-center gap-2 sm:gap-2.5 mb-4">
+          <div className="w-[19px] h-[19px] sm:w-[21px] sm:h-[21px] flex items-center justify-center overflow-visible">
             <DotmSquare8
-              size={22}
+              size={19}
               dotSize={3}
               cellPadding={1}
               speed={1.35}

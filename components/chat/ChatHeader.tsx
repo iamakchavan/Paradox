@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { ApiKeys } from '@/hooks/use-api-keys';
 import { useSidebarContext } from '@/components/chat/SidebarContext';
 import { useRouter, usePathname } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface ChatHeaderProps {
   isSidebarCollapsed: boolean;
@@ -48,6 +49,8 @@ export function ChatHeader({
   const { isSearchActive, setIsSearchActive, isSettingsActive, setIsSettingsActive } = useSidebarContext();
   const router = useRouter();
   const pathname = usePathname();
+  const isEmptyNewChatPage = !activeChatId && (pathname === '/' || pathname === '/chat');
+  const shouldShowNewChatButton = !isEmptyNewChatPage;
 
   return (
     <>
@@ -61,7 +64,11 @@ export function ChatHeader({
       <header className="fixed top-[calc(1.25rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 transition-all duration-300 pointer-events-none px-4">
       <div className="w-full flex items-center justify-between gap-4 relative">
         {/* Left Pill: Sidebar trigger + New Chat */}
-        <div className="pointer-events-auto flex items-center gap-1.5 p-1 rounded-full liquid-glass-dock h-11 md:h-12 shrink-0">
+        <motion.div
+          layout
+          transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7 }}
+          className="pointer-events-auto flex items-center gap-1.5 p-1 rounded-full liquid-glass-dock h-11 md:h-12 shrink-0 overflow-hidden"
+        >
           {isSettingsActive ? (
             <Button
               variant="ghost"
@@ -168,16 +175,30 @@ export function ChatHeader({
                 />
               </SheetContent>
           </Sheet>
-          <Button
-            onClick={onNewChat}
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out text-foreground/80 hover:text-foreground flex items-center justify-center"
-            title="New chat"
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5"><path d="M11.4875 0.512563C10.804 -0.170854 9.696 -0.170854 9.01258 0.512563L4.75098 4.77417C4.49563 5.02951 4.29308 5.33265 4.15488 5.66628L3.30712 7.71282C3.19103 7.99307 3.25519 8.31566 3.46968 8.53017C3.68417 8.74467 4.00676 8.80885 4.28702 8.69277L6.33382 7.84501C6.66748 7.70681 6.97066 7.50423 7.22604 7.24886L11.4875 2.98744C12.1709 2.30402 12.1709 1.19598 11.4875 0.512563Z" fill="currentColor"></path><path d="M2.75 1.5C2.05964 1.5 1.5 2.05964 1.5 2.75V9.25C1.5 9.94036 2.05964 10.5 2.75 10.5H9.25C9.94036 10.5 10.5 9.94036 10.5 9.25V7C10.5 6.58579 10.8358 6.25 11.25 6.25C11.6642 6.25 12 6.58579 12 7V9.25C12 10.7688 10.7688 12 9.25 12H2.75C1.23122 12 0 10.7688 0 9.25V2.75C0 1.23122 1.23122 4.84288e-08 2.75 4.84288e-08H5C5.41421 4.84288e-08 5.75 0.335786 5.75 0.75C5.75 1.16421 5.41421 1.5 5 1.5H2.75Z" fill="currentColor"></path></svg>
-          </Button>
-        </div>
+          <AnimatePresence initial={false}>
+            {shouldShowNewChatButton && (
+              <motion.div
+                key="new-chat-button"
+                layout
+                initial={{ width: 0, opacity: 0, scale: 0.85 }}
+                animate={{ width: 'auto', opacity: 1, scale: 1 }}
+                exit={{ width: 0, opacity: 0, scale: 0.85 }}
+                transition={{ type: 'spring', stiffness: 430, damping: 32, mass: 0.65 }}
+                className="overflow-hidden"
+              >
+                <Button
+                  onClick={onNewChat}
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out text-foreground/80 hover:text-foreground flex items-center justify-center"
+                  title="New chat"
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5"><path d="M11.4875 0.512563C10.804 -0.170854 9.696 -0.170854 9.01258 0.512563L4.75098 4.77417C4.49563 5.02951 4.29308 5.33265 4.15488 5.66628L3.30712 7.71282C3.19103 7.99307 3.25519 8.31566 3.46968 8.53017C3.68417 8.74467 4.00676 8.80885 4.28702 8.69277L6.33382 7.84501C6.66748 7.70681 6.97066 7.50423 7.22604 7.24886L11.4875 2.98744C12.1709 2.30402 12.1709 1.19598 11.4875 0.512563Z" fill="currentColor"></path><path d="M2.75 1.5C2.05964 1.5 1.5 2.05964 1.5 2.75V9.25C1.5 9.94036 2.05964 10.5 2.75 10.5H9.25C9.94036 10.5 10.5 9.94036 10.5 9.25V7C10.5 6.58579 10.8358 6.25 11.25 6.25C11.6642 6.25 12 6.58579 12 7V9.25C12 10.7688 10.7688 12 9.25 12H2.75C1.23122 12 0 10.7688 0 9.25V2.75C0 1.23122 1.23122 4.84288e-08 2.75 4.84288e-08H5C5.41421 4.84288e-08 5.75 0.335786 5.75 0.75C5.75 1.16421 5.41421 1.5 5 1.5H2.75Z" fill="currentColor"></path></svg>
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Center Pill: Model Selector — hidden on non-chat pages */}
         {!hideModelSelector && !isSearchActive && !isSettingsActive && !isLibraryPageActive && (
