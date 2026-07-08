@@ -1,3 +1,5 @@
+@import "@/components/ui/dotmatrix-loader.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -415,34 +417,29 @@
   }
 }
 
-.thinking-shine {
+.thinking-shine,
+.deep-research-shimmer {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
   background: linear-gradient(
     90deg,
-    hsl(var(--muted-foreground)) 25%,
-    hsl(var(--muted-foreground)/0.25) 50%,
-    hsl(var(--muted-foreground)) 75%
+    hsl(var(--muted-foreground) / 0.46) 0%,
+    hsl(var(--muted-foreground) / 0.46) 38%,
+    hsl(var(--foreground) / 0.88) 50%,
+    hsl(var(--muted-foreground) / 0.46) 62%,
+    hsl(var(--muted-foreground) / 0.46) 100%
   );
   background-size: 200% 100%;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: thinking-shimmer 2s linear infinite;
-  font-style: normal;
-  letter-spacing: 0.025em;
 }
 
-.deep-research-shimmer {
-  background: linear-gradient(
-    90deg,
-    hsl(var(--muted-foreground)) 25%,
-    hsl(var(--muted-foreground)/0.25) 50%,
-    hsl(var(--muted-foreground)) 75%
-  );
-  background-size: 200% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: thinking-shimmer 2s linear infinite;
+.thinking-shine {
+  font-style: normal;
+  letter-spacing: 0.025em;
 }
 
 /* Copy button animations */

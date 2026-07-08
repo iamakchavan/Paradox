@@ -17,6 +17,8 @@ import { useCustomToast } from '@/components/ui/custom-toast';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { parseResearchStream, ResearchStep } from '@/lib/research/parser';
 import { ResearchTimeline } from './ResearchTimeline';
+import { DotmSquare8 } from '@/components/ui/dotm-square-8';
+import { DotmSquare11 } from '@/components/ui/dotm-square-11';
 import { getIntegrationFromToolName } from '@/utils/mcp-helpers';
 import { parseGenerativeUIContent } from '@/utils/generative-ui-parser';
 import { GenerativeUIRegistry } from './generative-ui/registry';
@@ -1053,6 +1055,7 @@ const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelinePro
   const groupedSteps = useMemo(() => {
     interface GroupedStep {
       type: 'integration' | 'web' | 'read' | 'map' | 'other';
+      key: string;
       integrationId?: string;
       name?: string;
       logo?: any;
@@ -1081,6 +1084,7 @@ const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelinePro
         } else {
           grouped.push({
             type: 'integration',
+            key: `integration-${integration.id}-${grouped.length}`,
             integrationId: integration.id,
             name: integration.name,
             logo: integration.logo,
@@ -1107,6 +1111,7 @@ const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelinePro
 
         grouped.push({
           type,
+          key: `${type}-${i}-${step}`,
           label: stepLabel,
           subActions: [],
           isItemLoading,
@@ -1127,14 +1132,16 @@ const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelinePro
       >
         {isStreaming ? (
           <div className="relative w-4 h-4 flex items-center justify-center shrink-0">
-            <motion.div
-              animate={{ scale: [0.8, 1.2, 0.8] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-              className="absolute w-1.5 h-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400"
+            <DotmSquare11
+              size={17}
+              dotSize={2}
+              cellPadding={1}
+              speed={1.35}
+              opacityBase={0.12}
+              opacityMid={0.42}
+              opacityPeak={1}
+              className="text-zinc-500/85 dark:text-zinc-400/85"
             />
-            <svg className="w-4 h-4 text-zinc-400/60 dark:text-zinc-500/60 animate-spin" viewBox="0 0 16 16">
-              <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
-            </svg>
           </div>
         ) : (
           <div className="w-4 h-4 rounded-full bg-emerald-500/10 border border-emerald-500/35 flex items-center justify-center shrink-0">
@@ -1143,10 +1150,10 @@ const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelinePro
         )}
         
         <span className={cn(
-          "text-xs font-medium tracking-tight transition-all duration-300 flex items-center gap-1.5",
+          "text-xs font-medium tracking-tight flex items-center gap-1.5",
           isStreaming 
             ? "thinking-shine font-semibold" 
-            : "text-zinc-500 dark:text-zinc-400 hover:text-foreground"
+            : "text-zinc-500 dark:text-zinc-400 hover:text-foreground transition-colors duration-200"
         )}>
           {isStreaming ? 'Running Paradox task...' : 'Paradox task complete'}
           <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-normal">
@@ -1190,7 +1197,7 @@ const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelinePro
                 }
 
                 return (
-                  <div key={idx} className="flex items-start gap-2.5 relative group">
+                  <div key={group.key} className="flex items-start gap-2.5 relative group">
                     <div className="pt-0.5 select-none">
                       {iconNode}
                     </div>
@@ -1200,7 +1207,7 @@ const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelinePro
                         "text-[11px] font-medium leading-tight truncate",
                         group.isItemLoading 
                           ? "thinking-shine font-semibold" 
-                          : "text-zinc-600 dark:text-zinc-400"
+                          : "text-zinc-600 dark:text-zinc-400 transition-colors duration-200"
                       )}>
                         {group.label}
                       </span>
@@ -1320,6 +1327,7 @@ const MessageComponent = ({
     modelMode.toLowerCase().includes('gpt-oss') ||
     modelMode.toLowerCase().includes('step-') ||
     modelMode.toLowerCase().includes('stepfun') ||
+    modelMode.toLowerCase().includes('minimax') ||
     (modelMode.toLowerCase().includes('nemotron') && (modelMode.includes('super') || modelMode.includes('ultra')))
   ));
 
@@ -1616,10 +1624,23 @@ const MessageComponent = ({
       isStreaming && "streaming-message"
     )}>
       {isThinkingActive && (
-        <div className="flex items-center gap-2 mb-4">
-          <span className="thinking-shine text-sm font-medium">Thinking...</span>
+        <div className="flex items-center gap-2.5 sm:gap-3 mb-4">
+          <div className="w-[20px] h-[20px] sm:w-[23px] sm:h-[23px] flex items-center justify-center overflow-visible">
+            <DotmSquare8
+              size={22}
+              dotSize={3}
+              cellPadding={1}
+              speed={1.35}
+              opacityBase={0.12}
+              opacityMid={0.42}
+              opacityPeak={1}
+              className="text-zinc-500/80 dark:text-zinc-400/80"
+            />
+          </div>
+          <span className="thinking-shine text-sm sm:text-base font-medium">Thinking...</span>
         </div>
       )}
+
       <div className="relative group w-full">
         {steps.length > 0 && (
           <ResearchTimeline steps={steps} isLoading={isStreaming} researchTime={researchTime} />
