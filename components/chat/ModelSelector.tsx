@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
   ChevronDown, 
@@ -221,7 +221,9 @@ export const ModelSelector = ({
 }: ModelSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
+  const [desktopPosition, setDesktopPosition] = useState<{ left: number; top: number; width: number } | null>(null);
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredModelId, setHoveredModelId] = useState<string | null>(selectedModelId);
@@ -270,6 +272,50 @@ export const ModelSelector = ({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useLayoutEffect(() => {
+    if (!shouldRender || isMobile || !triggerRef.current) {
+      setDesktopPosition(null);
+      return;
+    }
+
+    const trigger = triggerRef.current;
+    const viewport = trigger.closest<HTMLElement>('[data-chat-viewport]');
+    if (!viewport) return;
+
+    const updatePosition = () => {
+      const triggerRect = trigger.getBoundingClientRect();
+      const viewportRect = viewport.getBoundingClientRect();
+      const viewportStyles = window.getComputedStyle(viewport);
+      const contentLeft = viewportRect.left + (Number.parseFloat(viewportStyles.paddingLeft) || 0);
+      const contentRight = viewportRect.right - (Number.parseFloat(viewportStyles.paddingRight) || 0);
+      const margin = 16;
+      const availableWidth = Math.max(0, contentRight - contentLeft - margin * 2);
+      const width = Math.min(680, availableWidth);
+      const desiredLeft = triggerRect.left + triggerRect.width / 2 - width / 2;
+      const left = Math.min(
+        Math.max(desiredLeft, contentLeft + margin),
+        contentRight - margin - width
+      );
+
+      setDesktopPosition({
+        left,
+        top: align === 'top' ? triggerRect.bottom + 8 : triggerRect.top - 458,
+        width,
+      });
+    };
+
+    updatePosition();
+    const observer = new ResizeObserver(updatePosition);
+    observer.observe(viewport);
+    observer.observe(trigger);
+    window.addEventListener('resize', updatePosition);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [align, isMobile, shouldRender]);
 
   // Synchronize hovered model with selected model when dropdown opens
   useEffect(() => {
@@ -381,18 +427,24 @@ export const ModelSelector = ({
           : "animate-out fade-out-0 zoom-out-95 duration-200 ease-in",
         isMobile 
           ? "w-[calc(100vw-32px)] h-[390px] left-4 right-4" 
-          : "w-[680px] h-[450px]",
+          : "h-[450px]",
         align === 'top'
-          ? (isMobile 
+          ? (isMobile
               ? (isOpen ? "top-20 left-4 right-4 slide-in-from-top-4" : "top-20 left-4 right-4 slide-out-to-top-4")
-              : (isOpen ? "md:absolute md:top-14 md:left-1/2 md:-translate-x-1/2 md:bottom-auto slide-in-from-top-4" : "md:absolute md:top-14 md:left-1/2 md:-translate-x-1/2 md:bottom-auto slide-out-to-top-4"))
-          : (isMobile 
+              : (isOpen ? "slide-in-from-top-4" : "slide-out-to-top-4"))
+          : (isMobile
               ? (isOpen ? "bottom-20 left-4 right-4 slide-in-from-bottom-4" : "bottom-20 left-4 right-4 slide-out-to-bottom-4")
-              : (isOpen ? "md:absolute md:bottom-14 md:right-0 md:left-auto slide-in-from-bottom-4" : "md:absolute md:bottom-14 md:right-0 md:left-auto slide-out-to-bottom-4"))
+              : (isOpen ? "slide-in-from-bottom-4" : "slide-out-to-bottom-4"))
       )}
       style={{
-        '--tw-enter-translate-x': (!isMobile && align === 'top') ? '-50%' : '0px',
-        '--tw-exit-translate-x': (!isMobile && align === 'top') ? '-50%' : '0px'
+        '--tw-enter-translate-x': '0px',
+        '--tw-exit-translate-x': '0px',
+        ...(!isMobile ? {
+          left: desktopPosition?.left,
+          top: desktopPosition?.top,
+          width: desktopPosition?.width,
+          visibility: desktopPosition ? 'visible' : 'hidden',
+        } : {}),
       } as React.CSSProperties}
     >
       
@@ -403,7 +455,7 @@ export const ModelSelector = ({
       )}>
         {/* Left Pane: Search & Model List */}
         <div className={cn(
-          "border-zinc-200/60 dark:border-zinc-800/80 flex flex-col bg-zinc-50/30 dark:bg-zinc-950/20 h-full",
+          "model-selector-list-pane border-zinc-200/60 dark:border-zinc-800/80 flex flex-col bg-zinc-50/30 dark:bg-zinc-950/20 h-full",
           isMobile ? "w-full h-full" : "w-[290px] border-r"
         )}>
           {/* Search Input */}
@@ -510,7 +562,7 @@ export const ModelSelector = ({
 
         {/* Right Pane: Model Inspector (Desktop Only) */}
         {!isMobile && (
-          <div className="flex-1 p-5 flex flex-col justify-between bg-zinc-50/10 dark:bg-zinc-950/5 h-full">
+          <div className="model-selector-details-pane min-w-0 flex-1 p-5 flex flex-col justify-between bg-zinc-50/10 dark:bg-zinc-950/5 h-full">
             {hoveredModel ? (
               <div className="flex flex-col h-full justify-between">
                 {/* Top: Name & Description */}
@@ -585,7 +637,7 @@ export const ModelSelector = ({
       </div>
 
       {/* Footer: Brand Filter Nav Bar */}
-      <div className="px-3 py-2 border-t border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-50/40 dark:bg-zinc-950/40 flex items-center justify-start md:justify-center gap-2 overflow-x-auto shrink-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full select-none">
+      <div className="model-selector-brand-nav px-3 py-2 border-t border-zinc-200/50 dark:border-zinc-800/50 bg-zinc-50/40 dark:bg-zinc-950/40 flex items-center justify-start md:justify-center gap-2 overflow-x-auto shrink-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full select-none">
         {DISPLAY_BRANDS.map((brand) => {
           const isBrandSelected = selectedBrand === brand;
           const hasModels = groupedModels[brand] && groupedModels[brand].length > 0;
@@ -616,6 +668,7 @@ export const ModelSelector = ({
   return (
     <div className="relative model-selector-container animate-fade-in">
       <Button
+        ref={triggerRef}
         variant={minimal ? "ghost" : "outline"}
         onClick={toggleDropdown}
         className={cn(
@@ -644,7 +697,7 @@ export const ModelSelector = ({
       </Button>
 
       {shouldRender && (
-        isMobile && mounted
+        mounted
           ? createPortal(dropdownContent, document.body)
           : dropdownContent
       )}

@@ -8,6 +8,9 @@ import { cn } from '@/lib/utils';
 import { LayoutGroup, AnimatePresence } from 'framer-motion';
 import { CommandPalette } from '@/components/chat/CommandPalette';
 import { SettingsModal } from '@/components/chat/settings/SettingsModal';
+import type { AnswerSource } from '@/components/chat/SourceList';
+import { DesktopSourcesPanel } from '@/components/chat/DesktopSourcesPanel';
+import { SourcesPanelContext } from '@/components/chat/SourcesPanelContext';
 
 export default function MainLayout({
   children,
@@ -24,6 +27,8 @@ export default function MainLayout({
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isSettingsActive, setIsSettingsActive] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [sourcesPanelSources, setSourcesPanelSources] = useState<AnswerSource[]>([]);
+  const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('sidebar-collapsed');
@@ -115,6 +120,30 @@ export default function MainLayout({
     router.push('/chat');
   };
 
+  const closeSources = useCallback(() => {
+    setIsSourcesPanelOpen(false);
+  }, []);
+
+  const toggleSources = useCallback((sources: AnswerSource[]) => {
+    const currentUrls = sourcesPanelSources.map((source) => source.url);
+    const nextUrls = sources.map((source) => source.url);
+    const isSameAnswer =
+      currentUrls.length === nextUrls.length &&
+      currentUrls.every((url, index) => url === nextUrls[index]);
+
+    if (isSourcesPanelOpen && isSameAnswer) {
+      setIsSourcesPanelOpen(false);
+      return;
+    }
+
+    setSourcesPanelSources(sources);
+    setIsSourcesPanelOpen(true);
+  }, [isSourcesPanelOpen, sourcesPanelSources]);
+
+  useEffect(() => {
+    setIsSourcesPanelOpen(false);
+  }, [pathname]);
+
   const handleOpenSettingsFromCommandPalette = useCallback(() => {
     if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
       router.push('/chat');
@@ -141,9 +170,16 @@ export default function MainLayout({
   ]);
 
   const isLibraryActive = pathname === '/library';
+  const sourcesPanelContextValue = useMemo(() => ({
+    sources: sourcesPanelSources,
+    isOpen: isSourcesPanelOpen,
+    toggleSources,
+    closeSources,
+  }), [sourcesPanelSources, isSourcesPanelOpen, toggleSources, closeSources]);
 
   return (
     <SidebarContext.Provider value={sidebarContextValue}>
+      <SourcesPanelContext.Provider value={sourcesPanelContextValue}>
       <div className="flex h-dvh w-screen overflow-hidden bg-background">
         <Sidebar
           activeChatId={activeChatId}
@@ -194,10 +230,14 @@ export default function MainLayout({
         />
         <div
           className={cn(
-            "flex-1 flex flex-col h-full relative overflow-hidden",
+            "min-w-0 flex-1 flex flex-col h-full relative overflow-hidden",
             mounted && "transition-[padding-left] duration-300 ease-in-out",
             isSidebarCollapsed ? "md:pl-0" : "md:pl-[270px]"
           )}
+          style={{
+            "--sources-panel-width": isSourcesPanelOpen ? "390px" : "0px",
+          } as React.CSSProperties}
+          data-chat-viewport
         >
           <main className="flex flex-col h-full bg-background relative overflow-hidden">
             <LayoutGroup id="chat-layout-group">
@@ -205,6 +245,7 @@ export default function MainLayout({
             </LayoutGroup>
           </main>
         </div>
+        <DesktopSourcesPanel />
       </div>
       <CommandPalette
         isOpen={isCommandPaletteOpen}
@@ -217,6 +258,7 @@ export default function MainLayout({
           onClose={() => setIsSettingsActive(false)}
         />
       )}
+      </SourcesPanelContext.Provider>
     </SidebarContext.Provider>
   );
 }

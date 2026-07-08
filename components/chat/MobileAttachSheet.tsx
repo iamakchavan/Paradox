@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, FileText, Image, Plus, Puzzle, X } from 'luc
 import { AnimatePresence, motion } from 'framer-motion';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
+import { FloatingIconButton } from '@/components/ui/floating-icon-button';
 import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
 import { PROVIDER_LOGOS } from '@/components/chat/integrations/IntegrationsTab';
 import type { MCPIntegration } from '@/lib/db';
@@ -94,7 +95,7 @@ function OptionRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[54px] w-full items-center justify-between gap-4 rounded-2xl px-2 text-left transition-colors active:bg-foreground/[0.05]"
+      className="flex min-h-[54px] w-full items-center justify-between gap-4 rounded-2xl px-2 text-left [-webkit-tap-highlight-color:transparent] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15"
     >
       <span className="flex min-w-0 items-center gap-3">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center text-foreground/62">
@@ -123,7 +124,7 @@ function AppsRow({
     <button
       type="button"
       onClick={onToggle}
-      className="flex min-h-[56px] w-full items-center justify-between gap-4 rounded-2xl px-3.5 text-left transition-colors active:bg-foreground/[0.06]"
+      className="flex min-h-[56px] w-full items-center justify-between gap-4 rounded-2xl px-3.5 text-left [-webkit-tap-highlight-color:transparent] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15"
     >
       <span className="flex min-w-0 items-center gap-3.5">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center">
@@ -275,7 +276,6 @@ export function MobileAttachSheet({
     onBeforeDismiss: handleBeforeDismiss,
     getDismissHistoryDelta,
   });
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -332,13 +332,9 @@ export function MobileAttachSheet({
                   </h2>
 
                   <DialogPrimitive.Close asChild>
-                    <button
-                      type="button"
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-foreground/[0.07] text-foreground/55 transition-all hover:text-foreground active:scale-[0.93] dark:bg-white/[0.08]"
-                      aria-label="Close actions"
-                    >
+                    <FloatingIconButton aria-label="Close actions">
                       <X className="h-3.5 w-3.5" />
-                    </button>
+                    </FloatingIconButton>
                   </DialogPrimitive.Close>
                 </div>
 

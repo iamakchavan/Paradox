@@ -12,11 +12,16 @@ import { preprocessLaTeX } from '@/utils/latex';
 import { CodeBlock } from './CodeBlock';
 import { db } from '@/lib/db';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
+import { MobileBottomSheet } from '@/components/ui/mobile-bottom-sheet';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { parseResearchStream, ResearchStep } from '@/lib/research/parser';
 import { ResearchTimeline } from './ResearchTimeline';
+import { AnswerSources } from './AnswerSources';
+import { FaviconImage } from './FaviconImage';
+import { SourcesSheetHeader } from './SourcesSheetHeader';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
 import { DotmSquare8 } from '@/components/ui/dotm-square-8';
 import { DotmSquare11 } from '@/components/ui/dotm-square-11';
 import { getIntegrationFromToolName } from '@/utils/mcp-helpers';
@@ -53,148 +58,6 @@ interface MessageContextValue {
 }
 
 const MessageContext = createContext<MessageContextValue | null>(null);
-
-// Memory cache for synchronous lookups during render/mounts to prevent visual blinking
-const memoryFaviconCache = new Map<string, string>();
-
-// Track pending favicon network or DB requests to deduplicate concurrent lookups
-const pendingFavicons = new Map<string, Promise<string | null>>();
-
-// Helper to get and fetch favicon with full deduplication across all instances
-const getFavicon = (domain: string): Promise<string | null> => {
-  const memCached = memoryFaviconCache.get(domain);
-  if (memCached) {
-    return Promise.resolve(memCached === 'FAILED' ? null : memCached);
-  }
-
-  let pending = pendingFavicons.get(domain);
-  if (pending) {
-    return pending;
-  }
-
-  const promise = (async () => {
-    try {
-      // 1. Check IndexedDB cache
-      const cached = await db.favicons.get(domain);
-      if (cached) {
-        if (Date.now() - cached.createdAt < 7 * 24 * 60 * 60 * 1000) {
-          memoryFaviconCache.set(domain, cached.dataUrl);
-          return cached.dataUrl === 'FAILED' ? null : cached.dataUrl;
-        }
-      }
-
-      // 2. Fetch via proxy from Google Favicon API
-      const googleFavicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
-      const proxiedFavicon = `/api/proxy-image?url=${encodeURIComponent(googleFavicon)}`;
-
-      const res = await fetch(proxiedFavicon);
-      if (!res.ok) {
-        memoryFaviconCache.set(domain, 'FAILED');
-        try {
-          await db.favicons.put({ domain, dataUrl: 'FAILED', createdAt: Date.now() });
-        } catch (dbErr) {
-          console.warn('Failed to cache failed favicon in IndexedDB:', dbErr);
-        }
-        return null;
-      }
-
-      const blob = await res.blob();
-      const base64data = await new Promise<string | null>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(blob);
-      });
-
-      if (base64data) {
-        memoryFaviconCache.set(domain, base64data);
-        try {
-          await db.favicons.put({ domain, dataUrl: base64data, createdAt: Date.now() });
-        } catch (dbErr) {
-          console.warn('Failed to store favicon in IndexedDB:', dbErr);
-        }
-        return base64data;
-      } else {
-        memoryFaviconCache.set(domain, 'FAILED');
-        try {
-          await db.favicons.put({ domain, dataUrl: 'FAILED', createdAt: Date.now() });
-        } catch (dbErr) {
-          console.warn('Failed to cache failed favicon in IndexedDB:', dbErr);
-        }
-        return null;
-      }
-    } catch (err) {
-      console.warn('Error fetching favicon for domain:', domain, err);
-      memoryFaviconCache.set(domain, 'FAILED');
-      try {
-        await db.favicons.put({ domain, dataUrl: 'FAILED', createdAt: Date.now() });
-      } catch (dbErr) {
-        console.warn('Failed to cache failed favicon in IndexedDB:', dbErr);
-      }
-      return null;
-    } finally {
-      pendingFavicons.delete(domain);
-    }
-  })();
-
-  pendingFavicons.set(domain, promise);
-  return promise;
-};
-
-// Component to load and render favicon from IndexedDB cache or external fallback
-export const FaviconImage = memo(({ domain, className }: { domain: string; className?: string }) => {
-  // Initialize state synchronously from in-memory cache to prevent flickering on remounts
-  const [src, setSrc] = useState<string | null>(() => {
-    const cached = memoryFaviconCache.get(domain);
-    return cached && cached !== 'FAILED' ? cached : null;
-  });
-  const [error, setError] = useState(() => {
-    return memoryFaviconCache.get(domain) === 'FAILED';
-  });
-
-  useEffect(() => {
-    const cached = memoryFaviconCache.get(domain);
-    if (cached) {
-      if (cached === 'FAILED') {
-        setError(true);
-      } else {
-        setSrc(cached);
-        setError(false);
-      }
-      return;
-    }
-
-    let active = true;
-    getFavicon(domain).then((data) => {
-      if (!active) return;
-      if (data) {
-        setSrc(data);
-        setError(false);
-      } else {
-        setError(true);
-      }
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [domain]);
-
-  if (error || !src) {
-    return <Globe className={cn("text-muted-foreground/70", className)} />;
-  }
-
-  return (
-    <img
-      src={src}
-      alt=""
-      className={cn("object-contain shrink-0", className)}
-      style={{ margin: 0 }}
-      onError={() => setError(true)}
-    />
-  );
-});
-FaviconImage.displayName = 'FaviconImage';
 
 // Styled citation pill component (used in WebSearchWidget source cards)
 const CitationPill = memo(({ href, domain, label }: { href: string; domain: string; label: string }) => {
@@ -374,31 +237,19 @@ const GroupedCitationPill = memo(({ items, searchMap }: {
 }) => {
   const [page, setPage] = useState(0);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const isMobile = useIsMobile();
   const total = items.length;
   const current = items[page];
   const first = items[0];
   const extraCount = total - 1;
 
-  // Synchronize history state to dismiss drawer on mobile browser back button / back gestures
-  useEffect(() => {
-    if (!isDrawerOpen) return;
-
-    // Push a dummy state to history so that a back gesture pops this state instead of navigating away
-    window.history.pushState({ modalOpen: true }, '');
-
-    const handlePopState = () => {
-      setIsDrawerOpen(false);
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      if (window.history.state?.modalOpen) {
-        window.history.back();
-      }
-    };
-  }, [isDrawerOpen]);
-
+  useMobileBackDismiss({
+    isOpen: isDrawerOpen,
+    isMobile,
+    stateKey: 'paradoxInlineSources',
+    entryPrefix: 'inline-sources',
+    onDismiss: () => setIsDrawerOpen(false),
+  });
   // Recompute matched result whenever page changes
   const matchedResult = useMemo(() => {
     if (!current || !searchMap) return null;
@@ -515,67 +366,65 @@ const GroupedCitationPill = memo(({ items, searchMap }: {
       </HoverCard>
 
       {/* Mobile Drawer (Bottom Sheet) */}
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerContent className="max-h-[80vh] p-0 flex flex-col bg-background rounded-t-[24px] select-none border-t border-border/40 shadow-2xl">
-          <DrawerHeader className="px-6 pt-6 pb-4 border-b border-border/40 text-left shrink-0">
-            <div className="flex items-center gap-2">
-              <DrawerTitle className="font-serif text-lg font-medium tracking-tight text-foreground">
-                Sources
-              </DrawerTitle>
-              <span className="bg-secondary text-secondary-foreground font-semibold px-2 py-0.5 text-[10px] rounded-full">
-                {total}
-              </span>
-            </div>
-          </DrawerHeader>
+      <MobileBottomSheet
+        open={isDrawerOpen}
+        onOpenChange={setIsDrawerOpen}
+        title="Sources"
+        description={`${total} ${total === 1 ? 'source' : 'sources'} cited in this answer`}
+        className="h-[80dvh] min-h-[300px] select-none"
+      >
+        <SourcesSheetHeader
+          description={`${total} ${total === 1 ? 'source' : 'sources'} cited in this answer`}
+          onClose={() => setIsDrawerOpen(false)}
+        />
 
-          {/* List of citation items scrollable */}
-          <div className="flex-1 overflow-y-auto px-6 py-2 divide-y divide-border/30">
-            {items.map((item, idx) => {
-              const matched = searchMap ? (searchMap.get(getCleanUrl(item.href)) || (() => {
-                try {
-                  const dom = new URL(item.href).hostname.replace('www.', '').toLowerCase();
-                  return searchMap.get(dom) ?? null;
-                } catch { return null; }
-              })()) : null;
+        {/* List of citation items scrollable */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-[72px] divide-y divide-border/30">
+          {items.map((item, idx) => {
+            const matched = searchMap ? (searchMap.get(getCleanUrl(item.href)) || (() => {
+              try {
+                const dom = new URL(item.href).hostname.replace('www.', '').toLowerCase();
+                return searchMap.get(dom) ?? null;
+              } catch { return null; }
+            })()) : null;
 
-              const siteName = matched ? (extractSiteName(matched.title) ?? item.domain) : item.domain;
+            const siteName = matched ? (extractSiteName(matched.title) ?? item.domain) : item.domain;
 
-              return (
-                <a
-                  key={idx}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex flex-col gap-1.5 py-4 no-underline active:opacity-70 transition-all select-none"
-                  onClick={() => setIsDrawerOpen(false)}
-                >
-                  <div className="flex items-center justify-between w-full min-w-0">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <FaviconImage domain={item.domain} className="w-3.5 h-3.5 rounded-sm shrink-0" />
-                      <span className="text-[10px] font-bold tracking-wider uppercase text-zinc-500 truncate">{item.domain}</span>
-                    </div>
-                    <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
+            return (
+              <a
+                key={idx}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col gap-1.5 py-4 no-underline active:opacity-70 transition-all select-none"
+                onClick={() => setIsDrawerOpen(false)}
+              >
+                <div className="flex items-center justify-between w-full min-w-0">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <FaviconImage domain={item.domain} className="w-3.5 h-3.5 rounded-sm shrink-0" />
+                    <span className="text-[10px] font-bold tracking-wider uppercase text-zinc-500 truncate">{item.domain}</span>
                   </div>
-                  {matched ? (
-                    <div className="flex flex-col gap-1">
-                      <h4 className="font-serif font-normal text-foreground text-[13px] leading-snug line-clamp-2">
-                        {matched.title}
-                      </h4>
-                      <p className="text-muted-foreground/90 leading-normal line-clamp-3 text-[11px] font-normal">
-                        {matched.content}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-[11px] text-muted-foreground/75 break-all leading-normal">
-                      {item.href}
+                  <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
+                </div>
+                {matched ? (
+                  <div className="flex flex-col gap-1">
+                    <h4 className="font-serif font-normal text-foreground text-[13px] leading-snug line-clamp-2">
+                      {matched.title}
+                    </h4>
+                    <p className="text-muted-foreground/90 leading-normal line-clamp-3 text-[11px] font-normal">
+                      {matched.content}
                     </p>
-                  )}
-                </a>
-              );
-            })}
-          </div>
-        </DrawerContent>
-      </Drawer>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground/75 break-all leading-normal">
+                    {item.href}
+                  </p>
+                )}
+              </a>
+            );
+          })}
+        </div>
+      </MobileBottomSheet>
     </>
   );
 });
@@ -1677,10 +1526,6 @@ const MessageComponent = ({
           );
         })()}
 
-        {searchData && (
-          <WebSearchWidget searchData={searchData} />
-        )}
-
         <MessageContext.Provider value={contextValue}>
           {(() => {
             const { blocks } = parseGenerativeUIContent(processedContent);
@@ -1748,7 +1593,7 @@ const MessageComponent = ({
         </MessageContext.Provider>
 
         {!isStreaming && mainContent && (
-          <div className="mt-4 flex justify-start gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
+          <div className="mt-4 flex flex-wrap items-center justify-start gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
             {/* Copy answer button */}
             <Tooltip delayDuration={200}>
               <TooltipTrigger asChild>
@@ -1875,6 +1720,7 @@ const MessageComponent = ({
                 </TooltipContent>
               </Tooltip>
             )}
+            <AnswerSources sources={allSearchResults} />
           </div>
         )}
       </div>

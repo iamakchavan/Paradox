@@ -56,12 +56,12 @@ export function ChatHeader({
     <>
       <div
         className={cn(
-          "fixed top-0 right-0 z-30 h-24 sm:h-28 pointer-events-none progressive-blur-top",
-          mounted && "transition-[left] duration-300",
+          "fixed top-0 right-0 md:right-[var(--sources-panel-width,0px)] z-30 h-24 sm:h-28 pointer-events-none progressive-blur-top",
+          mounted && "transition-[left,right] duration-300",
           isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]"
         )}
       />
-      <header className="fixed top-[calc(1.25rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 transition-all duration-300 pointer-events-none px-4">
+      <header className="fixed top-[calc(1.25rem+env(safe-area-inset-top,0px))] left-0 right-0 md:right-[var(--sources-panel-width,0px)] z-40 transition-[left,right] duration-300 pointer-events-none px-4">
       <div className="w-full flex items-center justify-between gap-4 relative">
         {/* Left Pill: Sidebar trigger + New Chat */}
         <motion.div

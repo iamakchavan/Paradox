@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X, ChevronRight, Paintbrush, Key } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { FloatingIconButton } from '@/components/ui/floating-icon-button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useApiKeys } from '@/hooks/use-api-keys';
 import { useCustomToast } from '@/components/ui/custom-toast';
@@ -330,12 +331,11 @@ export function SettingsModal({ isOpen, onClose }: Props) {
                           </button>
                         ) : null}
                         <DialogPrimitive.Close asChild>
-                          <button className={cn(
-                            "w-7 h-7 flex items-center justify-center rounded-full bg-foreground/[0.07] text-foreground/50 hover:text-foreground transition-all cursor-pointer active:scale-[0.93]",
+                          <FloatingIconButton className={cn(
                             !mobileView && "hidden"
                           )}>
                             <X className="w-3.5 h-3.5" />
-                          </button>
+                          </FloatingIconButton>
                         </DialogPrimitive.Close>
                       </div>
 

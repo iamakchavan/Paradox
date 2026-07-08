@@ -1385,8 +1385,8 @@ export default function ChatPage() {
       {!isInitialView && !isSearchActive && !isSettingsActive && (
         <div
           className={cn(
-            "fixed bottom-0 right-0 z-10 h-32 sm:h-40 pointer-events-none progressive-blur",
-            mounted && "transition-[left,bottom] duration-300",
+            "fixed bottom-0 right-0 md:right-[var(--sources-panel-width,0px)] z-10 h-32 sm:h-40 pointer-events-none progressive-blur",
+            mounted && "transition-[left,right,bottom] duration-300",
             isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]"
           )}
           style={
@@ -1405,7 +1405,7 @@ export default function ChatPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           className={cn(
-            "fixed z-20 bottom-6 sm:bottom-12 right-0 mx-auto",
+            "fixed z-20 bottom-6 sm:bottom-12 right-0 md:right-[var(--sources-panel-width,0px)] mx-auto",
             isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]",
             isInputExpanded
               ? "max-w-[720px] px-3 sm:px-2 md:px-4"
@@ -1413,7 +1413,7 @@ export default function ChatPage() {
           )}
           style={{
             transition: mounted
-              ? 'left 300ms cubic-bezier(0.4, 0, 0.2, 1), bottom 300ms cubic-bezier(0.4, 0, 0.2, 1), max-width 300ms cubic-bezier(0.4, 0, 0.2, 1), padding 300ms cubic-bezier(0.4, 0, 0.2, 1)'
+              ? 'left 300ms cubic-bezier(0.4, 0, 0.2, 1), right 300ms cubic-bezier(0.4, 0, 0.2, 1), bottom 300ms cubic-bezier(0.4, 0, 0.2, 1), max-width 300ms cubic-bezier(0.4, 0, 0.2, 1), padding 300ms cubic-bezier(0.4, 0, 0.2, 1)'
               : 'max-width 300ms cubic-bezier(0.4, 0, 0.2, 1), padding 300ms cubic-bezier(0.4, 0, 0.2, 1)',
             bottom: keyboardOffset > 0 ? `${keyboardOffset + 8}px` : undefined
           }}

@@ -3,7 +3,7 @@ import { Search, Globe, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { ResearchStep } from '@/lib/research/parser';
-import { FaviconImage } from './Message';
+import { FaviconImage } from './FaviconImage';
 
 const DeepResearchIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
