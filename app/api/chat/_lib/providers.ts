@@ -25,7 +25,11 @@ export function readChatRequestHeaders(req: Request): ChatRequestHeaders {
   };
 }
 
-export function createChatModel(config: ModelConfig, keys: ProviderKeys): any {
+export function createProviderModel(
+  config: ModelConfig,
+  keys: ProviderKeys,
+  perplexityMode: 'chat' | 'research',
+): any {
   const baseModel = (() => {
     if (config.provider === 'google') {
       if (!keys.geminiKey) throw new Error('Google Gemini API key is missing');
@@ -37,7 +41,7 @@ export function createChatModel(config: ModelConfig, keys: ProviderKeys): any {
     }
     if (config.provider === 'perplexity') {
       if (!keys.perplexityKey) throw new Error('Perplexity API key is missing');
-      return getPerplexityModel(keys.perplexityKey, config.id, 'chat');
+      return getPerplexityModel(keys.perplexityKey, config.id, perplexityMode);
     }
     if (config.provider === 'zenmux') {
       if (!keys.zenmuxKey) throw new Error('ZenMux API key is missing');
@@ -76,6 +80,10 @@ export function createChatModel(config: ModelConfig, keys: ProviderKeys): any {
   }
 
   return baseModel;
+}
+
+export function createChatModel(config: ModelConfig, keys: ProviderKeys): any {
+  return createProviderModel(config, keys, 'chat');
 }
 
 export function buildProviderOptions(
@@ -138,4 +146,3 @@ export function buildProviderOptions(
 
   return providerOptions;
 }
-
