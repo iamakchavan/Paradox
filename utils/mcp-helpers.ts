@@ -1,5 +1,5 @@
 import { Puzzle } from 'lucide-react';
-import { PROVIDER_LOGOS } from '@/components/chat/integrations/IntegrationsTab';
+import { PROVIDER_LOGOS } from '@/components/chat/integrations/provider-catalog';
 
 export const KEYWORD_MAP: Record<string, string[]> = {
   yahoofinance: ['quote', 'ticker', 'stock', 'finance', 'chart', 'historical', 'history'],

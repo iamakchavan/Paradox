@@ -107,6 +107,7 @@ function AuthCallbackContent() {
         setStatus('Syncing tools and completing connection...');
 
         // Pre-fetch tools list to store in database cache (crucial for mobile/redirect flow)
+        // Namespace tools with provider id so they collide-free in Skills / chat tools.
         let cachedTools: any[] = [];
         try {
           const discRes = await fetch('/api/mcp/discover', {
@@ -120,35 +121,52 @@ function AuthCallbackContent() {
           if (discRes.ok) {
             const discData = await discRes.json();
             if (discData.tools) {
-              cachedTools = discData.tools.map((t: any) => ({
-                name: t.name,
-                namespacedName: t.name,
-                description: t.description || 'No description provided.',
-                inputSchema: t.inputSchema || {}
-              }));
+              const prefix = `${String(provider).toLowerCase()}_`;
+              cachedTools = discData.tools.map((t: any) => {
+                const cleanName = String(t.name || '').replace(/:/g, '_');
+                const namespacedName = cleanName.startsWith(prefix)
+                  ? cleanName
+                  : `${prefix}${cleanName}`;
+                return {
+                  name: namespacedName,
+                  namespacedName,
+                  description: t.description || 'No description provided.',
+                  inputSchema: t.inputSchema || {}
+                };
+              });
             }
           }
         } catch (syncErr) {
           console.warn('[Auth Callback] Background tool sync failed:', syncErr);
         }
 
+        const existing = await db.mcpIntegrations.get(provider);
+        const displayName =
+          existing?.name ||
+          (provider.charAt(0).toUpperCase() + provider.slice(1));
+
         await db.mcpIntegrations.put({
           id: provider,
-          name: provider.charAt(0).toUpperCase() + provider.slice(1),
+          name: displayName,
           url: targetUrl,
-          connectionMode: 'auto',
+          connectionMode: existing?.connectionMode || 'auto',
           authType: 'oauth',
           accessToken,
           refreshToken: refreshToken || undefined,
           expiresAt,
+          scope: authorizedScope || existing?.scope || undefined,
           isEnabled: true,
           status: 'connected',
           cachedTools,
           lastToolSync: Date.now(),
-          createdAt: Date.now()
+          createdAt: existing?.createdAt || Date.now()
         });
 
-        setStatus('Integration connected successfully!');
+        setStatus(
+          cachedTools.length > 0
+            ? `Connected — ${cachedTools.length} tools detected.`
+            : 'Integration connected successfully!'
+        );
 
         if (isMobile) {
           setTimeout(() => {
@@ -169,12 +187,14 @@ function AuthCallbackContent() {
       const codeVerifier = sessionStorage.getItem('oauth_pending_verifier');
       const clientId = sessionStorage.getItem('oauth_pending_client');
       const clientSecret = sessionStorage.getItem('oauth_pending_secret');
+      const authorizedScope = sessionStorage.getItem('oauth_pending_scope');
       const tokenEndpoint = sessionStorage.getItem('oauth_pending_token_endpoint');
 
       // Cleanup verifier state
       sessionStorage.removeItem('oauth_pending_verifier');
       sessionStorage.removeItem('oauth_pending_client');
       sessionStorage.removeItem('oauth_pending_secret');
+      sessionStorage.removeItem('oauth_pending_scope');
       sessionStorage.removeItem('oauth_pending_token_endpoint');
 
       if (tokenEndpoint && codeVerifier) {

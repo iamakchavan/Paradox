@@ -5,7 +5,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/utils';
 import { FloatingIconButton } from '@/components/ui/floating-icon-button';
 import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
-import { PROVIDER_LOGOS } from '@/components/chat/integrations/IntegrationsTab';
+import { PROVIDER_LOGOS } from '@/components/chat/integrations/provider-catalog';
 import type { MCPIntegration } from '@/lib/db';
 
 const DeepResearchIcon = ({ className }: { className?: string }) => (

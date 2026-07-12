@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { PROVIDER_LOGOS } from '@/components/chat/integrations/IntegrationsTab';
+import { PROVIDER_LOGOS } from '@/components/chat/integrations/provider-catalog';
 import { MobileAttachSheet } from '@/components/chat/MobileAttachSheet';
 import { DeepResearchIcon, isMobileOrTablet, WebSearchIcon } from './icons';
 import type { ConnectedApp } from './types';
