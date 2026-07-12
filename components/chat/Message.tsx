@@ -22,8 +22,8 @@ import { FaviconImage } from './FaviconImage';
 import { SourcesSheetHeader } from './SourcesSheetHeader';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
-import { DotmSquare8 } from '@/components/ui/dotm-square-8';
 import { DotmSquare11 } from '@/components/ui/dotm-square-11';
+import { DotmSquare12 } from '@/components/ui/dotm-square-12';
 import { getIntegrationFromToolName } from '@/utils/mcp-helpers';
 import { parseGenerativeUIContent } from '@/utils/generative-ui-parser';
 import { GenerativeUIRegistry } from './generative-ui/registry';
@@ -1475,7 +1475,7 @@ const MessageComponent = ({
       {isThinkingActive && (
         <div className="flex items-center gap-2 sm:gap-2.5 mb-4">
           <div className="w-[19px] h-[19px] sm:w-[21px] sm:h-[21px] flex items-center justify-center overflow-visible">
-            <DotmSquare8
+            <DotmSquare12
               size={19}
               dotSize={3}
               cellPadding={1}
