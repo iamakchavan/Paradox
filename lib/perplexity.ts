@@ -1,6 +1,28 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { headers } from 'next/headers';
+import type { AgentReasoningEffort } from './models';
 import { makeOpenAiCompatibleStream } from './perplexity-stream';
+
+interface PerplexityAgentOptions {
+  reasoningEffort?: AgentReasoningEffort;
+}
+
+function extractAgentOutputText(response: unknown): string {
+  if (!response || typeof response !== 'object') return '';
+
+  const payload = response as Record<string, unknown>;
+  if (typeof payload.output_text === 'string') return payload.output_text;
+  if (!Array.isArray(payload.output)) return '';
+
+  return payload.output
+    .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
+    .filter(item => item.type === 'message' && Array.isArray(item.content))
+    .flatMap(item => item.content as unknown[])
+    .filter((content): content is Record<string, unknown> => Boolean(content && typeof content === 'object'))
+    .filter(content => content.type === 'output_text' && typeof content.text === 'string')
+    .map(content => content.text as string)
+    .join('');
+}
 
 /**
  * Creates a Vercel AI SDK compatible LanguageModel instance for Perplexity.
@@ -18,7 +40,8 @@ import { makeOpenAiCompatibleStream } from './perplexity-stream';
 export function getPerplexityModel(
   perplexityKey: string, 
   modelId: string,
-  context: 'chat' | 'research' | 'title'
+  context: 'chat' | 'research' | 'title',
+  agentOptions: PerplexityAgentOptions = {},
 ) {
   // Agent API models are identified by having a slash in the model ID (e.g. `openai/gpt-5-mini`)
   const isAgentModel = modelId.includes('/');
@@ -65,6 +88,9 @@ export function getPerplexityModel(
               instructions: systemMessage ? systemMessage.content : undefined,
               stream: body.stream,
               max_output_tokens: body.max_tokens || 4096,
+              ...(agentOptions.reasoningEffort
+                ? { reasoning: { effort: agentOptions.reasoningEffort } }
+                : {}),
             };
 
             // Dynamically assign preset and tools based on route context and search flag
@@ -113,7 +139,7 @@ export function getPerplexityModel(
             // Non-streaming completion format adaptation
             if (!body.stream) {
               const json = await response.json();
-              const text = json.output?.[0]?.content?.[0]?.text || "";
+              const text = extractAgentOutputText(json);
               const mockResponse = {
                 id: json.id || 'chatcmpl-mock',
                 object: 'chat.completion',

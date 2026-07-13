@@ -14,7 +14,7 @@ import { MessageMarkdownContext, useMessageMarkdownContext } from './markdown-co
 
 const MarkdownParagraph = memo(({ children }: { children?: ReactNode }) => {
   const context = useMessageMarkdownContext();
-  return <p className="mb-4 last:mb-0">{groupCitationChildren(children, context?.searchMap ?? null)}</p>;
+  return <p>{groupCitationChildren(children, context?.searchMap ?? null)}</p>;
 });
 MarkdownParagraph.displayName = 'MarkdownParagraph';
 
@@ -137,7 +137,7 @@ export const MessageMarkdown = memo((props: MessageMarkdownProps) => {
             key={index}
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeKatex]}
-            className="prose dark:prose-invert max-w-none prose-pre:p-0 break-words"
+            className="typeset typeset-chat max-w-none"
             components={markdownComponents}
           >
             {group.content}

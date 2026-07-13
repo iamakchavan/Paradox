@@ -41,7 +41,9 @@ export function createProviderModel(
     }
     if (config.provider === 'perplexity') {
       if (!keys.perplexityKey) throw new Error('Perplexity API key is missing');
-      return getPerplexityModel(keys.perplexityKey, config.id, perplexityMode);
+      return getPerplexityModel(keys.perplexityKey, config.id, perplexityMode, {
+        reasoningEffort: config.agentApi?.reasoningEffort,
+      });
     }
     if (config.provider === 'zenmux') {
       if (!keys.zenmuxKey) throw new Error('ZenMux API key is missing');

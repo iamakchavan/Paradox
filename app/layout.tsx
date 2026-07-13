@@ -5,7 +5,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { CustomToastProvider } from '@/components/ui/custom-toast';
-import { Space_Mono, JetBrains_Mono } from 'next/font/google';
+import { JetBrains_Mono, Space_Mono } from 'next/font/google';
 
 const spaceMono = Space_Mono({
   weight: ['400', '700'],
@@ -62,12 +62,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@300;400;700&display=swap"
-        />
         <link
           rel="stylesheet"
           href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap"

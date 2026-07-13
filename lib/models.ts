@@ -1,3 +1,5 @@
+export type AgentReasoningEffort = 'minimal' | 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+
 export interface ModelConfig {
   id: string;
   name: string;
@@ -6,6 +8,9 @@ export interface ModelConfig {
   contextWindow: string;
   pricing: { input: string; output: string };
   tags: string[]; // e.g. ["Vision", "Coding", "Reasoning", "Fast"]
+  agentApi?: {
+    reasoningEffort?: AgentReasoningEffort;
+  };
 }
 
 export const MODELS_REGISTRY: ModelConfig[] = [
@@ -276,6 +281,16 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     tags: ['Reasoning', 'Coding', 'Agentic']
   },
   {
+    id: 'xai/grok-4.5',
+    name: 'Grok 4.5',
+    provider: 'perplexity',
+    description: "xAI's Grok 4.5 model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$2.00 / 1M', output: '$10.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic'],
+    agentApi: { reasoningEffort: 'medium' }
+  },
+  {
     id: 'xai/grok-4.20-reasoning',
     name: 'Grok 4.20 Reasoning',
     provider: 'perplexity',
@@ -373,6 +388,35 @@ export const MODELS_REGISTRY: ModelConfig[] = [
     contextWindow: '128k tokens',
     pricing: { input: '$0.075 / 1M', output: '$0.30 / 1M' },
     tags: ['Fast', 'Multimodal', 'Reasoning']
+  },
+  {
+    id: 'openai/gpt-5.6-sol',
+    name: 'GPT 5.6 Sol',
+    provider: 'perplexity',
+    description: "OpenAI's GPT 5.6 Sol model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic'],
+    agentApi: { reasoningEffort: 'medium' }
+  },
+  {
+    id: 'openai/gpt-5.6-terra',
+    name: 'GPT 5.6 Terra',
+    provider: 'perplexity',
+    description: "OpenAI's GPT 5.6 Terra model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic'],
+    agentApi: { reasoningEffort: 'medium' }
+  },
+  {
+    id: 'openai/gpt-5.6-luna',
+    name: 'GPT 5.6 Luna',
+    provider: 'perplexity',
+    description: "OpenAI's GPT 5.6 Luna model, accessed via Perplexity Agent API.",
+    contextWindow: '128k tokens',
+    pricing: { input: '$3.00 / 1M', output: '$15.00 / 1M' },
+    tags: ['Reasoning', 'Coding', 'Agentic']
   },
   {
     id: 'openai/gpt-5',

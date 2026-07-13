@@ -1,4 +1,5 @@
 @import "@/components/ui/dotmatrix-loader.css";
+@import "./typeset.css";
 
 @tailwind base;
 @tailwind components;
@@ -126,6 +127,86 @@
 }
 
 /* Markdown Styles */
+.typeset-chat {
+  --typeset-font-body: inherit;
+  --typeset-font-heading: 'Switzer', sans-serif;
+  --typeset-font-mono: var(--font-jetbrains-mono), monospace;
+  --typeset-size: 13.7778px;
+  --typeset-leading: 1.75;
+  --typeset-flow: 1em;
+  --typeset-muted: hsl(var(--muted-foreground));
+  --typeset-rule: hsl(var(--border));
+  --typeset-chat-text: rgb(39 39 42);
+  --typeset-chat-strong: rgb(24 24 27);
+  --typeset-chat-heading: rgb(8 145 178);
+  color: var(--typeset-chat-text);
+  font-weight: 400;
+  letter-spacing: 0.015em;
+  word-break: break-word;
+}
+
+.dark .typeset-chat {
+  --typeset-chat-text: rgb(161 161 170);
+  --typeset-chat-strong: rgb(212 212 216);
+  --typeset-chat-heading: rgb(34 211 238);
+}
+
+@media (min-width: 640px) and (max-width: 47.999rem) {
+  .typeset-chat {
+    --typeset-size: 14.2222px;
+  }
+}
+
+@media (min-width: 48rem) {
+  .typeset-chat {
+    --typeset-size: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .typeset-chat {
+    --typeset-size: 16.5px;
+  }
+}
+
+.typeset-chat :where(strong, b) {
+  color: var(--typeset-chat-strong);
+  font-weight: 600;
+}
+
+.typeset.typeset-chat :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--typeset-chat-heading);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-wrap: pretty;
+}
+
+.typeset.typeset-chat :where(h1, h2, h3, h4, h5, h6) :where(strong, b) {
+  color: inherit;
+  font-weight: 400;
+}
+
+.typeset-chat ol > li strong:first-of-type {
+  color: var(--typeset-chat-heading);
+}
+
+.typeset-chat h1 {
+  font-size: 1.5em;
+  line-height: 1.3;
+}
+
+.typeset-chat h2 {
+  line-height: 1.35;
+}
+
+.typeset-chat :where(h3, h4) {
+  line-height: 1.4;
+}
+
+.typeset-chat :where(h1, h2, h3, h4) + * {
+  margin-block-start: 0.75em;
+}
+
 .prose {
   @apply text-zinc-800 dark:text-zinc-400;
   font-weight: 400;
@@ -231,7 +312,8 @@
 
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
   @apply mt-6 mb-4;
-  font-family: 'Inria Serif', serif !important;
+  font-family: 'Switzer', sans-serif !important;
+  letter-spacing: 0;
 }
 
 .prose h1 {
@@ -251,10 +333,10 @@
 }
 
 /* Streaming cursor animation */
-.streaming-message .prose > p:last-child::after,
-.streaming-message .prose > li:last-child::after,
-.streaming-message .prose > ul:last-child > li:last-child::after,
-.streaming-message .prose > ol:last-child > li:last-child::after {
+.streaming-message .typeset > p:last-child::after,
+.streaming-message .typeset > li:last-child::after,
+.streaming-message .typeset > ul:last-child > li:last-child::after,
+.streaming-message .typeset > ol:last-child > li:last-child::after {
   content: ' │';
   display: inline-block;
   vertical-align: baseline;

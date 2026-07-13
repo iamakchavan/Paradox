@@ -10,7 +10,10 @@ import type { MessageProps } from './message/types';
 function isThinkingModel(modelMode?: string) {
   if (!modelMode) return false;
   const model = modelMode.toLowerCase();
-  return model.includes('glm-')
+  return model === 'openai/gpt-5.6-sol'
+    || model === 'openai/gpt-5.6-terra'
+    || model === 'xai/grok-4.5'
+    || model.includes('glm-')
     || model.includes('medium-3.5')
     || (modelMode.startsWith('gemini') && model.includes('pro'))
     || model.includes('reasoning')

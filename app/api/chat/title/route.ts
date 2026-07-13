@@ -51,7 +51,9 @@ export async function POST(req: Request) {
         if (!perplexityKey) {
           return new Response(JSON.stringify({ title: fallbackTitle }), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
-        aiModel = getPerplexityModel(perplexityKey, modelConfig.id, 'title');
+        aiModel = getPerplexityModel(perplexityKey, modelConfig.id, 'title', {
+          reasoningEffort: modelConfig.agentApi?.reasoningEffort,
+        });
       } else if (modelConfig.provider === 'zenmux') {
         if (!zenmuxKey) {
           return new Response(JSON.stringify({ title: fallbackTitle }), { status: 200, headers: { 'Content-Type': 'application/json' } });

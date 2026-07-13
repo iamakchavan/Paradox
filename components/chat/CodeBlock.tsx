@@ -161,7 +161,7 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
 
   if (isStreaming) {
     return (
-      <div className="relative group rounded-xl sm:rounded-2xl overflow-hidden mb-6 border border-zinc-200/90 dark:border-zinc-800/90 shadow-sm bg-background">
+      <div data-not-typeset className="relative group rounded-xl sm:rounded-2xl overflow-hidden mb-6 border border-zinc-200/90 dark:border-zinc-800/90 shadow-sm bg-background">
         <div className="h-9 flex items-center justify-between px-4 bg-zinc-100/90 dark:bg-zinc-900/90 border-b border-zinc-200/65 dark:border-zinc-800/65 select-none">
           <div className="text-[11px] text-muted-foreground/80 font-mono lowercase font-medium">
             {language}
@@ -175,7 +175,7 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
   }
 
   return (
-    <div className="relative group rounded-xl sm:rounded-2xl overflow-hidden mb-6 border border-zinc-200/90 dark:border-zinc-800/90 shadow-sm bg-background">
+    <div data-not-typeset className="relative group rounded-xl sm:rounded-2xl overflow-hidden mb-6 border border-zinc-200/90 dark:border-zinc-800/90 shadow-sm bg-background">
       <div className="h-9 flex items-center justify-between px-4 bg-zinc-100/90 dark:bg-zinc-900/90 border-b border-zinc-200/65 dark:border-zinc-800/65 select-none">
         <div className="text-[11px] text-muted-foreground/80 font-mono lowercase font-medium">
           {language}
