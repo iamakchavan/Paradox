@@ -50,7 +50,7 @@ const SingleCitationPill = memo(({ item, searchMap }: { item: CitationItem; sear
       href={item.href}
       target="_blank"
       rel="noopener noreferrer"
-      className="not-typeset inline-flex items-center px-2 py-px mx-0.5 text-[10px] font-medium rounded-full bg-zinc-200/70 hover:bg-zinc-200/90 dark:bg-white/[0.105] dark:hover:bg-white/[0.15] border border-zinc-950/[0.04] dark:border-white/[0.06] text-foreground/70 dark:text-zinc-200/80 transition-[background-color,color,border-color,transform] duration-200 hover:scale-[1.02] select-none cursor-pointer no-underline align-[0.08em] leading-[1.35]"
+      className="not-typeset inline-flex items-center px-2 py-px mx-0.5 text-[10px] font-medium rounded-full bg-zinc-200/70 hover:bg-zinc-200/90 dark:bg-white/[0.105] dark:hover:bg-white/[0.15] border border-zinc-950/[0.04] dark:border-white/[0.06] text-foreground/70 dark:text-zinc-200/80 transition-[background-color,color,border-color,transform] duration-200 hover:scale-[1.02] motion-reduce:transform-none select-none cursor-pointer no-underline align-[0.08em] leading-[1.35]"
       style={{ color: 'unset', textDecoration: 'none' }}
     >
       <span className="truncate max-w-[104px] font-medium">{displayLabel}</span>
@@ -118,7 +118,7 @@ const GroupedCitationPill = memo(({ items, searchMap }: { items: CitationItem[];
           setIsDrawerOpen(true);
         }
       }}
-      className="not-typeset inline-flex items-center gap-1 px-2 py-px mx-0.5 text-[10px] font-medium rounded-full bg-zinc-200/70 hover:bg-zinc-200/90 dark:bg-white/[0.105] dark:hover:bg-white/[0.15] border border-zinc-950/[0.04] dark:border-white/[0.06] text-foreground/70 hover:text-foreground dark:text-zinc-200/80 dark:hover:text-zinc-100 transition-[background-color,color,border-color,transform] duration-200 hover:scale-[1.02] select-none cursor-pointer align-[0.08em] leading-[1.35]"
+      className="not-typeset inline-flex items-center gap-1 px-2 py-px mx-0.5 text-[10px] font-medium rounded-full bg-zinc-200/70 hover:bg-zinc-200/90 dark:bg-white/[0.105] dark:hover:bg-white/[0.15] border border-zinc-950/[0.04] dark:border-white/[0.06] text-foreground/70 hover:text-foreground dark:text-zinc-200/80 dark:hover:text-zinc-100 transition-[background-color,color,border-color,transform] duration-200 hover:scale-[1.02] motion-reduce:transform-none select-none cursor-pointer align-[0.08em] leading-[1.35]"
     >
       <span className="truncate max-w-[92px] font-medium">{firstSiteName}</span>
       <span className="text-foreground/50 font-medium leading-none">+{items.length - 1}</span>
@@ -192,7 +192,7 @@ const GroupedCitationPill = memo(({ items, searchMap }: { items: CitationItem[];
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-col gap-1.5 py-4 no-underline active:opacity-70 transition-all select-none"
+                className="flex flex-col gap-1.5 py-4 no-underline active:opacity-70 transition-opacity duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] select-none"
                 onClick={() => setIsDrawerOpen(false)}
               >
                 <div className="flex items-center justify-between w-full min-w-0">

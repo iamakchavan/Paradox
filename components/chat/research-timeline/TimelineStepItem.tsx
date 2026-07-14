@@ -29,7 +29,7 @@ export const TimelineStepItem = memo(({
     <>
       <TimelineStatusIndicator isStepLoading={isStepLoading} isCompleted={isCompleted} />
       <span className={cn(
-        'text-xs transition-all duration-200 flex-1 truncate pr-2 font-medium leading-relaxed',
+        'text-xs transition-colors duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] flex-1 truncate pr-2 font-medium leading-relaxed',
         isStepLoading ? 'thinking-shine font-semibold text-foreground' : 'text-foreground/80 group-hover:text-primary'
       )}>
         {text}
@@ -76,7 +76,7 @@ export const TimelineStepItem = memo(({
         <button
           type="button"
           onClick={() => toggleStep(idx)}
-          className="w-full flex items-center gap-3 text-left py-1.5 hover:bg-secondary/40 dark:hover:bg-zinc-800/10 rounded-lg px-2 -mx-2 transition-all duration-200 cursor-pointer focus:outline-hidden group"
+          className="w-full flex items-center gap-3 text-left py-1.5 hover:bg-secondary/40 dark:hover:bg-zinc-800/10 rounded-lg px-2 -mx-2 transition-colors duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] cursor-pointer focus:outline-hidden group"
         >
           {content}
         </button>

@@ -9,6 +9,7 @@ import { MobileSettingsContent } from './modal/MobileSettingsContent';
 import { desktopSettingsSpring, mobileSettingsSpring } from './modal/settings-modal-config';
 import type { SettingsModalProps } from './modal/types';
 import { useSettingsModalController } from './modal/use-settings-modal-controller';
+import { motionTransitions } from '@/lib/motion';
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const isMobile = useIsMobile();
@@ -29,7 +30,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  transition={motionTransitions.overlay}
                   className={cn(
                     'fixed inset-0 z-50 bg-black/50',
                     !isMobile && 'dark:bg-black/70 backdrop-blur-[6px]'

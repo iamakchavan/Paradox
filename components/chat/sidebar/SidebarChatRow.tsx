@@ -29,7 +29,7 @@ export function SidebarChatRow({
     <div
       onClick={onSelect}
       className={cn(
-        "group relative w-full h-[34px] px-3 rounded-lg flex items-center justify-between text-[13px] transition-all duration-150 cursor-pointer border select-none",
+        "group relative w-full h-[34px] px-3 rounded-lg flex items-center justify-between text-[13px] transition-[background-color,color,border-color,box-shadow] duration-[var(--motion-duration-fast)] cursor-pointer border select-none",
         isActive
           ? "bg-white dark:bg-zinc-900 border-zinc-200/50 dark:border-zinc-800/60 shadow-sm text-foreground font-medium"
           : "border-transparent text-foreground/65 hover:text-foreground hover:bg-foreground/[0.03]"
@@ -44,7 +44,7 @@ export function SidebarChatRow({
               onClick={(event) => event.stopPropagation()}
               onPointerDown={(event) => event.stopPropagation()}
               className={cn(
-                "opacity-100 md:opacity-0 md:group-hover:opacity-100 data-[state=open]:opacity-100 transition-all duration-150",
+                "opacity-100 md:opacity-0 md:group-hover:opacity-100 data-[state=open]:opacity-100 transition-[opacity,background-color,color] duration-[var(--motion-duration-fast)]",
                 "h-6 w-6 flex items-center justify-center rounded-md text-foreground/40 hover:text-foreground/80 hover:bg-foreground/[0.05]"
               )}
               title="More options"

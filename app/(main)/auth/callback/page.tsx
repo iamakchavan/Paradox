@@ -294,7 +294,7 @@ function AuthCallbackContent() {
         <h2 className="text-sm font-semibold tracking-wide text-foreground mb-1.5 uppercase">
           {errorOccurred ? 'Connection Error' : 'Authenticating'}
         </h2>
-        <p className="text-xs text-muted-foreground leading-relaxed transition-all">
+        <p className="text-xs text-muted-foreground leading-relaxed transition-colors duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)]">
           {status}
         </p>
       </div>

@@ -102,6 +102,11 @@ export default function MainLayout({
 
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
+
+        // A held shortcut emits repeated keydown events. Treat one physical
+        // press as one toggle so the dialog is not rapidly mounted/unmounted.
+        if (e.repeat || e.isComposing) return;
+
         setIsCommandPaletteOpen((prev) => !prev);
       }
     };
@@ -224,14 +229,14 @@ export default function MainLayout({
           }}
           className={cn(
             "fixed top-0 bottom-0 left-0 z-50 h-dvh hidden md:flex",
-            mounted && "transition-[transform,box-shadow] duration-300 ease-in-out",
+            mounted && "transition-[transform,box-shadow] motion-layout-transition motion-reduce:transition-none",
             isSidebarCollapsed ? "-translate-x-full shadow-none" : "translate-x-0 shadow-2xl shadow-black/5 dark:shadow-black/20"
           )}
         />
         <div
           className={cn(
             "min-w-0 flex-1 flex flex-col h-full relative overflow-hidden",
-            mounted && "transition-[padding-left] duration-300 ease-in-out",
+            mounted && "transition-[padding-left] motion-layout-transition motion-reduce:transition-none",
             isSidebarCollapsed ? "md:pl-0" : "md:pl-[270px]"
           )}
           style={{

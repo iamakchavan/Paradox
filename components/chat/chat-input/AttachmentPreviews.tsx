@@ -2,6 +2,7 @@
 
 import { FileText, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { motionTransitions } from '@/lib/motion';
 
 export function AttachmentPreviews({
   images,
@@ -22,17 +23,17 @@ export function AttachmentPreviews({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            transition={motionTransitions.content}
             style={{ overflow: 'hidden' }}
             className="flex gap-2.5 px-5 pt-4 pb-1.5 overflow-x-auto scrollbar-none border-b border-border/30 rounded-t-[28px] bg-secondary/5"
           >
             {images.map((image, index) => (
               <motion.div
                 key={`${image.substring(0, 80)}_${index}`}
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={motionTransitions.item}
                 className="relative shrink-0 group/image"
               >
                 <img
@@ -42,7 +43,7 @@ export function AttachmentPreviews({
                 />
                 <button
                   onClick={() => removeImage(index)}
-                  className="absolute -top-1.5 -right-1.5 bg-background/95 rounded-full p-1 shadow-md border opacity-0 scale-75 group-hover/image:opacity-100 group-hover/image:scale-100 transition-all duration-200"
+                  className="absolute -top-1.5 -right-1.5 bg-background/95 rounded-full p-1 shadow-md border opacity-0 scale-75 group-hover/image:opacity-100 group-hover/image:scale-100 transition-[background-color,transform,opacity] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] motion-reduce:transform-none"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -57,17 +58,17 @@ export function AttachmentPreviews({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            transition={motionTransitions.content}
             style={{ overflow: 'hidden' }}
             className="flex gap-2.5 px-5 pt-4 pb-1.5 overflow-x-auto scrollbar-none border-b border-border/30 rounded-t-[28px] bg-secondary/5"
           >
             {pdfs.map((pdf, index) => (
               <motion.div
                 key={`${pdf.name}_${index}`}
-                initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.8, x: -10 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={motionTransitions.item}
                 className="relative shrink-0 group/pdf"
               >
                 <div className="flex items-center gap-3 bg-secondary/20 rounded-lg px-4 py-2.5 border border-border/50 transition-colors duration-200 group-hover/pdf:bg-secondary/30">
@@ -80,7 +81,7 @@ export function AttachmentPreviews({
                   </div>
                   <button
                     onClick={() => removePDF(index)}
-                    className="ml-2 p-1 hover:bg-secondary/50 rounded-full transition-all duration-200 opacity-0 scale-75 group-hover/pdf:opacity-100 group-hover/pdf:scale-100"
+                    className="ml-2 p-1 hover:bg-secondary/50 rounded-full transition-[background-color,transform,opacity] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] opacity-0 scale-75 group-hover/pdf:opacity-100 group-hover/pdf:scale-100 motion-reduce:transform-none"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>

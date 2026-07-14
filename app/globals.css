@@ -5,6 +5,107 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --motion-duration-press: 140ms;
+  --motion-duration-fast: 150ms;
+  --motion-duration-popover: 180ms;
+  --motion-duration-content: 200ms;
+  --motion-duration-panel: 300ms;
+  --motion-duration-layout: 400ms;
+  --motion-duration-drawer: 420ms;
+  --motion-duration-drawer-exit: 320ms;
+  --motion-duration-side-sheet: 500ms;
+  --motion-duration-side-sheet-exit: 340ms;
+  --motion-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --motion-ease-layout: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --motion-ease-drawer: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.motion-layout-transition {
+  transition-duration: var(--motion-duration-layout);
+  transition-timing-function: var(--motion-ease-layout);
+}
+
+.motion-sheet-transition {
+  --motion-sheet-x: 0%;
+  --motion-sheet-y: 0%;
+  will-change: transform;
+}
+
+.motion-sheet-transition[data-state="open"] {
+  animation-name: motion-sheet-enter;
+  animation-duration: var(--motion-duration-side-sheet);
+  animation-timing-function: var(--motion-ease-drawer);
+  animation-fill-mode: both;
+}
+
+.motion-sheet-transition[data-state="closed"] {
+  animation-name: motion-sheet-exit;
+  animation-duration: var(--motion-duration-side-sheet-exit);
+  animation-timing-function: var(--motion-ease-drawer);
+  animation-fill-mode: both;
+}
+
+.motion-sheet-from-top {
+  --motion-sheet-y: -100%;
+}
+
+.motion-sheet-from-bottom {
+  --motion-sheet-y: 100%;
+}
+
+.motion-sheet-from-left {
+  --motion-sheet-x: -100%;
+}
+
+.motion-sheet-from-right {
+  --motion-sheet-x: 100%;
+}
+
+.motion-sheet-overlay[data-state="open"] {
+  animation: motion-sheet-overlay-in 220ms var(--motion-ease-out) both;
+}
+
+.motion-sheet-overlay[data-state="closed"] {
+  animation: motion-sheet-overlay-out 180ms var(--motion-ease-out) both;
+}
+
+@keyframes motion-sheet-enter {
+  from {
+    transform: translate3d(var(--motion-sheet-x), var(--motion-sheet-y), 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes motion-sheet-exit {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(var(--motion-sheet-x), var(--motion-sheet-y), 0);
+  }
+}
+
+@keyframes motion-sheet-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes motion-sheet-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-sheet-transition[data-state],
+  .motion-sheet-overlay[data-state] {
+    animation: none;
+  }
+}
+
 @layer base {
   :root {
     --background: 45 35% 97%;
@@ -55,12 +156,15 @@
     @apply border-border;
   }
 
-  html {
-    @apply transition-colors duration-500;
+  html,
+  body {
+    transition-property: color, background-color;
+    transition-duration: var(--motion-duration-panel);
+    transition-timing-function: var(--motion-ease-in-out);
   }
 
   body {
-    @apply bg-background text-foreground transition-colors duration-500;
+    @apply bg-background text-foreground;
   }
 }
 
@@ -69,29 +173,6 @@
     @apply border-border;
   }
   
-  /* Smooth global theme transitions for primary elements */
-  body, 
-  div, 
-  header, 
-  footer, 
-  nav, 
-  a, 
-  button, 
-  input, 
-  textarea, 
-  span, 
-  p, 
-  h1, 
-  h2, 
-  h3, 
-  h4, 
-  h5, 
-  h6 {
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, box-shadow;
-    transition-duration: 300ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
   body {
     @apply bg-background text-foreground;
   }
@@ -545,7 +626,9 @@
 .copy-button .copy-icon,
 .copy-button .copy-text,
 .copy-button .check-text {
-  transition: all 0.2s ease;
+  transition-property: opacity, transform;
+  transition-duration: var(--motion-duration-content);
+  transition-timing-function: var(--motion-ease-out);
 }
 
 .check-text {
@@ -844,7 +927,10 @@
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.42));
   border: 1px solid rgba(24, 24, 27, 0.08);
-  @apply backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300;
+  @apply backdrop-blur-2xl backdrop-saturate-150;
+  transition-property: transform, opacity, color, border-color, box-shadow;
+  transition-duration: var(--motion-duration-content);
+  transition-timing-function: var(--motion-ease-out);
   box-shadow: 
     0 14px 36px rgba(24, 24, 27, 0.08),
     0 2px 8px rgba(24, 24, 27, 0.04),
@@ -869,7 +955,10 @@
     background:
       linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.42));
     border: 1px solid rgba(24, 24, 27, 0.08);
-    @apply backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300;
+    @apply backdrop-blur-2xl backdrop-saturate-150;
+    transition-property: transform, opacity, color, border-color, box-shadow;
+    transition-duration: var(--motion-duration-content);
+    transition-timing-function: var(--motion-ease-out);
     box-shadow: 
       0 14px 36px rgba(24, 24, 27, 0.08),
       0 2px 8px rgba(24, 24, 27, 0.04),

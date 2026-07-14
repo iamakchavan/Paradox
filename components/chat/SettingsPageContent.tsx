@@ -204,7 +204,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose, defaultTab }:
                   className="overflow-hidden"
                 >
                   <div className="px-4 pb-4 sm:px-5 sm:pb-5 space-y-2.5">
-                    <div className="relative flex items-center bg-zinc-200/20 dark:bg-zinc-900/35 rounded-xl border border-zinc-200/30 dark:border-zinc-800/40 px-3.5 focus-within:border-zinc-300 dark:focus-within:border-zinc-700 focus-within:ring-2 focus-within:ring-zinc-400/5 transition-all duration-200">
+                    <div className="relative flex items-center bg-zinc-200/20 dark:bg-zinc-900/35 rounded-xl border border-zinc-200/30 dark:border-zinc-800/40 px-3.5 focus-within:border-zinc-300 dark:focus-within:border-zinc-700 focus-within:ring-2 focus-within:ring-zinc-400/5 transition-[border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)]">
                       <Input
                         id={field.key}
                         type={visibleFields[field.key] ? 'text' : 'password'}
@@ -274,7 +274,7 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose, defaultTab }:
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={cn(
-                  "px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all select-none cursor-pointer",
+                  "px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-[background-color,color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] select-none cursor-pointer",
                   isActive
                     ? "bg-white dark:bg-zinc-800 text-foreground shadow-xs font-semibold"
                     : "text-muted-foreground hover:text-foreground"
@@ -356,13 +356,13 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose, defaultTab }:
             <Button
               variant="outline"
               onClick={onClose}
-              className="h-9 px-4 rounded-lg text-xs font-medium hover:bg-zinc-100 dark:hover:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800/80 transition-all active:scale-[0.97]"
+              className="h-9 px-4 rounded-lg text-xs font-medium hover:bg-zinc-100 dark:hover:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800/80 transition-[background-color,border-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.97] motion-reduce:transform-none"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
-              className="h-9 px-5 rounded-lg text-xs font-medium bg-cyan-600 hover:bg-cyan-700 text-white dark:bg-cyan-800/90 dark:hover:bg-cyan-700/90 shadow-sm transition-all active:scale-[0.97]"
+              className="h-9 px-5 rounded-lg text-xs font-medium bg-cyan-600 hover:bg-cyan-700 text-white dark:bg-cyan-800/90 dark:hover:bg-cyan-700/90 shadow-sm transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.97] motion-reduce:transform-none"
             >
               Save Changes
             </Button>

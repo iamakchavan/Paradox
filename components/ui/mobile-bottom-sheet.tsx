@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+import { motionTransitions } from "@/lib/motion";
 
 interface MobileBottomSheetProps {
   open: boolean;
@@ -33,7 +34,7 @@ export function MobileBottomSheet({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                transition={motionTransitions.overlay}
                 className="fixed inset-0 z-50 bg-black/45"
               />
             </DialogPrimitive.Overlay>
@@ -51,7 +52,7 @@ export function MobileBottomSheet({
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
-                transition={{ type: "tween", ease: [0.16, 1, 0.3, 1], duration: 0.3 }}
+                transition={motionTransitions.drawer}
                 className={cn(
                   "fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-w-[520px] flex-col overflow-hidden rounded-t-[24px] border border-b-0 border-border/60 bg-background shadow-[0_-18px_70px_rgba(0,0,0,0.24)] outline-none dark:border-white/[0.08] dark:shadow-[0_-18px_70px_rgba(0,0,0,0.55)]",
                   className

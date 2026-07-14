@@ -44,7 +44,7 @@ export function useModelSelectorController({
     closeTimeoutRef.current = setTimeout(() => {
       setShouldRender(false);
       closeTimeoutRef.current = null;
-    }, 200);
+    }, 150);
   };
 
   const toggleDropdown = () => {

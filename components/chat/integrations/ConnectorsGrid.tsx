@@ -46,7 +46,7 @@ export function ConnectorsGrid({
                   <div
                     key={template.id}
                     onClick={() => onOpenTemplate(template)}
-                    className="group flex items-center gap-3.5 px-4 py-3.5 bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60 border border-transparent hover:border-zinc-200/80 dark:hover:border-zinc-800/80 rounded-xl transition-all duration-150 cursor-pointer"
+                    className="group flex items-center gap-3.5 px-4 py-3.5 bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60 border border-transparent hover:border-zinc-200/80 dark:hover:border-zinc-800/80 rounded-xl transition-[background-color,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] cursor-pointer"
                   >
                     <div className="w-9 h-9 flex items-center justify-center shrink-0">
                       <TemplateIcon className="w-7 h-7" />
@@ -77,7 +77,7 @@ export function ConnectorsGrid({
               <div
                 key={connection.id}
                 onClick={() => onOpenTemplate(customTemplate(connection))}
-                className="group flex items-center gap-3.5 px-4 py-3.5 bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60 border border-transparent hover:border-zinc-200/80 dark:hover:border-zinc-800/80 rounded-xl transition-all duration-150 cursor-pointer"
+                className="group flex items-center gap-3.5 px-4 py-3.5 bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60 border border-transparent hover:border-zinc-200/80 dark:hover:border-zinc-800/80 rounded-xl transition-[background-color,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] cursor-pointer"
               >
                 <div className="w-9 h-9 flex items-center justify-center shrink-0">
                   <Puzzle className="w-5 h-5 text-zinc-400 dark:text-zinc-500" />

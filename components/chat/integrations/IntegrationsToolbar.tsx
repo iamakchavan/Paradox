@@ -49,7 +49,7 @@ export function IntegrationsToolbar({
         </div>
         <Button
           onClick={onNewConnector}
-          className="h-9 px-5 rounded-full text-xs font-medium bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer active:scale-[0.97] transition-all shrink-0 shadow-none border-0"
+          className="h-9 px-5 rounded-full text-xs font-medium bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-white dark:text-black dark:hover:bg-zinc-200 cursor-pointer active:scale-[0.97] transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] motion-reduce:transform-none shrink-0 shadow-none border-0"
         >
           New Connector
         </Button>

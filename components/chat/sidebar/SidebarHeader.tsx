@@ -13,7 +13,7 @@ export function SidebarHeader({ onCollapse }: { onCollapse?: () => void }) {
       {onCollapse && (
         <button
           onClick={onCollapse}
-          className="flex h-7 w-7 items-center justify-center rounded-lg text-foreground/40 hover:text-foreground/80 hover:bg-foreground/[0.05] active:scale-[0.93] active:duration-75 transition-all duration-200 cursor-pointer"
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-foreground/40 hover:text-foreground/80 hover:bg-foreground/[0.05] active:scale-[0.93] transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] active:duration-75 ease-[var(--motion-ease-out)] cursor-pointer motion-reduce:transform-none"
           title="Collapse sidebar"
         >
           <ChevronsLeft className="w-[18px] h-[18px]" strokeWidth={2} />

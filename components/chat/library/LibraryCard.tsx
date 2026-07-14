@@ -34,7 +34,7 @@ export function LibraryCard({
     <motion.div
       ref={cardRef}
       layoutId={`file-card-${file.id}`}
-      className="group relative flex flex-col rounded-xl overflow-hidden border border-foreground/[0.06] bg-foreground/[0.015] dark:bg-foreground/[0.005] hover:bg-foreground/[0.03] dark:hover:bg-foreground/[0.01] hover:border-foreground/[0.12] transition-all duration-200"
+      className="group relative flex flex-col rounded-xl overflow-hidden border border-foreground/[0.06] bg-foreground/[0.015] dark:bg-foreground/[0.005] hover:bg-foreground/[0.03] dark:hover:bg-foreground/[0.01] hover:border-foreground/[0.12] transition-[background-color,border-color] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)]"
     >
       <div
         className="aspect-square relative w-full bg-foreground/[0.02] border-b border-foreground/[0.04] flex items-center justify-center cursor-zoom-in overflow-hidden"
@@ -45,7 +45,7 @@ export function LibraryCard({
             <img
               src={imgSrc}
               alt={file.name}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-[var(--motion-duration-panel)] ease-[var(--motion-ease-out)] group-hover:scale-105 motion-reduce:transform-none"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-foreground/[0.02]">
@@ -66,7 +66,7 @@ export function LibraryCard({
               if (dataUrl) onDownload(dataUrl, file.name);
             }}
             disabled={!dataUrl && file.type === 'image'}
-            className="h-8 w-8 rounded-full bg-background hover:bg-foreground/[0.04] text-foreground/75 hover:text-foreground flex items-center justify-center transition-all duration-150 border border-foreground/[0.08] shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-8 w-8 rounded-full bg-background hover:bg-foreground/[0.04] text-foreground/75 hover:text-foreground flex items-center justify-center transition-[background-color,color,opacity,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.97] motion-reduce:transform-none border border-foreground/[0.08] shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             title="Download"
           >
             <Download className="w-3.5 h-3.5" />
@@ -76,7 +76,7 @@ export function LibraryCard({
               event.stopPropagation();
               onJumpToChat(file.chatId);
             }}
-            className="h-8 w-8 rounded-full bg-background hover:bg-foreground/[0.04] text-foreground/75 hover:text-foreground flex items-center justify-center transition-all duration-150 border border-foreground/[0.08] shadow-sm cursor-pointer"
+            className="h-8 w-8 rounded-full bg-background hover:bg-foreground/[0.04] text-foreground/75 hover:text-foreground flex items-center justify-center transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.97] motion-reduce:transform-none border border-foreground/[0.08] shadow-sm cursor-pointer"
             title="Jump to Chat"
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -86,7 +86,7 @@ export function LibraryCard({
               event.stopPropagation();
               onDelete(file.id!, file.name);
             }}
-            className="h-8 w-8 rounded-full bg-background hover:bg-red-50/50 hover:text-red-600 text-foreground/45 flex items-center justify-center transition-all duration-150 border border-foreground/[0.08] shadow-sm cursor-pointer"
+            className="h-8 w-8 rounded-full bg-background hover:bg-red-50/50 hover:text-red-600 text-foreground/45 flex items-center justify-center transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.97] motion-reduce:transform-none border border-foreground/[0.08] shadow-sm cursor-pointer"
             title="Delete from Library"
           >
             <Trash2 className="w-3.5 h-3.5" />

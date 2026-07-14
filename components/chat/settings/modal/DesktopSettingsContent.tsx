@@ -25,7 +25,7 @@ export function DesktopSettingsContent({ controller }: { controller: SettingsMod
                 key={tab.id}
                 onClick={() => controller.setActiveTab(tab.id)}
                 className={cn(
-                  'w-full h-[36px] px-3 rounded-xl flex items-center gap-2.5 text-[13px] font-medium transition-all duration-150 cursor-pointer text-left',
+                  'w-full h-[36px] px-3 rounded-xl flex items-center gap-2.5 text-[13px] font-medium transition-[background-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] cursor-pointer text-left',
                   isActive
                     ? 'bg-foreground/[0.075] text-foreground'
                     : 'text-foreground/55 hover:text-foreground hover:bg-foreground/[0.04]'
@@ -45,7 +45,7 @@ export function DesktopSettingsContent({ controller }: { controller: SettingsMod
               {SETTINGS_TABS.find(tab => tab.id === controller.activeTab)?.label}
             </h2>
             <DialogPrimitive.Close asChild>
-              <button className="pointer-events-auto relative z-10 w-7 h-7 flex items-center justify-center rounded-lg text-foreground/40 hover:text-foreground hover:bg-foreground/[0.05] transition-all cursor-pointer active:scale-[0.93]">
+              <button className="pointer-events-auto relative z-10 w-7 h-7 flex items-center justify-center rounded-lg text-foreground/40 hover:text-foreground hover:bg-foreground/[0.05] transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] cursor-pointer active:scale-[0.93] motion-reduce:transform-none">
                 <X className="w-4 h-4" />
               </button>
             </DialogPrimitive.Close>
@@ -73,13 +73,13 @@ export function DesktopSettingsContent({ controller }: { controller: SettingsMod
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 flex items-end justify-end gap-2 px-6 pb-4">
             <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-xl [mask-image:linear-gradient(to_top,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] dark:from-zinc-950 dark:via-zinc-950/95" />
             <DialogPrimitive.Close asChild>
-              <button className="pointer-events-auto relative z-10 h-8 px-4 rounded-lg text-[12px] font-medium text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05] transition-all cursor-pointer active:scale-[0.97]">
+              <button className="pointer-events-auto relative z-10 h-8 px-4 rounded-lg text-[12px] font-medium text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05] transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] cursor-pointer active:scale-[0.97] motion-reduce:transform-none">
                 Cancel
               </button>
             </DialogPrimitive.Close>
             <button
               onClick={controller.save}
-              className="pointer-events-auto relative z-10 h-8 px-5 rounded-lg text-[12px] font-semibold bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer active:scale-[0.97] shadow-sm"
+              className="pointer-events-auto relative z-10 h-8 px-5 rounded-lg text-[12px] font-semibold bg-foreground text-background hover:bg-foreground/90 transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] cursor-pointer active:scale-[0.97] motion-reduce:transform-none shadow-sm"
             >
               Save Changes
             </button>

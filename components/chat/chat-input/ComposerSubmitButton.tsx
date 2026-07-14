@@ -27,7 +27,7 @@ export function ComposerSubmitButton({
           onClick={onStop}
           onMouseDown={event => event.preventDefault()}
           size="icon"
-          className="h-9 w-9 rounded-full bg-foreground text-background hover:bg-foreground/95 hover:scale-105 active:scale-[0.93] active:duration-75 shrink-0 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out"
+          className="h-9 w-9 rounded-full bg-foreground text-background hover:bg-foreground/95 hover:scale-105 active:scale-[0.93] active:duration-75 shrink-0 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transform-none"
           title="Stop streaming"
         >
           <Square className="w-3.5 h-3.5 fill-current" />
@@ -39,7 +39,7 @@ export function ComposerSubmitButton({
           onMouseDown={event => event.preventDefault()}
           size="icon"
           className={cn(
-            'h-9 w-9 rounded-full shrink-0 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out',
+            'h-9 w-9 rounded-full shrink-0 flex items-center justify-center transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transform-none',
             isSendDisabled
               ? 'bg-zinc-200/50 dark:bg-zinc-800/40 text-muted-foreground/35 cursor-not-allowed'
               : 'bg-cyan-600 text-white hover:bg-cyan-700 dark:bg-cyan-500 dark:hover:bg-cyan-600 hover:scale-105 active:scale-[0.93] active:duration-75 shadow-sm shadow-cyan-500/10',

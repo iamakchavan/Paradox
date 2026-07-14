@@ -59,7 +59,7 @@ export function TimelineStepDetails({ step }: { step: ResearchStep }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   title={result.title || domain}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium rounded-full bg-secondary/80 dark:bg-secondary/40 hover:bg-secondary border border-border/50 hover:scale-[1.03] hover:-translate-y-0.5 transition-all duration-200 select-none shadow-xs cursor-pointer no-underline align-middle text-foreground/75 hover:text-foreground"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium rounded-full bg-secondary/80 dark:bg-secondary/40 hover:bg-secondary border border-border/50 hover:scale-[1.03] hover:-translate-y-0.5 transition-[background-color,color,transform] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] motion-reduce:transform-none select-none shadow-xs cursor-pointer no-underline align-middle text-foreground/75 hover:text-foreground"
                 >
                   <FaviconImage domain={domain} className="w-3.5 h-3.5 rounded-sm shrink-0" />
                   <span className="truncate max-w-[120px]">{domain}</span>
@@ -86,7 +86,7 @@ function BrowseTarget({ step }: { step: ResearchStep }) {
           href={targetUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium rounded-full bg-secondary/80 dark:bg-secondary/40 hover:bg-secondary border border-border/50 hover:scale-[1.03] hover:-translate-y-0.5 transition-all duration-200 select-none shadow-xs cursor-pointer no-underline align-middle text-foreground/75 hover:text-foreground"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11px] font-medium rounded-full bg-secondary/80 dark:bg-secondary/40 hover:bg-secondary border border-border/50 hover:scale-[1.03] hover:-translate-y-0.5 transition-[background-color,color,transform] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] motion-reduce:transform-none select-none shadow-xs cursor-pointer no-underline align-middle text-foreground/75 hover:text-foreground"
         >
           <FaviconImage domain={hostname} className="w-3.5 h-3.5 rounded-sm shrink-0" />
           <span className="truncate max-w-[120px] font-mono">{hostname}</span>

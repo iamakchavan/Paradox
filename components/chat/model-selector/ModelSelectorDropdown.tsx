@@ -31,8 +31,8 @@ export function ModelSelectorDropdown({
       className={cn(
         'fixed bg-background border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-[0_12px_38px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_38px_rgba(0,0,0,0.3)] p-0 z-50 flex flex-col overflow-hidden text-foreground backdrop-blur-md select-none max-h-[500px] model-dropdown-portal',
         controller.isOpen
-          ? 'animate-in fade-in-0 zoom-in-95 duration-300 ease-out'
-          : 'animate-out fade-out-0 zoom-out-95 duration-200 ease-in',
+          ? 'animate-in fade-in-0 zoom-in-95 duration-[var(--motion-duration-popover)] ease-[var(--motion-ease-out)]'
+          : 'animate-out fade-out-0 zoom-out-95 duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]',
         controller.isMobile
           ? 'w-[calc(100vw-32px)] h-[390px] left-4 right-4'
           : 'h-[450px]',

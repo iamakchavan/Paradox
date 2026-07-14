@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Trash2, AlertTriangle, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { MOTION_EASE_DRAWER, MOTION_EASE_OUT, motionTransitions } from '@/lib/motion';
 
 interface DeleteFileConfirmModalProps {
   isOpen: boolean;
@@ -17,11 +18,11 @@ const isMobileDevice = typeof window !== 'undefined' && (
 );
 
 const spring = isMobileDevice
-  ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.28 }
+  ? { type: 'tween', ease: MOTION_EASE_OUT, duration: 0.28 }
   : { type: 'spring', stiffness: 500, damping: 40, mass: 0.8 };
 
 const springMed = isMobileDevice
-  ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.32 }
+  ? { type: 'tween', ease: MOTION_EASE_DRAWER, duration: 0.32 }
   : { type: 'spring', stiffness: 380, damping: 36, mass: 0.9 };
 
 export function DeleteFileConfirmModal({
@@ -44,7 +45,7 @@ export function DeleteFileConfirmModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
+                transition={motionTransitions.overlay}
                 style={{
                   position: 'fixed',
                   inset: 0,

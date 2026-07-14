@@ -37,7 +37,7 @@ export function SkillsGrid({
               <div
                 key={`${tool.integrationId}-${tool.name}`}
                 onClick={() => onSelect(tool)}
-                className="flex flex-col p-5 h-36 bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-900 rounded-2xl hover:border-zinc-300 dark:hover:border-zinc-800 hover:shadow-xs transition-all duration-200 text-left cursor-pointer select-none"
+                className="flex flex-col p-5 h-36 bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-900 rounded-2xl hover:border-zinc-300 dark:hover:border-zinc-800 hover:shadow-xs transition-[border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] text-left cursor-pointer select-none"
               >
                 <div className="flex items-start justify-between mb-2 gap-4">
                   <div className="flex flex-col min-w-0">

@@ -48,7 +48,7 @@ export function SidebarNavigation({
       <button
         onClick={onSearchClick}
         className={cn(
-          "w-full h-[36px] px-3 rounded-lg flex items-center gap-2.5 text-[13px] font-medium transition-all duration-150 cursor-pointer border",
+          "w-full h-[36px] px-3 rounded-lg flex items-center gap-2.5 text-[13px] font-medium transition-[background-color,color,border-color,box-shadow] duration-[var(--motion-duration-fast)] cursor-pointer border",
           isSearchActive
             ? "bg-white dark:bg-zinc-900 border-zinc-200/50 dark:border-zinc-800/60 shadow-sm text-foreground font-semibold"
             : "bg-foreground/[0.02] border-transparent text-foreground/60 hover:text-foreground hover:bg-foreground/[0.05]"
@@ -60,7 +60,7 @@ export function SidebarNavigation({
 
       <button
         onClick={onNewChat}
-        className="w-full h-[36px] px-3 rounded-lg flex items-center gap-2.5 text-[13px] font-medium border border-transparent text-foreground/60 hover:text-foreground hover:bg-foreground/[0.04] transition-all duration-150 cursor-pointer"
+        className="w-full h-[36px] px-3 rounded-lg flex items-center gap-2.5 text-[13px] font-medium border border-transparent text-foreground/60 hover:text-foreground hover:bg-foreground/[0.04] transition-[background-color,color] duration-[var(--motion-duration-fast)] cursor-pointer"
       >
         <NewChatIcon />
         <span>New Chat</span>
@@ -70,7 +70,7 @@ export function SidebarNavigation({
         <button
           onClick={onLibraryClick}
           className={cn(
-            "w-full h-[36px] px-3 rounded-lg flex items-center gap-2.5 text-[13px] font-medium transition-all duration-150 cursor-pointer border",
+            "w-full h-[36px] px-3 rounded-lg flex items-center gap-2.5 text-[13px] font-medium transition-[background-color,color,border-color,box-shadow] duration-[var(--motion-duration-fast)] cursor-pointer border",
             isLibraryActive
               ? "bg-white dark:bg-zinc-900 border-zinc-200/50 dark:border-zinc-800/60 shadow-sm text-foreground font-semibold"
               : "border-transparent text-foreground/65 hover:text-foreground hover:bg-foreground/[0.04]"
@@ -84,7 +84,7 @@ export function SidebarNavigation({
       <button
         onClick={onIntegrationsClick}
         className={cn(
-          "w-full h-[36px] px-3 rounded-lg flex items-center gap-2.5 text-[13px] font-medium transition-all duration-150 cursor-pointer border",
+          "w-full h-[36px] px-3 rounded-lg flex items-center gap-2.5 text-[13px] font-medium transition-[background-color,color,border-color,box-shadow] duration-[var(--motion-duration-fast)] cursor-pointer border",
           isIntegrationsActive
             ? "bg-white dark:bg-zinc-900 border-zinc-200/50 dark:border-zinc-800/60 shadow-sm text-foreground font-semibold"
             : "border-transparent text-foreground/65 hover:text-foreground hover:bg-foreground/[0.04]"

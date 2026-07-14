@@ -28,8 +28,8 @@ export function ModelSelectorTrigger({
       onClick={onToggle}
       className={cn(
         minimal
-          ? 'h-9 md:h-10 rounded-full px-3 flex items-center gap-1.5 hover:bg-zinc-200/50 dark:hover:bg-white/5 text-xs font-semibold bg-transparent transition-all duration-200 shadow-none border-0 shrink-0 select-none text-zinc-800 hover:text-zinc-950 dark:text-zinc-200 dark:hover:text-zinc-50 hover:scale-105 active:scale-95'
-          : 'h-8 sm:h-9 rounded-full px-3.5 py-2 flex items-center gap-1.5 border border-zinc-200 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-white/5 text-xs font-medium bg-background/50 backdrop-blur-xs transition-all duration-200 shadow-2xs',
+          ? 'h-9 md:h-10 rounded-full px-3 flex items-center gap-1.5 hover:bg-zinc-200/50 dark:hover:bg-white/5 text-xs font-semibold bg-transparent transition-[transform,background-color,color] duration-[var(--motion-duration-popover)] ease-[var(--motion-ease-out)] motion-reduce:transform-none shadow-none border-0 shrink-0 select-none text-zinc-800 hover:text-zinc-950 dark:text-zinc-200 dark:hover:text-zinc-50 hover:scale-105 active:scale-95'
+          : 'h-8 sm:h-9 rounded-full px-3.5 py-2 flex items-center gap-1.5 border border-zinc-200 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-white/5 text-xs font-medium bg-background/50 backdrop-blur-xs transition-[background-color,color,border-color,box-shadow] duration-[var(--motion-duration-popover)] ease-[var(--motion-ease-out)] shadow-2xs',
         isOpen && (minimal ? 'text-zinc-950 dark:text-zinc-50' : 'bg-zinc-200/55 dark:bg-white/10 text-zinc-950 dark:text-zinc-50')
       )}
       disabled={isLoading}
@@ -39,7 +39,7 @@ export function ModelSelectorTrigger({
         {activeModel.name}
       </span>
       <ChevronDown
-        className="w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ease-out"
+        className="w-3.5 h-3.5 text-zinc-400 transition-transform duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] motion-reduce:transition-none"
         style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}
       />
     </Button>

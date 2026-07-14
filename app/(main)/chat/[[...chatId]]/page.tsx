@@ -227,7 +227,7 @@ export default function ChatPage() {
       <div
         ref={scrollContainerRef}
         className={cn(
-          'flex-1 w-full transition-[padding-left] duration-300 ease-in-out h-full min-h-0',
+          'flex-1 w-full transition-[padding-left] motion-layout-transition motion-reduce:transition-none h-full min-h-0',
           isSearchActive
             ? 'flex flex-col h-[calc(100vh-80px)] overflow-hidden pt-20'
             : isInitialView

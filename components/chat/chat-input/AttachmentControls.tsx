@@ -10,22 +10,23 @@ import { PROVIDER_LOGOS } from '@/components/chat/integrations/provider-catalog'
 import { MobileAttachSheet } from '@/components/chat/MobileAttachSheet';
 import { DeepResearchIcon, isMobileOrTablet, WebSearchIcon } from './icons';
 import type { ConnectedApp } from './types';
+import { motionTransitions } from '@/lib/motion';
 
 const containerVariants = {
-  hidden: { opacity: 0, scale: 0.85, y: 10, transformOrigin: 'bottom left' },
+  hidden: { opacity: 0, scale: 0.96, y: 6, transformOrigin: 'bottom left' },
   visible: {
     opacity: 1,
     scale: 1,
     y: 0,
     transformOrigin: 'bottom left',
-    transition: { type: 'spring', stiffness: 400, damping: 28, mass: 0.8 },
+    transition: motionTransitions.item,
   },
   exit: {
     opacity: 0,
-    scale: 0.9,
-    y: 8,
+    scale: 0.96,
+    y: 6,
     transformOrigin: 'bottom left',
-    transition: { type: 'spring', stiffness: 450, damping: 32 },
+    transition: motionTransitions.item,
   },
 };
 
@@ -63,7 +64,7 @@ export function AttachmentControls(props: Props) {
         multiple
       />
       {props.isMobile ? (
-        <motion.div whileTap={{ scale: 0.88 }} className="h-9 w-9 shrink-0">
+        <motion.div whileTap={{ scale: 0.96 }} className="h-9 w-9 shrink-0">
           <Button
             variant="ghost"
             size="icon"
@@ -85,7 +86,7 @@ export function AttachmentControls(props: Props) {
         <TooltipProvider delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <motion.div whileTap={{ scale: 0.88 }} className="h-9 w-9 shrink-0">
+              <motion.div whileTap={{ scale: 0.96 }} className="h-9 w-9 shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -130,7 +131,7 @@ export function AttachmentControls(props: Props) {
               onClick={() => { props.onToggleSearch?.(!props.searchEnabled); props.setShowDropdown(false); }}
               onMouseDown={event => event.preventDefault()}
               className={cn(
-                'group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer whitespace-nowrap',
+                'group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-[background-color,color] duration-[var(--motion-duration-fast)] text-left cursor-pointer whitespace-nowrap',
                 props.searchEnabled
                   ? 'bg-blue-500/10 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/15'
                   : 'hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground',
@@ -147,7 +148,7 @@ export function AttachmentControls(props: Props) {
               onClick={() => { props.onToggleResearch?.(!props.researchEnabled); props.setShowDropdown(false); }}
               onMouseDown={event => event.preventDefault()}
               className={cn(
-                'group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer whitespace-nowrap',
+                'group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-[background-color,color] duration-[var(--motion-duration-fast)] text-left cursor-pointer whitespace-nowrap',
                 props.researchEnabled
                   ? 'bg-purple-500/10 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/15'
                   : 'hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground',
@@ -206,7 +207,7 @@ function AppsMenu(props: Props) {
         }}
         onMouseDown={event => event.preventDefault()}
         className={cn(
-          'group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 text-left cursor-pointer whitespace-nowrap',
+          'group w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-[background-color,color] duration-[var(--motion-duration-fast)] text-left cursor-pointer whitespace-nowrap',
           props.showAppsSubmenu
             ? 'bg-black/5 dark:bg-white/5 text-foreground'
             : 'text-foreground/80 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5',
@@ -231,7 +232,7 @@ function AppsMenu(props: Props) {
             initial={{ opacity: 0, x: 6, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 6, scale: 0.95 }}
-            transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            transition={motionTransitions.popover}
             className="absolute left-[calc(100%+8px)] bottom-0 w-[200px] bg-popover border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl shadow-[0_12px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_30px_rgba(0,0,0,0.4)] p-1.5 z-50 flex flex-col gap-0.5"
           >
             {props.activeApps.length === 0 ? (
@@ -251,7 +252,7 @@ function AppsMenu(props: Props) {
                       type="button"
                       onClick={event => { event.stopPropagation(); props.onToggleMcpId(app.id); }}
                       className={cn(
-                        'group w-full flex items-center justify-between gap-3 px-2.5 py-2 rounded-xl text-xs font-medium transition-all duration-150 text-left cursor-pointer whitespace-nowrap',
+                        'group w-full flex items-center justify-between gap-3 px-2.5 py-2 rounded-xl text-xs font-medium transition-[background-color,color] duration-[var(--motion-duration-fast)] text-left cursor-pointer whitespace-nowrap',
                         selected
                           ? 'bg-black/[0.03] dark:bg-white/[0.045] text-foreground'
                           : 'hover:bg-black/[0.035] dark:hover:bg-white/[0.045] text-foreground/75 hover:text-foreground',
@@ -279,7 +280,7 @@ function AppsMenu(props: Props) {
                 props.setShowDropdown(false);
                 props.setShowAppsSubmenu(false);
               }}
-              className="group w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/5 transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
+              className="group w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/5 transition-[background-color,color] duration-[var(--motion-duration-fast)] text-left cursor-pointer whitespace-nowrap"
             >
               <Plus className="w-3.5 h-3.5 shrink-0" />
               <span>Manage connectors</span>
@@ -297,7 +298,7 @@ function MenuButton({ onClick, icon, children }: { onClick: () => void; icon: Re
       type="button"
       onClick={onClick}
       onMouseDown={event => event.preventDefault()}
-      className="group w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground transition-all duration-150 text-left cursor-pointer whitespace-nowrap"
+      className="group w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground transition-[background-color,color] duration-[var(--motion-duration-fast)] text-left cursor-pointer whitespace-nowrap"
     >
       {icon}
       <span className="transition-colors duration-150">{children}</span>

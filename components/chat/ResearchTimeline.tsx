@@ -4,6 +4,7 @@ import { memo } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { MOTION_EASE_IN_OUT, motionTransitions } from '@/lib/motion';
 import { DeepResearchIcon } from './research-timeline/DeepResearchIcon';
 import { ResearchSources } from './research-timeline/ResearchSources';
 import { formatResearchDuration } from './research-timeline/research-timeline-utils';
@@ -29,7 +30,7 @@ export const ResearchTimeline = memo(function ResearchTimeline({
         <div className="flex items-center gap-2">
           <DeepResearchIcon className="w-[18px] h-[18px] text-zinc-650 dark:text-zinc-350 shrink-0" />
           <span className={cn(
-            'text-sm font-semibold transition-all duration-300',
+            'text-sm font-semibold transition-colors duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)]',
             controller.isResearchRunning ? 'deep-research-shimmer font-bold' : 'text-foreground/90'
           )}>
             Deep Research
@@ -55,7 +56,7 @@ export const ResearchTimeline = memo(function ResearchTimeline({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            transition={{ duration: 0.25, ease: MOTION_EASE_IN_OUT }}
             className="overflow-hidden"
           >
             <div className="pt-3.5 space-y-4">
@@ -79,7 +80,7 @@ export const ResearchTimeline = memo(function ResearchTimeline({
                       initial={{ opacity: 0, y: 12, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.98 }}
-                      transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                      transition={motionTransitions.item}
                     >
                       <TimelineStepItem
                         step={step}

@@ -186,7 +186,7 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
             className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none"
             title="Download code file"
           >
-            <div className="relative flex items-center gap-1.5 sm:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md hover:bg-secondary transition-all duration-200">
+            <div className="relative flex items-center gap-1.5 sm:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md hover:bg-secondary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]">
               <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             </div>
           </button>
@@ -198,13 +198,13 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
             className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none"
             title="Copy code to clipboard"
           >
-            <div className="relative flex items-center gap-1.5 sm:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md hover:bg-secondary transition-all duration-200">
+            <div className="relative flex items-center gap-1.5 sm:gap-2 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md hover:bg-secondary transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]">
               <div className="relative w-3 h-3 sm:w-3.5 sm:h-3.5">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
                   className={cn(
-                    "absolute inset-0 w-3 h-3 sm:w-3.5 sm:h-3.5 transition-all duration-200",
+                    "absolute inset-0 w-3 h-3 sm:w-3.5 sm:h-3.5 transition-[transform,opacity] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] motion-reduce:transform-none",
                     copied ? "opacity-0 scale-75" : "opacity-100 scale-100"
                   )}
                 >
@@ -223,7 +223,7 @@ export const CodeBlock = ({ language, codeString, index, isStreaming = false }: 
                   viewBox="0 0 24 24"
                   fill="none"
                   className={cn(
-                    "absolute inset-0 w-3 h-3 sm:w-3.5 sm:h-3.5 text-green-500 transition-all duration-200",
+                    "absolute inset-0 w-3 h-3 sm:w-3.5 sm:h-3.5 text-green-500 transition-[transform,opacity] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] motion-reduce:transform-none",
                     copied ? "opacity-100 scale-100" : "opacity-0 scale-75"
                   )}
                 >

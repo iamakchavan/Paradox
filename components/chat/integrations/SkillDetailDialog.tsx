@@ -31,7 +31,7 @@ export function SkillDetailDialog({ skill, onClose }: { skill: IntegrationToolVi
           )}
         </div>
         <div className="mt-6 flex justify-end">
-          <Button variant="outline" type="button" onClick={onClose} className="h-8 px-4 rounded-full text-xs font-medium border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer transition-all active:scale-[0.98]">Close</Button>
+          <Button variant="outline" type="button" onClick={onClose} className="h-8 px-4 rounded-full text-xs font-medium border-zinc-200 dark:border-zinc-850 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer transition-[background-color,border-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.98] motion-reduce:transform-none">Close</Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -5,6 +5,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { MobileAttachSheetContent } from './mobile-attach/MobileAttachSheetContent';
 import type { MobileAttachSheetProps } from './mobile-attach/types';
 import { useMobileAttachController } from './mobile-attach/use-mobile-attach-controller';
+import { motionTransitions } from '@/lib/motion';
 
 export function MobileAttachSheet({
   isOpen,
@@ -38,7 +39,7 @@ export function MobileAttachSheet({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
+                transition={motionTransitions.overlay}
                 className="fixed inset-0 z-50 bg-black/45"
               />
             </DialogPrimitive.Overlay>
@@ -54,7 +55,7 @@ export function MobileAttachSheet({
                 initial={{ y: '100%' }}
                 animate={{ y: 0 }}
                 exit={{ y: '100%' }}
-                transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.3 }}
+                transition={motionTransitions.drawer}
                 className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[78dvh] max-w-[520px] flex-col overflow-hidden rounded-t-[30px] border border-border/60 border-b-0 bg-background shadow-[0_-18px_70px_rgba(0,0,0,0.24)] outline-none dark:border-white/[0.08] dark:bg-[#151517] dark:shadow-[0_-18px_70px_rgba(0,0,0,0.55)]"
                 style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}
               >

@@ -36,14 +36,14 @@ export function LibraryLightbox({ image, onClose, onDownload }: LibraryLightboxP
                   event.stopPropagation();
                   onDownload(image, `Paradox_Image_${Date.now()}.png`);
                 }}
-                className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white cursor-pointer transition-all duration-150"
+                className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white cursor-pointer transition-[background-color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.97] motion-reduce:transform-none"
                 title="Download"
               >
                 <Download className="w-4 h-4" />
               </button>
               <button
                 onClick={onClose}
-                className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white cursor-pointer transition-all duration-150"
+                className="h-9 w-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white cursor-pointer transition-[background-color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.97] motion-reduce:transform-none"
                 title="Close"
               >
                 <X className="w-4 h-4" />

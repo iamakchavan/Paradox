@@ -28,7 +28,7 @@ export function MobileSettingsContent({ controller }: { controller: SettingsModa
           {controller.mobileView ? (
             <button
               onClick={controller.closeMobileView}
-              className="flex items-center gap-1.5 text-[15px] font-medium text-foreground/60 hover:text-foreground transition-colors cursor-pointer active:scale-[0.96] select-none"
+              className="flex items-center gap-1.5 text-[15px] font-medium text-foreground/60 hover:text-foreground transition-[color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] cursor-pointer active:scale-[0.96] motion-reduce:transform-none select-none"
             >
               <ChevronRight className="w-4 h-4 rotate-180" />
               <span>Settings</span>
@@ -98,7 +98,7 @@ export function MobileSettingsContent({ controller }: { controller: SettingsModa
                 >
                   <button
                     onClick={controller.save}
-                    className="pointer-events-auto w-full h-12 rounded-2xl text-[14px] font-semibold bg-foreground text-background hover:bg-foreground/90 transition-all cursor-pointer active:scale-[0.98] shadow-sm"
+                    className="pointer-events-auto w-full h-12 rounded-2xl text-[14px] font-semibold bg-foreground text-background hover:bg-foreground/90 transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] cursor-pointer active:scale-[0.98] motion-reduce:transform-none shadow-sm"
                   >
                     Save Changes
                   </button>

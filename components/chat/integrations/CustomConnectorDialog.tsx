@@ -84,8 +84,8 @@ export function CustomConnectorDialog({
             </div>
           </div>
           <div className="px-6 py-4 flex justify-end items-center gap-2 bg-zinc-50/50 dark:bg-zinc-900/10 border-t border-zinc-100 dark:border-zinc-900">
-            <Button variant="outline" type="button" onClick={onDismiss} className="h-8 px-4 rounded-full text-xs font-medium border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer transition-all active:scale-[0.98]">Cancel</Button>
-            <Button type="submit" disabled={form.detectingAuth} className="h-8 px-4 rounded-full text-xs font-medium bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+            <Button variant="outline" type="button" onClick={onDismiss} className="h-8 px-4 rounded-full text-xs font-medium border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer transition-[background-color,border-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.98] motion-reduce:transform-none">Cancel</Button>
+            <Button type="submit" disabled={form.detectingAuth} className="h-8 px-4 rounded-full text-xs font-medium bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-[background-color,color,transform,opacity] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.98] motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed">
               {form.detectingAuth ? 'Checking Server...' : 'Add Connector'}
             </Button>
           </div>

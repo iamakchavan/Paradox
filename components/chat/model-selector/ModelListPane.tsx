@@ -76,7 +76,7 @@ export function ModelListPane({
                       onMouseEnter={() => !isMobile && onHoverModel(model.id)}
                       onClick={() => onSelectModel(model.id)}
                       className={cn(
-                        'w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-all relative border border-transparent select-none outline-none focus:outline-none',
+                        'w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-[background-color,color,border-color] duration-[var(--motion-duration-fast)] relative border border-transparent select-none outline-none focus:outline-none',
                         isSelected
                           ? 'bg-zinc-100 text-zinc-950 font-medium dark:bg-zinc-900/80 dark:text-zinc-50'
                           : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/30 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200',

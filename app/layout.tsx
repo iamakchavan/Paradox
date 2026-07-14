@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { CustomToastProvider } from '@/components/ui/custom-toast';
+import { MotionPreferencesProvider } from '@/components/motion-preferences-provider';
 import { JetBrains_Mono, Space_Mono } from 'next/font/google';
 
 const spaceMono = Space_Mono({
@@ -74,11 +75,13 @@ export default function RootLayout({
           enableSystem
         >
           <TooltipProvider>
-            <CustomToastProvider>
-              {children}
-              <Analytics />
-              <SpeedInsights />
-            </CustomToastProvider>
+            <MotionPreferencesProvider>
+              <CustomToastProvider>
+                {children}
+                <Analytics />
+                <SpeedInsights />
+              </CustomToastProvider>
+            </MotionPreferencesProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>

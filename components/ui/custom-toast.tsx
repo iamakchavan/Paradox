@@ -252,7 +252,7 @@ function ToastComponent({
               e.stopPropagation();
               onDismiss(id);
             }}
-            className="text-foreground/30 hover:text-foreground/70 hover:bg-foreground/[0.04] p-1.5 rounded-full transition-all duration-150 cursor-pointer shrink-0 ml-1"
+            className="text-foreground/30 hover:text-foreground/70 hover:bg-foreground/[0.04] p-1.5 rounded-full transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.96] motion-reduce:transform-none cursor-pointer shrink-0 ml-1"
             title="Dismiss"
           >
             <X className="w-3.5 h-3.5" />

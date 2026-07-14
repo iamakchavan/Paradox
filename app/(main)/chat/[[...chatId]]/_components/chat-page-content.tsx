@@ -49,7 +49,9 @@ export function ChatPageContent(props: Props) {
           <img
             src="/chaticons/logo_chat.png"
             alt="Paradox Logo"
-            className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+            draggable={false}
+            onDragStart={(event) => event.preventDefault()}
+            className="select-none w-12 h-12 sm:w-16 sm:h-16 object-contain"
           />
           <p className="text-2xl sm:text-3xl font-normal tracking-tight text-foreground">
             What doesn't make sense yet?
@@ -77,7 +79,7 @@ export function ChatPageContent(props: Props) {
         const streaming = index === props.displayMessages.length - 1 && Boolean(props.streamingMessage);
         return (
           <div key={message.id ?? `msg-${index}`} id={`msg-${message.id ?? index}`} className="group">
-            <MessageAnimator role={message.role} isNew={index >= props.initialMessageCount}>
+            <MessageAnimator isNew={index >= props.initialMessageCount}>
               <MessageComponent
                 message={message}
                 index={index}

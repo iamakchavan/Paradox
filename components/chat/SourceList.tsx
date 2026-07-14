@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 
 import { FaviconImage } from "./FaviconImage";
 
@@ -55,7 +55,7 @@ export function SourceList({ sources }: { sources: AnswerSource[] }) {
               </div>
               <div className="mt-1 flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground/75">
                 <span className="truncate">{domain}</span>
-                <ExternalLink className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-60" />
+                <ArrowUpRight className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-60" />
               </div>
               {source.content && (
                 <p className="mt-1.5 line-clamp-3 text-[11px] leading-relaxed text-muted-foreground/80">

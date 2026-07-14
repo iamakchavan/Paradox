@@ -58,7 +58,7 @@ export const ChatInput = ({
               removePDF={props.removePDF}
             />
             <motion.div className={cn(
-              'w-full relative flex transition-all duration-300 ease-out',
+              'w-full relative flex transition-[padding,min-height] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] motion-reduce:transition-none',
               controller.expanded
                 ? 'flex-col pt-2.5 pb-[46px] px-4'
                 : 'flex-row items-center gap-1 pl-1.5 pr-1.5 py-1.5 min-h-[48px]',

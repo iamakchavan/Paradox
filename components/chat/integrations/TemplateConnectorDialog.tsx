@@ -114,14 +114,14 @@ export function TemplateConnectorDialog({
         <div className="px-6 py-4 flex justify-end items-center gap-2 bg-zinc-50/50 dark:bg-zinc-900/10 border-t border-zinc-100 dark:border-zinc-900">
           {template && connection?.status === 'connected' ? (
             <>
-              <Button variant="outline" type="button" disabled={isSyncing} onClick={() => onSync(connection.id)} className="h-8 px-4 rounded-full text-xs font-medium border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer transition-all active:scale-[0.98] flex items-center gap-1.5">
+              <Button variant="outline" type="button" disabled={isSyncing} onClick={() => onSync(connection.id)} className="h-8 px-4 rounded-full text-xs font-medium border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer transition-[background-color,border-color,color,transform,opacity] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.98] motion-reduce:transform-none flex items-center gap-1.5">
                 <RefreshCw className={cn('w-3 h-3 text-zinc-500', isSyncing && 'animate-spin')} />Refresh Connection
               </Button>
-              <Button onClick={() => { onDelete(connection.id); onClose(); }} className="h-8 px-4 rounded-full text-xs font-medium bg-red-600 hover:bg-red-750 dark:bg-red-650 dark:hover:bg-red-550 text-white cursor-pointer transition-all active:scale-[0.98]">Disconnect</Button>
+              <Button onClick={() => { onDelete(connection.id); onClose(); }} className="h-8 px-4 rounded-full text-xs font-medium bg-red-600 hover:bg-red-750 dark:bg-red-650 dark:hover:bg-red-550 text-white cursor-pointer transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.98] motion-reduce:transform-none">Disconnect</Button>
             </>
           ) : template && connection ? (
             <>
-              <Button onClick={() => { onDelete(connection.id); onClose(); }} className="h-8 px-4 rounded-full text-xs font-medium bg-red-600 hover:bg-red-750 dark:bg-red-650 dark:hover:bg-red-550 text-white cursor-pointer transition-all active:scale-[0.98]">Remove</Button>
+              <Button onClick={() => { onDelete(connection.id); onClose(); }} className="h-8 px-4 rounded-full text-xs font-medium bg-red-600 hover:bg-red-750 dark:bg-red-650 dark:hover:bg-red-550 text-white cursor-pointer transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.98] motion-reduce:transform-none">Remove</Button>
               <ConnectButton onClick={() => { onConnect(template); onClose(); }} />
             </>
           ) : template ? <ConnectButton onClick={() => { onConnect(template); onClose(); }} /> : null}
@@ -132,5 +132,5 @@ export function TemplateConnectorDialog({
 }
 
 function ConnectButton({ onClick }: { onClick: () => void }) {
-  return <Button onClick={onClick} className="h-8 px-5 rounded-full text-xs font-medium bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-all active:scale-[0.98]">Connect</Button>;
+  return <Button onClick={onClick} className="h-8 px-5 rounded-full text-xs font-medium bg-cyan-600 hover:bg-cyan-700 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white cursor-pointer transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] active:scale-[0.98] motion-reduce:transform-none">Connect</Button>;
 }

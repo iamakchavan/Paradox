@@ -33,7 +33,7 @@ export function ModeCapsules({
           onMouseEnter={() => setSearchHovered(true)}
           onMouseLeave={() => setSearchHovered(false)}
           className={cn(
-            'flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out select-none border shadow-[0_1px_2px_rgba(0,0,0,0.02)] shrink-0 active:scale-[0.93] active:duration-75',
+            'flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transform-none select-none border shadow-[0_1px_2px_rgba(0,0,0,0.02)] shrink-0 active:scale-[0.93] active:duration-75',
             searchHovered
               ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/35 dark:border-blue-500/35'
               : 'bg-blue-500/5 text-blue-600 dark:text-blue-400 border-blue-500/20 dark:border-blue-500/20 hover:bg-blue-500/10',
@@ -53,7 +53,7 @@ export function ModeCapsules({
           onMouseEnter={() => setResearchHovered(true)}
           onMouseLeave={() => setResearchHovered(false)}
           className={cn(
-            'flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out select-none border shadow-[0_1px_2px_rgba(0,0,0,0.02)] shrink-0 active:scale-[0.93] active:duration-75',
+            'flex items-center gap-1.5 px-3 h-8 rounded-full text-xs font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transform-none select-none border shadow-[0_1px_2px_rgba(0,0,0,0.02)] shrink-0 active:scale-[0.93] active:duration-75',
             researchHovered
               ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/35 dark:border-purple-500/35'
               : 'bg-purple-500/5 text-purple-600 dark:text-purple-400 border-purple-500/20 dark:border-purple-500/20 hover:bg-purple-500/10',

@@ -46,7 +46,7 @@ export const UserMessage = memo(({ message }: { message: ChatMessageData }) => {
         {shouldTruncate && (
           <button
             onClick={() => setExpanded(previous => !previous)}
-            className="text-[12px] font-semibold text-zinc-500/90 dark:text-zinc-400/90 hover:text-zinc-800 dark:hover:text-zinc-100 flex items-center gap-0.5 mt-1 select-none transition-colors duration-150 active:scale-95 origin-left"
+            className="text-[12px] font-semibold text-zinc-500/90 dark:text-zinc-400/90 hover:text-zinc-800 dark:hover:text-zinc-100 flex items-center gap-0.5 mt-1 select-none transition-[color,transform] duration-150 active:scale-95 origin-left motion-reduce:transform-none"
           >
             <span>{expanded ? 'See less' : 'See more'}</span>
             <ChevronDown className={cn('w-3.5 h-3.5 transition-transform duration-200', expanded && 'rotate-180')} />

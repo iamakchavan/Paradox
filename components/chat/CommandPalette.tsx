@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Search, Settings } from 'lucide-react';
 import { db, type ChatSession } from '@/lib/db';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 
 interface CommandPaletteProps {
@@ -213,12 +213,13 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPalet
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={(open) => { if (!open && isOpen) onClose(); }}>
       <DialogPrimitive.Portal forceMount>
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {isOpen && (
             <>
               {/* Backdrop Overlay */}
               <DialogPrimitive.Overlay asChild forceMount>
                 <motion.div
+                  key="command-palette-overlay"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -230,6 +231,7 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPalet
               {/* Modal Content Card */}
               <DialogPrimitive.Content asChild forceMount>
                 <motion.div
+                  key="command-palette-content"
                   ref={containerRef}
                   initial={{ opacity: 0, scale: 0.95, x: '-50%', y: -20 }}
                   animate={{ opacity: 1, scale: 1, x: '-50%', y: 0 }}
@@ -347,11 +349,11 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPalet
         </div>
 
           </motion.div>
-      </DialogPrimitive.Content>
-      </>
-    )}
-  </AnimatePresence>
-</DialogPrimitive.Portal>
-</DialogPrimitive.Root>
-);
+              </DialogPrimitive.Content>
+            </>
+          )}
+        </AnimatePresence>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  );
 }

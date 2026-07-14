@@ -18,7 +18,7 @@ export function SidebarFooter({ isSettingsActive, onSettingsClick }: SidebarFoot
       <button
         onClick={onSettingsClick}
         className={cn(
-          "pointer-events-auto h-[34px] px-3.5 rounded-full liquid-glass-dock flex items-center gap-1.5 text-[12.5px] font-medium cursor-pointer relative z-10 active:scale-[0.96] text-foreground/70 hover:text-foreground",
+          "pointer-events-auto h-[34px] px-3.5 rounded-full liquid-glass-dock flex items-center gap-1.5 text-[12.5px] font-medium cursor-pointer relative z-10 active:scale-[0.96] motion-reduce:transform-none text-foreground/70 hover:text-foreground",
           isSettingsActive && "text-foreground ring-1 ring-foreground/10"
         )}
       >
@@ -28,7 +28,7 @@ export function SidebarFooter({ isSettingsActive, onSettingsClick }: SidebarFoot
 
       <button
         onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-        className="pointer-events-auto w-[34px] h-[34px] rounded-full liquid-glass-dock flex items-center justify-center cursor-pointer relative z-10 active:scale-[0.96] text-foreground/70 hover:text-foreground"
+        className="pointer-events-auto w-[34px] h-[34px] rounded-full liquid-glass-dock flex items-center justify-center cursor-pointer relative z-10 active:scale-[0.96] motion-reduce:transform-none text-foreground/70 hover:text-foreground"
         title="Toggle theme"
       >
         <Sun className="sidebar-theme-icon h-[14px] w-[14px] flex-shrink-0 opacity-100 dark:opacity-0" strokeWidth={2.2} />

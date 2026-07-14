@@ -28,11 +28,9 @@ export function ResearchSources({
             <ResearchSourceCard key={index} source={source} citationIndex={index + 1} />
           ))}
           {sources.length > 4 && !showAllSources && (
-            <motion.button
-              whileHover={{ scale: 1.01, translateY: -0.5 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 15 }}
+            <button
               onClick={() => setShowAllSources(true)}
-              className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-100/50 dark:bg-zinc-900/40 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 cursor-pointer group shadow-3xs text-left"
+              className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-100/50 dark:bg-zinc-900/40 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] cursor-pointer group shadow-3xs text-left"
             >
               <div className="flex items-center gap-1 select-none">
                 {sources.slice(3, 6).map((source, index) => (
@@ -50,7 +48,7 @@ export function ResearchSources({
               <span className="text-[11px] font-semibold text-zinc-650 dark:text-zinc-350 group-hover:text-zinc-800 dark:group-hover:text-zinc-100 transition-colors">
                 View {sources.length - 3} more
               </span>
-            </motion.button>
+            </button>
           )}
         </div>
 
@@ -67,17 +65,15 @@ export function ResearchSources({
                 {sources.slice(4).map((source, index) => (
                   <ResearchSourceCard key={index + 4} source={source} citationIndex={index + 5} />
                 ))}
-                <motion.button
-                  whileHover={{ scale: 1.01, translateY: -0.5 }}
-                  transition={{ type: 'spring', stiffness: 450, damping: 15 }}
+                <button
                   onClick={() => setShowAllSources(false)}
-                  className="flex flex-col justify-center items-center h-[80px] p-2.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800/50 bg-zinc-50/10 dark:bg-zinc-950/5 hover:bg-zinc-100/50 dark:hover:bg-zinc-900/40 hover:border-zinc-400 dark:hover:border-zinc-700 transition-all duration-200 cursor-pointer group shadow-3xs"
+                  className="flex flex-col justify-center items-center h-[80px] p-2.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800/50 bg-zinc-50/10 dark:bg-zinc-950/5 hover:bg-zinc-100/50 dark:hover:bg-zinc-900/40 hover:border-zinc-400 dark:hover:border-zinc-700 transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] cursor-pointer group shadow-3xs"
                 >
                   <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-200 transition-colors rotate-180 mb-1" />
                   <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors">
                     Show less
                   </span>
-                </motion.button>
+                </button>
               </div>
             </motion.div>
           )}
@@ -95,13 +91,11 @@ function ResearchSourceCard({
   citationIndex: number;
 }) {
   return (
-    <motion.a
-      whileHover={{ scale: 1.01, translateY: -0.5 }}
-      transition={{ type: 'spring', stiffness: 450, damping: 15 }}
+    <a
       href={source.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-50/30 dark:bg-zinc-950/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-2xs transition-all duration-200 no-underline group cursor-pointer"
+      className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-50/30 dark:bg-zinc-950/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-2xs transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] no-underline group cursor-pointer"
     >
       <h4 className="font-semibold text-zinc-800 dark:text-zinc-200 text-[11px] leading-snug line-clamp-2 group-hover:text-primary transition-colors flex-1">
         {source.title || source.domain}
@@ -112,6 +106,6 @@ function ResearchSourceCard({
         <span className="text-zinc-300 dark:text-zinc-700/60 font-medium shrink-0">·</span>
         <span className="text-[9.5px] font-bold text-zinc-400 dark:text-zinc-500 shrink-0 font-mono">{citationIndex}</span>
       </div>
-    </motion.a>
+    </a>
   );
 }

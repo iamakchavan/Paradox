@@ -58,7 +58,7 @@ export function ModelDetailsPane({
                 <button
                   type="button"
                   onClick={event => onCopy(event, model.id)}
-                  className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-all duration-150 outline-none focus:outline-none"
+                  className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] outline-none focus:outline-none"
                   title="Copy Model ID"
                 >
                   {copied ? (

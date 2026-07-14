@@ -109,7 +109,7 @@ export function AIProvidersTab({ apiKeys, inputKeys, setInputKeys }: Props) {
                     className="overflow-hidden"
                   >
                     <div className="px-5 pb-4 space-y-2">
-                      <div className="relative flex items-center bg-zinc-200/20 dark:bg-zinc-900/35 rounded-xl border border-zinc-200/30 dark:border-zinc-800/40 px-3.5 focus-within:border-zinc-300 dark:focus-within:border-zinc-700 focus-within:ring-2 focus-within:ring-zinc-400/5 transition-all duration-200">
+                      <div className="relative flex items-center bg-zinc-200/20 dark:bg-zinc-900/35 rounded-xl border border-zinc-200/30 dark:border-zinc-800/40 px-3.5 focus-within:border-zinc-300 dark:focus-within:border-zinc-700 focus-within:ring-2 focus-within:ring-zinc-400/5 transition-[border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)]">
                         <Input
                           id={field.key}
                           type={visibleFields[field.key] ? 'text' : 'password'}

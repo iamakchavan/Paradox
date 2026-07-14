@@ -85,7 +85,7 @@ export default function LinearProject({
                 cx="16"
                 cy="16"
                 r={radius}
-                className="stroke-violet-500 fill-none transition-all duration-300"
+                className="stroke-violet-500 fill-none transition-[stroke-dashoffset] duration-[var(--motion-duration-panel)] ease-[var(--motion-ease-out)] motion-reduce:transition-none"
                 strokeWidth={strokeWidth}
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}

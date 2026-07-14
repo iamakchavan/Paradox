@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import type { ApiKeys } from '@/hooks/use-api-keys';
 import { ChatInput } from '@/components/chat/ChatInput';
 import { cn } from '@/lib/utils';
+import { motionTransitions } from '@/lib/motion';
 import type { ChatPdfAttachment, OpenSettingsTab } from '../_lib/types';
 
 export interface ChatComposerControls {
@@ -72,14 +73,11 @@ export function InitialChatComposer({ controls, expanded, keyboardOffset }: {
   return (
     <motion.div
       layoutId="chat-input-bar"
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{
-        y: { duration: 0.25, ease: [0.16, 1, 0.3, 1], delay: 0.4 },
-        opacity: { duration: 0.25, delay: 0.4 },
-      }}
+      transition={motionTransitions.popover}
       className={cn(
-        'w-full mx-auto fixed bottom-6 left-0 right-0 z-20 md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0',
+          'w-full mx-auto fixed bottom-6 left-0 right-0 z-20 motion-reduce:!transition-none md:relative md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0',
         expanded
           ? 'max-w-[720px] px-3 sm:px-2 md:px-0'
           : 'max-w-2xl focus-within:max-w-[720px] px-10 focus-within:px-3 sm:px-4 md:focus-within:px-0',
@@ -110,18 +108,18 @@ export function ActiveChatComposer({
       <div
         className={cn(
           'fixed bottom-0 right-0 md:right-[var(--sources-panel-width,0px)] z-10 h-32 sm:h-40 pointer-events-none progressive-blur',
-          mounted && 'transition-[left,right,bottom] duration-300',
+          mounted && 'transition-[left,right,bottom] motion-layout-transition motion-reduce:transition-none',
           sidebarCollapsed ? 'left-0' : 'left-0 md:left-[270px]',
         )}
         style={keyboardOffset > 0 ? { bottom: `${keyboardOffset}px` } : undefined}
       />
       <motion.div
         layoutId="chat-input-bar"
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        transition={motionTransitions.popover}
         className={cn(
-          'fixed z-20 bottom-6 sm:bottom-12 right-0 md:right-[var(--sources-panel-width,0px)] mx-auto',
+          'fixed z-20 bottom-6 sm:bottom-12 right-0 md:right-[var(--sources-panel-width,0px)] mx-auto motion-reduce:!transition-none',
           sidebarCollapsed ? 'left-0' : 'left-0 md:left-[270px]',
           expanded
             ? 'max-w-[720px] px-3 sm:px-2 md:px-4'
@@ -141,8 +139,8 @@ export function ActiveChatComposer({
             aria-label="Scroll to bottom"
             className={cn(
               'h-9 w-9 rounded-full liquid-glass-dock flex items-center justify-center',
-              'text-foreground/70 hover:text-foreground transform transition-all duration-300 ease-in-out',
-              'active:scale-[0.93] active:duration-75',
+              'text-foreground/70 hover:text-foreground transform transition-[transform,opacity,color] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] motion-reduce:transition-[opacity,color]',
+              'active:scale-[0.93] active:duration-75 motion-reduce:transform-none',
               showScrollButton ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none',
             )}
           >

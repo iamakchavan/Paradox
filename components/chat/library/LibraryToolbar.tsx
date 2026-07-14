@@ -28,7 +28,7 @@ export function LibraryToolbar({ browser }: { browser: LibraryBrowserController 
             placeholder="Search files..."
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="w-full h-9 pl-9 pr-8 bg-foreground/[0.02] dark:bg-foreground/[0.01] border border-foreground/[0.08] focus:border-foreground/30 rounded-lg text-[13px] focus:outline-none transition-all duration-150 placeholder:text-foreground/30 text-foreground"
+            className="w-full h-9 pl-9 pr-8 bg-foreground/[0.02] dark:bg-foreground/[0.01] border border-foreground/[0.08] focus:border-foreground/30 rounded-lg text-[13px] focus:outline-none transition-[border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] placeholder:text-foreground/30 text-foreground"
           />
           {query && (
             <button
@@ -45,7 +45,7 @@ export function LibraryToolbar({ browser }: { browser: LibraryBrowserController 
             <button
               key={filter}
               onClick={() => setTypeFilter(filter)}
-              className={`px-3 py-1 rounded-md transition-all duration-200 cursor-pointer ${
+              className={`px-3 py-1 rounded-md transition-[background-color,color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] cursor-pointer ${
                 typeFilter === filter
                   ? 'bg-background text-foreground/90 shadow-sm font-semibold'
                   : 'hover:text-foreground/80'
