@@ -71,6 +71,28 @@
   animation: motion-sheet-overlay-out 180ms var(--motion-ease-out) both;
 }
 
+.integration-dialog-overlay[data-state="open"] {
+  animation: integration-dialog-overlay-in 180ms var(--motion-ease-out) both;
+}
+
+.integration-dialog-overlay[data-state="closed"] {
+  animation: integration-dialog-overlay-out 180ms var(--motion-ease-out) both;
+}
+
+.integration-dialog-content {
+  transform: translate3d(-50%, -50%, 0);
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.integration-dialog-content[data-state="open"] {
+  animation: integration-dialog-enter 220ms var(--motion-ease-out) both;
+}
+
+.integration-dialog-content[data-state="closed"] {
+  animation: integration-dialog-exit 200ms var(--motion-ease-out) both;
+}
+
 @keyframes motion-sheet-enter {
   from {
     transform: translate3d(var(--motion-sheet-x), var(--motion-sheet-y), 0);
@@ -99,9 +121,43 @@
   to { opacity: 0; }
 }
 
+@keyframes integration-dialog-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes integration-dialog-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes integration-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) translate3d(0, 8px, 0) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes integration-dialog-exit {
+  from {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(-50%, -50%, 0) translate3d(0, 4px, 0) scale(0.985);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .motion-sheet-transition[data-state],
-  .motion-sheet-overlay[data-state] {
+  .motion-sheet-overlay[data-state],
+  .integration-dialog-overlay[data-state],
+  .integration-dialog-content[data-state] {
     animation: none;
   }
 }

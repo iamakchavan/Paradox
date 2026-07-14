@@ -1,7 +1,9 @@
 "use client";
 
-import { Puzzle } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, ChevronUp, Puzzle } from 'lucide-react';
 import { formatToolName } from './integration-utils';
+import { IntegrationToolIcon } from './IntegrationToolIcon';
 import type { IntegrationToolView } from './use-integrations-view-model';
 
 export function SkillsGrid({
@@ -11,6 +13,8 @@ export function SkillsGrid({
   tools: IntegrationToolView[];
   onSelect: (tool: IntegrationToolView) => void;
 }) {
+  const [expandedIntegrations, setExpandedIntegrations] = useState<Set<string>>(() => new Set());
+
   if (tools.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-9 bg-zinc-50/5 dark:bg-zinc-950/10 border border-dashed border-zinc-200/20 dark:border-zinc-850 rounded-2xl">
@@ -22,35 +26,88 @@ export function SkillsGrid({
     );
   }
   const grouped = tools.reduce((output, tool) => {
-    (output[tool.integrationName] ||= []).push(tool);
+    const group = output[tool.integrationId] ||= {
+      integrationName: tool.integrationName,
+      tools: [],
+    };
+    group.tools.push(tool);
     return output;
-  }, {} as Record<string, IntegrationToolView[]>);
+  }, {} as Record<string, { integrationName: string; tools: IntegrationToolView[] }>);
+
   return (
-    <div className="space-y-6">
-      {Object.entries(grouped).map(([integrationName, integrationTools]) => (
-        <div key={integrationName} className="space-y-3">
-          <h4 className="text-xs font-medium text-muted-foreground/60 mb-1">
-            {integrationName} Tools ({integrationTools.length})
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            {integrationTools.map(tool => (
-              <div
-                key={`${tool.integrationId}-${tool.name}`}
-                onClick={() => onSelect(tool)}
-                className="flex flex-col p-5 h-36 bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-900 rounded-2xl hover:border-zinc-300 dark:hover:border-zinc-800 hover:shadow-xs transition-[border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] text-left cursor-pointer select-none"
+    <div className="space-y-7">
+      {Object.entries(grouped).map(([integrationId, group]) => {
+        const { integrationName, tools: integrationTools } = group;
+        const isExpanded = expandedIntegrations.has(integrationId);
+        const visibleTools = isExpanded ? integrationTools : integrationTools.slice(0, 5);
+        const hiddenToolCount = integrationTools.length - 5;
+        const toolsRegionId = `integration-tools-${integrationId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+
+        return (
+          <section key={integrationId} className="space-y-2.5">
+            <div className="flex items-center gap-2 px-0.5">
+              <IntegrationToolIcon
+                integrationId={integrationId}
+                className="h-4 w-4 rounded-none bg-transparent dark:bg-transparent"
+              />
+              <h4 className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                {integrationName}
+              </h4>
+              <span className="text-[11px] text-muted-foreground/55">
+                {integrationTools.length} {integrationTools.length === 1 ? 'tool' : 'tools'}
+              </span>
+            </div>
+            <div id={toolsRegionId} className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              {visibleTools.map(tool => (
+                <button
+                  type="button"
+                  key={`${tool.integrationId}-${tool.name}`}
+                  onClick={() => onSelect(tool)}
+                  className="flex min-h-[108px] w-full flex-col rounded-lg border border-zinc-200/75 bg-white/75 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/25 dark:border-zinc-900 dark:bg-zinc-950/65 cursor-pointer select-none"
+                >
+                  <span className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                    {formatToolName(tool.name)}
+                  </span>
+                  <span className="mt-1.5 line-clamp-2 text-xs font-normal leading-relaxed text-zinc-600 dark:text-zinc-400">
+                    {tool.description}
+                  </span>
+                  <span className="mt-auto truncate pt-2 font-mono text-[10px] text-zinc-400 dark:text-zinc-600">
+                    {tool.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+            {hiddenToolCount > 0 && (
+              <button
+                type="button"
+                aria-expanded={isExpanded}
+                aria-controls={toolsRegionId}
+                onClick={() => {
+                  setExpandedIntegrations(current => {
+                    const next = new Set(current);
+                    if (next.has(integrationId)) next.delete(integrationId);
+                    else next.add(integrationId);
+                    return next;
+                  });
+                }}
+                className="inline-flex items-center gap-1 px-0.5 pt-1 text-xs font-medium text-zinc-500 hover:text-zinc-800 focus-visible:outline-none focus-visible:underline dark:text-zinc-500 dark:hover:text-zinc-200 cursor-pointer"
               >
-                <div className="flex items-start justify-between mb-2 gap-4">
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200 truncate">{formatToolName(tool.name)}</span>
-                    <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 mt-0.5 truncate">{tool.name}</span>
-                  </div>
-                </div>
-                <p className="text-xs text-zinc-550 dark:text-zinc-400 leading-relaxed font-normal mt-1.5 line-clamp-2">{tool.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+                {isExpanded ? (
+                  <>
+                    Show less
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  </>
+                ) : (
+                  <>
+                    Show {hiddenToolCount} more
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </>
+                )}
+              </button>
+            )}
+          </section>
+        );
+      })}
     </div>
   );
 }
