@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Settings } from 'lucide-react';
+import { Search, Settings, SquarePen } from 'lucide-react';
 import { db, type ChatSession } from '@/lib/db';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -117,11 +117,13 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPalet
       return;
     }
 
+    let cancelled = false;
+
     db.chats
       .filter((c) => c.title.toLowerCase().includes(query))
-      .limit(5)
       .toArray()
       .then((results) => {
+        if (cancelled) return;
         const sorted = results.sort((a, b) => {
           const timeA = a.updatedAt ?? a.createdAt;
           const timeB = b.updatedAt ?? b.createdAt;
@@ -130,6 +132,10 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPalet
         setFilteredChats(sorted);
       })
       .catch((err) => console.error('[CommandPalette Search Error]:', err));
+
+    return () => {
+      cancelled = true;
+    };
   }, [searchQuery, chats]);
 
   // Flat list of items mapping visual structure for perfect arrow navigation
@@ -237,31 +243,33 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPalet
                   animate={{ opacity: 1, scale: 1, x: '-50%', y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, x: '-50%', y: -20 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  className="fixed left-1/2 top-[12dvh] z-50 w-[calc(100vw-2rem)] max-w-[640px] bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl shadow-black/10 dark:shadow-black/60 rounded-[24px] overflow-hidden flex flex-col tracking-wide outline-none"
+                  className="fixed left-1/2 top-[11dvh] z-50 flex w-[calc(100vw-2rem)] max-w-[660px] flex-col overflow-hidden rounded-[22px] border border-zinc-200/80 bg-white text-zinc-900 shadow-[0_24px_80px_rgba(0,0,0,0.18)] outline-none dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100 dark:shadow-[0_24px_90px_rgba(0,0,0,0.65)]"
                 >
                   <DialogPrimitive.Title className="sr-only">Search threads</DialogPrimitive.Title>
                   <DialogPrimitive.Description className="sr-only">Search and browse saved chat sessions</DialogPrimitive.Description>
-        {/* Input Bar */}
-        <div className="flex items-center gap-3 px-5 h-[56px] border-b border-zinc-100 dark:border-zinc-800/60">
+        {/* Search */}
+        <div className="flex h-16 items-center gap-3 border-b border-zinc-100 px-5 dark:border-white/[0.07]">
+          <Search className="h-[18px] w-[18px] shrink-0 text-zinc-400 dark:text-zinc-500" strokeWidth={2} />
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search threads..."
+            placeholder="Search chats and commands"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
               setSelectedIndex(0);
             }}
-            className="flex-1 bg-transparent text-[15px] text-foreground outline-none border-none placeholder-foreground/35 select-none"
+            className="min-w-0 flex-1 border-none bg-transparent text-[15px] text-zinc-900 outline-none placeholder:text-zinc-400 dark:text-zinc-100 dark:placeholder:text-zinc-600"
           />
-          <Search className="w-[17px] h-[17px] text-zinc-400 dark:text-zinc-500 flex-shrink-0" strokeWidth={2} />
         </div>
 
-        {/* Scrollable list */}
-        <div className="flex-1 max-h-[380px] overflow-y-auto p-4 space-y-1.5 sidebar-scroll">
+        {/* Results */}
+        <div className="relative min-h-0 flex-1">
+        <div className="sidebar-scroll max-h-[420px] space-y-0.5 overflow-y-auto p-2.5 pb-12">
           {flatItems.length === 0 ? (
-            <div className="px-4 py-8 text-center text-[13px] text-foreground/45 select-none">
-              No results found
+            <div className="flex min-h-32 flex-col items-center justify-center px-4 py-8 text-center select-none">
+              <Search className="mb-2.5 h-5 w-5 text-zinc-300 dark:text-zinc-700" strokeWidth={1.7} />
+              <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">No matching chats or commands</span>
             </div>
           ) : flatItems.map((item, index) => {
             const isSelected = selectedIndex === index;
@@ -289,9 +297,9 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPalet
             }
 
             return (
-              <div key={`${item.id}-${index}`} className="space-y-1">
+              <div key={`${item.type}-${item.id}`}>
                 {categoryHeader && (
-                  <p className="text-[12px] font-normal text-foreground/45 px-3 pt-3 pb-1 select-none first:pt-0">
+                  <p className={cn('px-3 pb-1.5 text-[11px] font-medium text-zinc-400 select-none dark:text-zinc-600', index === 0 ? 'pt-1' : 'pt-3')}>
                     {categoryHeader}
                   </p>
                 )}
@@ -300,28 +308,30 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPalet
                   onClick={() => triggerAction(index)}
                   onMouseEnter={() => setSelectedIndex(index)}
                   className={cn(
-                    "flex items-center justify-between px-4 h-[42px] rounded-xl cursor-pointer select-none border border-transparent font-normal",
+                    "flex h-11 items-center justify-between rounded-lg px-3 cursor-pointer select-none font-normal",
                     isSelected
-                      ? "bg-zinc-100 dark:bg-zinc-800 text-foreground"
-                      : "text-foreground/75 hover:text-foreground"
+                      ? "bg-zinc-100 text-zinc-950 dark:bg-white/[0.07] dark:text-zinc-50"
+                      : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/[0.035] dark:hover:text-zinc-100"
                   )}
                 >
                   {item.type === 'action' ? (
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className={cn(
+                        'flex h-5 w-5 shrink-0 items-center justify-center',
+                        isSelected ? 'text-zinc-700 dark:text-zinc-200' : 'text-zinc-500 dark:text-zinc-500',
+                      )}>
                       {item.id === 'settings' ? (
-                        <Settings className="w-[15px] h-[15px] flex-shrink-0 text-foreground/60" strokeWidth={2.2} />
+                        <Settings className="h-3.5 w-3.5" strokeWidth={2.1} />
                       ) : (
-                        <svg width="15" height="15" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 text-foreground/60">
-                          <path d="M11.4875 0.512563C10.804 -0.170854 9.696 -0.170854 9.01258 0.512563L4.75098 4.77417C4.49563 5.02951 4.29308 5.33265 4.15488 5.66628L3.30712 7.71282C3.19103 7.99307 3.25519 8.31566 3.46968 8.53017C3.68417 8.74467 4.00676 8.80885 4.28702 8.69277L6.33382 7.84501C6.66748 7.70681 6.97066 7.50423 7.22604 7.24886L11.4875 2.98744C12.1709 2.30402 12.1709 1.19598 11.4875 0.512563Z" fill="currentColor"/>
-                          <path d="M2.75 1.5C2.05964 1.5 1.5 2.05964 1.5 2.75V9.25C1.5 9.94036 2.05964 10.5 2.75 10.5H9.25C9.94036 10.5 10.5 9.94036 10.5 9.25V7C10.5 6.58579 10.8358 6.25 11.25 6.25C11.6642 6.25 12 6.58579 12 7V9.25C12 10.7688 10.7688 12 9.25 12H2.75C1.23122 12 0 10.7688 0 9.25V2.75C0 1.23122 1.23122 4.84288e-08 2.75 4.84288e-08H5C5.41421 4.84288e-08 5.75 0.335786 5.75 0.75C5.75 1.16421 5.41421 1.5 5 1.5H2.75Z" fill="currentColor"/>
-                        </svg>
+                        <SquarePen className="h-3.5 w-3.5" strokeWidth={2.1} />
                       )}
-                      <span className="text-[14px]">{item.title}</span>
+                      </span>
+                      <span className="truncate text-sm font-medium">{item.title}</span>
                     </div>
                   ) : (
                     <>
-                      <span className="text-[14px] truncate flex-1 pr-4">{item.title}</span>
-                      <span className="text-[11.5px] text-foreground/35 flex-shrink-0 font-normal">
+                      <span className="min-w-0 flex-1 truncate pr-4 text-sm">{item.title}</span>
+                      <span className={cn('shrink-0 text-[11px] font-normal', isSelected ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-400 dark:text-zinc-600')}>
                         {getRelativeTime(item.updatedAt)}
                       </span>
                     </>
@@ -332,20 +342,10 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPalet
           })}
         </div>
 
-        {/* Footer Bar */}
-        <div className="h-[42px] bg-foreground/[0.01] border-t border-zinc-100 dark:border-zinc-800/60 px-5 flex items-center justify-between select-none">
-          {/* Guidelines on Left */}
-          <div className="flex items-center gap-4 text-foreground/45 text-[10.5px]">
-            <span className="flex items-center gap-1.5">
-              <span>Open</span>
-              <kbd className="border border-foreground/[0.08] bg-foreground/[0.02] px-1.5 py-0.5 rounded font-mono text-[9px] leading-none shadow-sm">↵</kbd>
-            </span>
-          </div>
-
-          {/* Results Count on Right */}
-          <div className="text-[11px] text-foreground/35 font-normal">
-            {totalCount} {totalCount === 1 ? 'total thread' : 'total threads'}
-          </div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-14 progressive-blur" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex h-9 items-center justify-end px-5 text-[11px] font-normal text-zinc-400 select-none dark:text-zinc-600">
+          {totalCount} {totalCount === 1 ? 'thread' : 'threads'}
+        </div>
         </div>
 
           </motion.div>

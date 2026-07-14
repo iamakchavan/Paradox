@@ -10,9 +10,11 @@ import { desktopSettingsSpring, mobileSettingsSpring } from './modal/settings-mo
 import type { SettingsModalProps } from './modal/types';
 import { useSettingsModalController } from './modal/use-settings-modal-controller';
 import { motionTransitions } from '@/lib/motion';
+import { usePreparedEntrance } from '@/hooks/use-prepared-entrance';
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const isMobile = useIsMobile();
+  const mobileEntranceReady = usePreparedEntrance(isOpen && isMobile);
   const controller = useSettingsModalController({ isOpen, isMobile, onClose });
 
   return (
@@ -60,7 +62,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       if (info.offset.y > 120 || info.velocity.y > 400) onClose();
                     }}
                     initial={{ y: '100%' }}
-                    animate={{ y: 0 }}
+                    animate={{ y: mobileEntranceReady ? 0 : '100%' }}
                     exit={{ y: '100%' }}
                     transition={mobileSettingsSpring}
                     className="fixed bottom-0 left-0 right-0"
@@ -78,6 +80,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       display: 'flex',
                       flexDirection: 'column',
                       outline: 'none',
+                      backfaceVisibility: 'hidden',
+                      willChange: 'transform',
                     }}
                   >
                     <MobileSettingsContent controller={controller} />

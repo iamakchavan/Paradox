@@ -5,7 +5,20 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { MobileAttachSheetContent } from './mobile-attach/MobileAttachSheetContent';
 import type { MobileAttachSheetProps } from './mobile-attach/types';
 import { useMobileAttachController } from './mobile-attach/use-mobile-attach-controller';
-import { motionTransitions } from '@/lib/motion';
+import { MOTION_EASE_OUT, motionTransitions } from '@/lib/motion';
+import { usePreparedEntrance } from '@/hooks/use-prepared-entrance';
+
+const mobileAttachEntrance = {
+  type: 'tween' as const,
+  duration: 0.32,
+  ease: MOTION_EASE_OUT,
+};
+
+const mobileAttachExit = {
+  type: 'tween' as const,
+  duration: 0.24,
+  ease: [0.4, 0, 1, 1] as [number, number, number, number],
+};
 
 export function MobileAttachSheet({
   isOpen,
@@ -21,6 +34,7 @@ export function MobileAttachSheet({
   onToggleMcpId,
   onManageConnectors,
 }: MobileAttachSheetProps) {
+  const entranceReady = usePreparedEntrance(isOpen);
   const controller = useMobileAttachController({
     isOpen,
     onClose,
@@ -53,10 +67,10 @@ export function MobileAttachSheet({
                   if (info.offset.y > 110 || info.velocity.y > 360) onClose();
                 }}
                 initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={motionTransitions.drawer}
-                className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[78dvh] max-w-[520px] flex-col overflow-hidden rounded-t-[30px] border border-border/60 border-b-0 bg-background shadow-[0_-18px_70px_rgba(0,0,0,0.24)] outline-none dark:border-white/[0.08] dark:bg-[#151517] dark:shadow-[0_-18px_70px_rgba(0,0,0,0.55)]"
+                animate={{ y: entranceReady ? 0 : '100%' }}
+                exit={{ y: '100%', transition: mobileAttachExit }}
+                transition={mobileAttachEntrance}
+                className="fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-h-[78dvh] max-w-[520px] flex-col overflow-hidden rounded-t-[30px] border border-border/60 border-b-0 bg-background shadow-[0_-18px_70px_rgba(0,0,0,0.24)] outline-none [backface-visibility:hidden] will-change-transform dark:border-white/[0.08] dark:bg-[#151517] dark:shadow-[0_-18px_70px_rgba(0,0,0,0.55)]"
                 style={{ paddingBottom: 'env(safe-area-inset-bottom, 12px)' }}
               >
                 <MobileAttachSheetContent

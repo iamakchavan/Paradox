@@ -3,6 +3,7 @@
 import { Puzzle } from 'lucide-react';
 import type { MCPIntegration } from '@/lib/db';
 import { cn } from '@/lib/utils';
+import { ProviderLogo } from './ProviderLogo';
 import type { ProviderTemplate } from './provider-catalog';
 
 export function ConnectorsGrid({
@@ -48,9 +49,7 @@ export function ConnectorsGrid({
                     onClick={() => onOpenTemplate(template)}
                     className="group flex items-center gap-3.5 px-4 py-3.5 bg-transparent hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60 border border-transparent hover:border-zinc-200/80 dark:hover:border-zinc-800/80 rounded-xl transition-[background-color,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] cursor-pointer"
                   >
-                    <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                      <TemplateIcon className="w-7 h-7" />
-                    </div>
+                    <ProviderLogo icon={TemplateIcon} />
                     <div className="flex-1 min-w-0">
                       <span className="text-[13.5px] font-semibold text-zinc-800 dark:text-zinc-100 leading-snug block truncate">{template.name}</span>
                       {connected ? (

@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 import { motionTransitions } from "@/lib/motion";
+import { usePreparedEntrance } from "@/hooks/use-prepared-entrance";
 
 interface MobileBottomSheetProps {
   open: boolean;
@@ -24,6 +25,8 @@ export function MobileBottomSheet({
   children,
   className,
 }: MobileBottomSheetProps) {
+  const entranceReady = usePreparedEntrance(open);
+
   return (
     <AnimatePresence>
       {open && (
@@ -50,11 +53,11 @@ export function MobileBottomSheet({
                   }
                 }}
                 initial={{ y: "100%" }}
-                animate={{ y: 0 }}
+                animate={{ y: entranceReady ? 0 : "100%" }}
                 exit={{ y: "100%" }}
                 transition={motionTransitions.drawer}
                 className={cn(
-                  "fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-w-[520px] flex-col overflow-hidden rounded-t-[24px] border border-b-0 border-border/60 bg-background shadow-[0_-18px_70px_rgba(0,0,0,0.24)] outline-none dark:border-white/[0.08] dark:shadow-[0_-18px_70px_rgba(0,0,0,0.55)]",
+                  "fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-w-[520px] flex-col overflow-hidden rounded-t-[24px] border border-b-0 border-border/60 bg-background shadow-[0_-18px_70px_rgba(0,0,0,0.24)] outline-none [backface-visibility:hidden] will-change-transform dark:border-white/[0.08] dark:shadow-[0_-18px_70px_rgba(0,0,0,0.55)]",
                   className
                 )}
                 style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}

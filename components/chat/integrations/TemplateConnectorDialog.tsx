@@ -8,6 +8,7 @@ import { Dialog, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { FloatingIconButton } from '@/components/ui/floating-icon-button';
 import { cn } from '@/lib/utils';
 import { IntegrationDialogContent } from './IntegrationDialogContent';
+import { ProviderLogo } from './ProviderLogo';
 import type { ProviderTemplate } from './provider-catalog';
 
 export function TemplateConnectorDialog({
@@ -47,9 +48,7 @@ export function TemplateConnectorDialog({
       <IntegrationDialogContent className="w-[92%] max-w-[500px] overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white p-0 text-foreground shadow-2xl focus:outline-none focus-visible:outline-none dark:border-zinc-900 dark:bg-zinc-950">
         <div className="flex w-full items-start justify-between gap-4 px-6 pb-5 pt-6 text-left">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100/80 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
-              {TemplateIcon && <TemplateIcon className="h-4.5 w-4.5" />}
-            </div>
+            {TemplateIcon && <ProviderLogo icon={TemplateIcon} variant="dialog" />}
             <div className="min-w-0 text-left">
               <DialogTitle className="text-base font-semibold leading-tight text-zinc-900 dark:text-zinc-100">{renderedTemplate?.name}</DialogTitle>
               <DialogDescription className="mt-1 text-xs leading-snug text-zinc-500 dark:text-zinc-500">MCP connector</DialogDescription>
@@ -84,10 +83,10 @@ export function TemplateConnectorDialog({
                     type="button"
                     disabled={isSyncing}
                     onClick={() => onSync(renderedConnection.id)}
-                    className="rounded-full p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-900 dark:hover:text-zinc-300 cursor-pointer"
+                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:text-zinc-500 dark:hover:bg-zinc-900 dark:hover:text-zinc-300 cursor-pointer"
                     title="Refresh tools list"
                   >
-                    <RefreshCw className={cn('w-3.5 h-3.5', isSyncing && 'animate-spin')} />
+                    <RefreshCw className={cn('h-3.5 w-3.5 shrink-0', isSyncing && 'animate-spin')} />
                   </button>
                 </div>
                 {!renderedConnection.cachedTools?.length ? (
@@ -130,8 +129,9 @@ export function TemplateConnectorDialog({
         <div className="flex items-center justify-end gap-2 px-6 pb-6">
           {renderedTemplate && renderedConnection?.status === 'connected' ? (
             <>
-              <Button variant="outline" type="button" disabled={isSyncing} onClick={() => onSync(renderedConnection.id)} className="flex h-9 items-center gap-1.5 rounded-full border-zinc-200 px-4 text-xs font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900 cursor-pointer">
-                <RefreshCw className={cn('w-3 h-3 text-zinc-500', isSyncing && 'animate-spin')} />Refresh Connection
+              <Button variant="outline" type="button" disabled={isSyncing} onClick={() => onSync(renderedConnection.id)} className="flex h-9 items-center gap-2 rounded-full border-zinc-200 px-4 text-xs font-medium hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900 cursor-pointer">
+                <RefreshCw className={cn('h-3 w-3 shrink-0 text-zinc-500', isSyncing && 'animate-spin')} />
+                <span>Refresh Connection</span>
               </Button>
               <Button onClick={() => { onDelete(renderedConnection.id); onClose(); }} className="h-9 rounded-full bg-red-600 px-4 text-xs font-medium text-white shadow-none hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500 cursor-pointer">Disconnect</Button>
             </>
