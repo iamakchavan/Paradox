@@ -57,41 +57,44 @@ export function AIProvidersTab({ apiKeys, inputKeys, setInputKeys }: Props) {
     setVisibleFields(prev => ({ ...prev, [k]: !prev[k] }));
 
   return (
-    <div className="space-y-2">
-      <p className="text-[12px] font-medium text-foreground/45 px-0.5 pb-1">
-        AI API Provider Keys
-      </p>
+    <section>
+      <div className="mb-4">
+        <h3 className="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200">Model provider keys</h3>
+        <p className="mt-1 text-[11px] leading-4 text-zinc-400 dark:text-zinc-600">Keys are stored locally in this browser and used only for your requests.</p>
+      </div>
 
-      <div className="bg-zinc-50/40 dark:bg-zinc-950/45 border border-zinc-200/40 dark:border-zinc-800/50 rounded-2xl divide-y divide-zinc-200/20 dark:divide-zinc-800/45 overflow-hidden shadow-sm">
+      <div className="overflow-hidden rounded-[14px] border border-zinc-200/70 bg-zinc-50/30 divide-y divide-zinc-200/60 dark:border-white/[0.08] dark:bg-white/[0.02] dark:divide-white/[0.06]">
         {AI_FIELDS.map((field) => {
           const isExpanded = expandedKey === field.key;
           const hasValue = (inputKeys[field.key] || '').trim().length > 0;
 
           return (
-            <div key={field.key} className="bg-zinc-100/5 dark:bg-zinc-950/5 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors duration-150">
+            <div key={field.key} className={cn('transition-colors duration-150', isExpanded ? 'bg-white dark:bg-white/[0.025]' : 'hover:bg-zinc-100/60 dark:hover:bg-white/[0.025]')}>
               {/* Header row */}
               <button
                 type="button"
                 onClick={() => setExpandedKey(isExpanded ? null : field.key)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left cursor-pointer select-none"
+                className="flex min-h-[54px] w-full items-center justify-between px-4 py-3 text-left cursor-pointer select-none"
               >
                 <div className="flex items-center gap-3">
-                  <ProviderLogo fieldKey={field.key} isDark={isDark} />
-                  <span className="text-sm font-semibold text-foreground/90">{field.label}</span>
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                    <ProviderLogo fieldKey={field.key} isDark={isDark} />
+                  </span>
+                  <span className="text-[13px] font-medium text-zinc-800 dark:text-zinc-200">{field.label}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   {hasValue ? (
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                      Configured
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Configured
                     </span>
                   ) : (
-                    <span className="text-[10px] font-bold text-foreground/40 bg-foreground/5 px-2.5 py-0.5 rounded-full border border-border/30">
-                      Not Set
+                    <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-600">
+                      Not set
                     </span>
                   )}
                   <ChevronDown
                     className={cn(
-                      'w-4 h-4 text-foreground/40 transition-transform duration-200',
+                      'h-3.5 w-3.5 text-zinc-400 transition-transform duration-200 dark:text-zinc-600',
                       isExpanded && 'rotate-180'
                     )}
                   />
@@ -108,8 +111,8 @@ export function AIProvidersTab({ apiKeys, inputKeys, setInputKeys }: Props) {
                     transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                     className="overflow-hidden"
                   >
-                    <div className="px-5 pb-4 space-y-2">
-                      <div className="relative flex items-center bg-zinc-200/20 dark:bg-zinc-900/35 rounded-xl border border-zinc-200/30 dark:border-zinc-800/40 px-3.5 focus-within:border-zinc-300 dark:focus-within:border-zinc-700 focus-within:ring-2 focus-within:ring-zinc-400/5 transition-[border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)]">
+                    <div className="space-y-2 px-4 pb-4 pl-14">
+                      <div className="relative flex items-center rounded-[10px] border border-zinc-200/80 bg-zinc-50/70 px-3.5 transition-[border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] focus-within:border-zinc-300 focus-within:ring-2 focus-within:ring-zinc-950/[0.03] dark:border-white/[0.08] dark:bg-black/20 dark:focus-within:border-white/[0.14] dark:focus-within:ring-white/[0.03]">
                         <Input
                           id={field.key}
                           type={visibleFields[field.key] ? 'text' : 'password'}
@@ -118,12 +121,12 @@ export function AIProvidersTab({ apiKeys, inputKeys, setInputKeys }: Props) {
                             setInputKeys(prev => ({ ...prev, [field.key]: e.target.value }))
                           }
                           placeholder={field.placeholder}
-                          className="h-10 border-0 bg-transparent px-0 text-xs text-foreground focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-foreground/35"
+                          className="h-10 border-0 bg-transparent px-0 text-xs text-zinc-800 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-zinc-400 dark:text-zinc-200 dark:placeholder:text-zinc-700"
                         />
                         <button
                           type="button"
                           onClick={() => toggleVisibility(field.key)}
-                          className="ml-2 text-foreground/40 hover:text-foreground transition-colors shrink-0"
+                          className="ml-2 shrink-0 text-zinc-400 transition-colors hover:text-zinc-800 dark:text-zinc-600 dark:hover:text-zinc-200"
                         >
                           {visibleFields[field.key]
                             ? <EyeOff className="w-4 h-4" />
@@ -136,7 +139,7 @@ export function AIProvidersTab({ apiKeys, inputKeys, setInputKeys }: Props) {
                             href={field.href}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-0.5"
+                            className="flex items-center gap-1 text-[10px] font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-200"
                           >
                             <span>Get {field.label} key</span>
                             <ExternalLink className="w-2.5 h-2.5" />
@@ -151,7 +154,7 @@ export function AIProvidersTab({ apiKeys, inputKeys, setInputKeys }: Props) {
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
 

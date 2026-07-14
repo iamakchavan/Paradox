@@ -17,7 +17,6 @@ export function useModelSelectorController({
   const [isOpen, setIsOpen] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [desktopPosition, setDesktopPosition] = useState<ModelDropdownPosition | null>(null);
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredModelId, setHoveredModelId] = useState<string | null>(selectedModelId);
@@ -28,24 +27,15 @@ export function useModelSelectorController({
   const isMobile = useIsMobile();
 
   const openDropdown = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
     setShouldRender(true);
     setIsOpen(true);
   };
 
   const closeDropdown = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-    }
     setIsOpen(false);
-    closeTimeoutRef.current = setTimeout(() => {
-      setShouldRender(false);
-      closeTimeoutRef.current = null;
-    }, 150);
   };
+
+  const finishClose = () => setShouldRender(false);
 
   const toggleDropdown = () => {
     if (isOpen) {
@@ -56,14 +46,6 @@ export function useModelSelectorController({
   };
 
   useEffect(() => {
-    return () => {
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     setMounted(true);
   }, []);
 
@@ -72,6 +54,11 @@ export function useModelSelectorController({
       setDesktopPosition(null);
       return;
     }
+
+    // Preserve the last measured geometry while the exit animation runs.
+    // The newly selected model can resize the trigger pill; re-centering the
+    // still-mounted portal against that new width causes a one-frame jump.
+    if (!isOpen) return;
 
     const trigger = triggerRef.current;
     const viewport = trigger.closest<HTMLElement>('[data-chat-viewport]');
@@ -109,7 +96,7 @@ export function useModelSelectorController({
       observer.disconnect();
       window.removeEventListener('resize', updatePosition);
     };
-  }, [align, isMobile, shouldRender]);
+  }, [align, isMobile, isOpen, shouldRender]);
 
   useEffect(() => {
     if (isOpen) {
@@ -188,6 +175,7 @@ export function useModelSelectorController({
     activeBrands,
     hoveredModel,
     closeDropdown,
+    finishClose,
     toggleDropdown,
     copyModelId,
   };

@@ -1,7 +1,9 @@
 "use client";
 
 import type { CSSProperties } from 'react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { MOTION_EASE_OUT } from '@/lib/motion';
 import { ModelBrandNavigation } from './ModelBrandNavigation';
 import { ModelDetailsPane } from './ModelDetailsPane';
 import { ModelListPane } from './ModelListPane';
@@ -27,26 +29,30 @@ export function ModelSelectorDropdown({
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95, y: align === 'top' ? -16 : 16 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{
+        opacity: 0,
+        scale: 0.95,
+        y: align === 'top' ? -16 : 16,
+        transition: { duration: 0.15, ease: MOTION_EASE_OUT },
+      }}
+      transition={{ duration: 0.18, ease: MOTION_EASE_OUT }}
       className={cn(
-        'fixed bg-background border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-[0_12px_38px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_38px_rgba(0,0,0,0.3)] p-0 z-50 flex flex-col overflow-hidden text-foreground backdrop-blur-md select-none max-h-[500px] model-dropdown-portal',
-        controller.isOpen
-          ? 'animate-in fade-in-0 zoom-in-95 duration-[var(--motion-duration-popover)] ease-[var(--motion-ease-out)]'
-          : 'animate-out fade-out-0 zoom-out-95 duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]',
+        'model-dropdown-portal fixed z-50 flex max-h-[500px] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-background p-0 text-foreground shadow-[0_12px_38px_rgba(0,0,0,0.06)] select-none will-change-[transform,opacity] dark:border-zinc-800 dark:shadow-[0_12px_38px_rgba(0,0,0,0.3)]',
         controller.isMobile
           ? 'w-[calc(100vw-32px)] h-[390px] left-4 right-4'
           : 'h-[450px]',
         align === 'top'
-          ? (controller.isMobile
-              ? (controller.isOpen ? 'top-20 left-4 right-4 slide-in-from-top-4' : 'top-20 left-4 right-4 slide-out-to-top-4')
-              : (controller.isOpen ? 'slide-in-from-top-4' : 'slide-out-to-top-4'))
-          : (controller.isMobile
-              ? (controller.isOpen ? 'bottom-20 left-4 right-4 slide-in-from-bottom-4' : 'bottom-20 left-4 right-4 slide-out-to-bottom-4')
-              : (controller.isOpen ? 'slide-in-from-bottom-4' : 'slide-out-to-bottom-4'))
+          ? (controller.isMobile ? 'top-20 left-4 right-4' : '')
+          : (controller.isMobile ? 'bottom-20 left-4 right-4' : '')
       )}
       style={{
         '--tw-enter-translate-x': '0px',
         '--tw-exit-translate-x': '0px',
+        backfaceVisibility: 'hidden',
+        transformOrigin: align === 'top' ? 'top center' : 'bottom center',
         ...(!controller.isMobile ? {
           left: controller.desktopPosition?.left,
           top: controller.desktopPosition?.top,
@@ -81,6 +87,6 @@ export function ModelSelectorDropdown({
         groupedModels={controller.groupedModels}
         searchQuery={controller.searchQuery}
       />
-    </div>
+    </motion.div>
   );
 }

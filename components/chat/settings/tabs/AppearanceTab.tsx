@@ -21,21 +21,22 @@ export function AppearanceTab() {
   };
 
   return (
-    <div className="space-y-2">
-      <p className="text-[12px] font-medium text-foreground/45 px-0.5 pb-1">
-        Theme
-      </p>
+    <section>
+      <div className="mb-4">
+        <h3 className="text-[13px] font-semibold text-zinc-800 dark:text-zinc-200">Color scheme</h3>
+        <p className="mt-1 text-[11px] leading-4 text-zinc-400 dark:text-zinc-600">Choose how Paradox appears on this device.</p>
+      </div>
 
-      <div className="rounded-2xl border border-zinc-200/50 dark:border-zinc-800/60 bg-white/70 dark:bg-zinc-950/35 overflow-hidden">
-        <div className="flex items-center justify-between gap-4 px-5 py-4">
+      <div className="overflow-hidden rounded-[14px] border border-zinc-200/70 bg-zinc-50/40 dark:border-white/[0.08] dark:bg-white/[0.025]">
+        <div className="flex min-h-[72px] items-center justify-between gap-4 px-4 py-3.5">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="h-8 w-8 rounded-xl bg-foreground/[0.04] dark:bg-white/[0.05] text-foreground/55 flex items-center justify-center flex-shrink-0">
-              <Moon className="h-4 w-4" strokeWidth={2} />
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[10px] bg-white text-zinc-500 shadow-sm ring-1 ring-zinc-950/[0.05] dark:bg-white/[0.06] dark:text-zinc-400 dark:shadow-none dark:ring-white/[0.05]">
+              <Moon className="h-4 w-4" strokeWidth={1.9} />
             </div>
             <div className="min-w-0">
-              <span className="block text-sm font-semibold text-foreground leading-5">Dark Mode</span>
-              <span className="mt-0.5 block text-[11px] text-foreground/45 leading-4">
-                Reduce eye strain in low-light environments
+              <span className="block text-[13px] font-semibold leading-5 text-zinc-900 dark:text-zinc-100">Dark mode</span>
+              <span className="mt-0.5 block text-[11px] leading-4 text-zinc-400 dark:text-zinc-600">
+                Use a darker interface in low-light environments
               </span>
             </div>
           </div>
@@ -48,7 +49,7 @@ export function AppearanceTab() {
             aria-label="Dark mode"
             className={cn(
               'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-0 transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-              localDark ? 'bg-zinc-600 dark:bg-zinc-500' : 'bg-zinc-300 dark:bg-zinc-700'
+              localDark ? 'bg-zinc-900 dark:bg-zinc-200' : 'bg-zinc-300 dark:bg-zinc-700'
             )}
           >
             <span
@@ -60,6 +61,6 @@ export function AppearanceTab() {
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

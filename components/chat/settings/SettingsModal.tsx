@@ -95,7 +95,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
                     exit={{ opacity: 0, scale: 0.96, x: '-50%', y: 'calc(-50% - 18px)' }}
                     transition={desktopSettingsSpring}
-                    className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-[720px] h-[520px] bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl shadow-black/10 dark:shadow-black/60 rounded-[24px] overflow-hidden flex outline-none"
+                    className="fixed left-1/2 top-1/2 z-50 flex h-[560px] w-[calc(100vw-2rem)] max-w-[780px] overflow-hidden rounded-[22px] border border-zinc-200/80 bg-white shadow-[0_28px_90px_rgba(0,0,0,0.18)] outline-none dark:border-white/10 dark:bg-zinc-950 dark:shadow-[0_28px_100px_rgba(0,0,0,0.65)]"
                     style={{ fontFamily: 'inherit' }}
                   >
                     <DesktopSettingsContent controller={controller} />

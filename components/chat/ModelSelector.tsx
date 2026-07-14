@@ -1,6 +1,7 @@
 "use client";
 
 import { createPortal } from 'react-dom';
+import { AnimatePresence } from 'framer-motion';
 import { ModelSelectorDropdown } from './model-selector/ModelSelectorDropdown';
 import { ModelSelectorTrigger } from './model-selector/ModelSelectorTrigger';
 import { useModelSelectorController } from './model-selector/use-model-selector-controller';
@@ -29,13 +30,18 @@ export const ModelSelector = ({
     inceptionApiKey,
   };
   const dropdown = (
-    <ModelSelectorDropdown
-      controller={controller}
-      align={align}
-      selectedModelId={selectedModelId}
-      providerKeys={providerKeys}
-      onSelectModel={onSelectModel}
-    />
+    <AnimatePresence onExitComplete={controller.finishClose}>
+      {controller.isOpen && (
+        <ModelSelectorDropdown
+          key="model-selector-dropdown"
+          controller={controller}
+          align={align}
+          selectedModelId={selectedModelId}
+          providerKeys={providerKeys}
+          onSelectModel={onSelectModel}
+        />
+      )}
+    </AnimatePresence>
   );
 
   return (
