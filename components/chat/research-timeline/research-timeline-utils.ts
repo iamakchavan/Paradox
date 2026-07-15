@@ -131,9 +131,21 @@ export function collectUniqueResearchSources(steps: ResearchStep[]): ResearchSou
   });
 }
 
-export function formatResearchDuration(seconds: number) {
-  if (seconds < 60) return `${Math.round(seconds)}sec`;
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.round(seconds % 60);
-  return remainingSeconds > 0 ? `${minutes}min${remainingSeconds}s` : `${minutes}min`;
+export function formatResearchDuration(seconds: number): string {
+  const totalSeconds = Number.isFinite(seconds) ? Math.max(0, Math.round(seconds)) : 0;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const remainingSeconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return [
+      `${hours}h`,
+      minutes > 0 ? `${minutes}m` : null,
+      remainingSeconds > 0 ? `${remainingSeconds}s` : null,
+    ].filter(Boolean).join(' ');
+  }
+  if (minutes > 0) {
+    return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+  }
+  return `${remainingSeconds}s`;
 }

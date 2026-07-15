@@ -40,7 +40,7 @@ export const ResearchTimeline = memo(function ResearchTimeline({
             Deep Research
           </span>
           {!isLoading && researchTime && researchTime > 0 && (
-            <span className="shrink-0 select-none text-[11px] font-normal text-muted-foreground/65">
+            <span className="shrink-0 select-none text-[12px] font-medium tabular-nums text-muted-foreground/85">
               {formatResearchDuration(researchTime)}
             </span>
           )}
