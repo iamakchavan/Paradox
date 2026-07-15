@@ -64,6 +64,8 @@ export function extractSearchData(content: string) {
 
 export function areStepsEqual(first: ResearchStep, second: ResearchStep): boolean {
   if (first.type !== second.type || first.status !== second.status
+    || first.id !== second.id || first.parentId !== second.parentId
+    || first.order !== second.order || first.sequence !== second.sequence
     || first.query !== second.query || first.url !== second.url) return false;
   if (!first.results && !second.results) return true;
   if (!first.results || !second.results || first.results.length !== second.results.length) return false;

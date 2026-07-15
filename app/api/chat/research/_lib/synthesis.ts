@@ -1,4 +1,5 @@
 import { streamText } from 'ai';
+import { serializeResearchEvent } from '@/lib/research/events';
 import {
   buildConversationalSystemPrompt,
   buildSynthesisSystemPrompt,
@@ -17,10 +18,14 @@ interface SynthesizeResearchOptions {
   systemPrompt?: string;
   providerOptions: Record<string, any>;
   emit: ResearchStreamEmitter;
+  signal?: AbortSignal;
 }
 
 function buildResearchContext(executionResult: ResearchExecutionResult): string {
   let researchContext = '';
+  if (executionResult.wasTruncated) {
+    researchContext += 'Note: The research execution budget was reached. Use the available sources, avoid unsupported claims, and acknowledge material gaps when necessary.\n\n';
+  }
   if (executionResult.searchResults.length > 0) {
     researchContext += '### Search Snippets Context:\n\n';
     executionResult.searchResults.forEach((searchResult, index) => {
@@ -48,9 +53,15 @@ function createCompletion({
   systemPrompt,
   providerOptions,
   emit,
+  signal,
 }: SynthesizeResearchOptions): any {
   if (planResult.researchNeeded) {
-    emit('<research-step type="synthesis" status="started" />');
+    emit(serializeResearchEvent({
+      type: 'synthesis',
+      status: 'started',
+      id: 'research-synthesis',
+      order: Number.MAX_SAFE_INTEGER,
+    }));
     const synthesisMessages = [
       ...formattedMessages,
       {
@@ -72,6 +83,7 @@ function createCompletion({
       system: buildSynthesisSystemPrompt(buildResearchContext(executionResult), systemPrompt),
       maxRetries: 2,
       providerOptions,
+      abortSignal: signal,
     });
   }
 
@@ -82,6 +94,7 @@ function createCompletion({
     system: buildConversationalSystemPrompt(systemPrompt),
     maxRetries: 2,
     providerOptions,
+    abortSignal: signal,
   });
 }
 
@@ -92,63 +105,70 @@ export async function synthesizeResearch(options: SynthesizeResearchOptions): Pr
   let isReasoningDeltaActive = false;
   let repetitionBuffer = '';
   let repetitionCount = 0;
+  let synthesisFailed = false;
 
   console.log('[DEEP RESEARCH SYNTHESIS] Iterating fullStream...');
-  for await (const part of result.fullStream) {
-    console.log(`[DEEP RESEARCH SYNTHESIS STREAM] Part type: ${part.type}`);
-    if (part.type === 'reasoning-delta') {
-      console.log(`[DEEP RESEARCH reasoning-delta] text: "${part.text}"`);
-      if (!hasThinkingStarted) {
-        emit('<think>');
-        hasThinkingStarted = true;
-        isReasoningDeltaActive = true;
-      }
-      emit(part.text);
-    } else if (part.type === 'text-delta') {
-      console.log(`[DEEP RESEARCH text-delta] text: "${part.text}"`);
-      if (hasThinkingStarted && isReasoningDeltaActive) {
-        emit('</think>');
-        hasThinkingStarted = false;
-        isReasoningDeltaActive = false;
-      }
-
-      const text = part.text;
-      if (text.includes('<think>')) {
-        hasThinkingStarted = true;
-        isReasoningDeltaActive = false;
-      }
-      if (text.includes('</think>')) {
-        hasThinkingStarted = false;
-        isReasoningDeltaActive = false;
-      }
-
-      if (text === repetitionBuffer && repetitionBuffer.length > 0) {
-        repetitionCount++;
-        if (repetitionCount > 5) {
-          continue;
+  try {
+    for await (const part of result.fullStream) {
+      if (part.type === 'reasoning-delta') {
+        if (!hasThinkingStarted) {
+          emit('<think>');
+          hasThinkingStarted = true;
+          isReasoningDeltaActive = true;
         }
-      } else {
-        repetitionBuffer = text;
-        repetitionCount = 0;
-      }
+        emit(part.text);
+      } else if (part.type === 'text-delta') {
+        if (hasThinkingStarted && isReasoningDeltaActive) {
+          emit('</think>');
+          hasThinkingStarted = false;
+          isReasoningDeltaActive = false;
+        }
 
-      emit(text);
-    } else if (part.type === 'error') {
-      if (hasThinkingStarted) {
-        emit('</think>');
-      }
-      console.error('[DEEP RESEARCH SYNTHESIS STREAM ERROR]:', part.error);
-      emit(
+        const text = part.text;
+        if (text.includes('<think>')) {
+          hasThinkingStarted = true;
+          isReasoningDeltaActive = false;
+        }
+        if (text.includes('</think>')) {
+          hasThinkingStarted = false;
+          isReasoningDeltaActive = false;
+        }
+
+        if (text === repetitionBuffer && repetitionBuffer.length > 0) {
+          repetitionCount++;
+          if (repetitionCount > 5) continue;
+        } else {
+          repetitionBuffer = text;
+          repetitionCount = 0;
+        }
+
+        emit(text);
+      } else if (part.type === 'error') {
+        if (options.signal?.aborted) break;
+        synthesisFailed = true;
+        if (hasThinkingStarted) {
+          emit('</think>');
+          hasThinkingStarted = false;
+        }
+        console.error('[DEEP RESEARCH SYNTHESIS STREAM ERROR]:', part.error);
+        emit(
         `\n\n⚠️ Error: ${part.error instanceof Error ? part.error.message : String(part.error)}`,
-      );
+        );
+      }
     }
-  }
-
-  if (hasThinkingStarted) {
-    emit('</think>');
-  }
-  if (planResult.researchNeeded) {
-    emit('<research-step type="synthesis" status="completed" />');
+  } catch (error) {
+    if (!options.signal?.aborted) synthesisFailed = true;
+    throw error;
+  } finally {
+    if (!options.signal?.aborted && hasThinkingStarted) emit('</think>');
+    if (!options.signal?.aborted && planResult.researchNeeded) {
+      emit(serializeResearchEvent({
+        type: 'synthesis',
+        status: synthesisFailed ? 'failed' : 'completed',
+        id: 'research-synthesis',
+        order: Number.MAX_SAFE_INTEGER,
+      }));
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 import type { SearchKeys } from '@/lib/research/client';
+import { isAbortError } from '@/lib/research/request-policy';
 import { executeResearchPlan } from './executor';
 import { planResearch } from './planner';
 import { synthesizeResearch } from './synthesis';
@@ -10,6 +11,7 @@ interface CreateResearchStreamResponseOptions {
   searchKeys: SearchKeys;
   plannerProviderOptions: Record<string, any>;
   synthesisProviderOptions: Record<string, any>;
+  signal?: AbortSignal;
 }
 
 export function createResearchStreamResponse({
@@ -19,11 +21,21 @@ export function createResearchStreamResponse({
   searchKeys,
   plannerProviderOptions,
   synthesisProviderOptions,
+  signal,
 }: CreateResearchStreamResponseOptions): Response {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       let isControllerClosed = false;
+      const closeForAbort = () => {
+        if (isControllerClosed) return;
+        isControllerClosed = true;
+        try {
+          controller.close();
+        } catch {}
+      };
+      signal?.addEventListener('abort', closeForAbort, { once: true });
+
       const safeEnqueue = (data: Uint8Array) => {
         if (!isControllerClosed) {
           try {
@@ -53,11 +65,13 @@ export function createResearchStreamResponse({
           aiModel,
           providerOptions: plannerProviderOptions,
           emit,
+          signal,
         });
         const executionResult = await executeResearchPlan({
           planResult,
           searchKeys,
           emit,
+          signal,
         });
         await synthesizeResearch({
           planResult,
@@ -67,8 +81,13 @@ export function createResearchStreamResponse({
           systemPrompt,
           providerOptions: synthesisProviderOptions,
           emit,
+          signal,
         });
       } catch (error) {
+        if (isAbortError(error) || signal?.aborted) {
+          console.info('[Deep Research] Request cancelled.');
+          return;
+        }
         console.error('[Deep Research Stream Exception]:', error);
         try {
           const errorMessage = error instanceof Error ? error.message : 'Unknown streaming error';
@@ -76,8 +95,9 @@ export function createResearchStreamResponse({
         } catch {}
       } finally {
         clearInterval(heartbeatInterval);
+        signal?.removeEventListener('abort', closeForAbort);
         try {
-          controller.close();
+          if (!isControllerClosed) controller.close();
         } catch {}
       }
     },

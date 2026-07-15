@@ -34,6 +34,7 @@ export interface ScrapedDocument {
 export interface ResearchExecutionResult {
   searchResults: SearchResultBucket[];
   scrapedDocuments: ScrapedDocument[];
+  wasTruncated?: boolean;
 }
 
 export type ResearchStreamEmitter = (content: string) => void;

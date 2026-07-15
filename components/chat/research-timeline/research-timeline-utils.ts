@@ -1,6 +1,55 @@
 import type { ResearchStep } from '@/lib/research/parser';
 import type { ResearchSource } from './types';
 
+function compareResearchSteps(first: ResearchStep, second: ResearchStep) {
+  const firstOrder = first.order ?? first.sequence ?? Number.MAX_SAFE_INTEGER;
+  const secondOrder = second.order ?? second.sequence ?? Number.MAX_SAFE_INTEGER;
+  return firstOrder - secondOrder;
+}
+
+export function getResearchStepKey(step: ResearchStep, fallbackIndex: number) {
+  return step.id || `legacy-${fallbackIndex}-${step.type}-${step.query || step.url || ''}`;
+}
+
+export function organizeResearchSteps(steps: ResearchStep[]): ResearchStep[] {
+  const visibleSteps = steps.filter(step => !(
+    step.status === 'failed' && (step.type === 'browse' || step.type === 'scrape')
+  ));
+  if (!visibleSteps.some(step => step.id || step.parentId)) return visibleSteps;
+
+  const childrenByParent = new Map<string, ResearchStep[]>();
+  const roots: ResearchStep[] = [];
+  const emittedSteps = new Set<ResearchStep>();
+
+  for (const step of visibleSteps) {
+    if (step.parentId) {
+      const siblings = childrenByParent.get(step.parentId) || [];
+      siblings.push(step);
+      childrenByParent.set(step.parentId, siblings);
+    } else {
+      roots.push(step);
+    }
+  }
+
+  const organized: ResearchStep[] = [];
+  const appendBranch = (step: ResearchStep) => {
+    organized.push(step);
+    emittedSteps.add(step);
+    const children = step.id ? childrenByParent.get(step.id) : undefined;
+    children?.sort(compareResearchSteps).forEach(appendBranch);
+  };
+
+  roots.sort(compareResearchSteps).forEach(appendBranch);
+
+  // A partially streamed or legacy message can contain a child before its
+  // parent. Preserve it until the next stream update supplies the parent.
+  visibleSteps.forEach(step => {
+    if (!emittedSteps.has(step)) organized.push(step);
+  });
+
+  return organized;
+}
+
 export function isExpandableResearchStep(step: ResearchStep) {
   return step.type === 'search'
     || step.type === 'map'
@@ -10,6 +59,7 @@ export function isExpandableResearchStep(step: ResearchStep) {
 }
 
 export function getResearchStepPresentation(step: ResearchStep, isStepLoading: boolean) {
+  const isFailed = step.status === 'failed';
   if (step.type === 'plan') {
     const isSkipped = step.query === 'skipped';
     return isStepLoading
@@ -19,19 +69,24 @@ export function getResearchStepPresentation(step: ResearchStep, isStepLoading: b
         : 'Formulated research strategy';
   }
   if (step.type === 'synthesis') {
+    if (isFailed) return 'Could not synthesize the final report';
     return isStepLoading ? 'Synthesizing gathered details into final report...' : 'Synthesized final report';
   }
   if (step.type === 'map') {
+    if (isFailed) return `Could not explore website: ${step.query}`;
     return isStepLoading ? `Exploring website: ${step.query}...` : `Explored website: ${step.query}`;
   }
   if (step.type === 'search') {
+    if (isFailed) return `Could not find sources for "${step.query}"`;
     return isStepLoading ? `Finding sources for "${step.query}"...` : `Searched for "${step.query}"`;
   }
   if (step.type === 'browse' || step.type === 'scrape') {
     const hostname = getResearchStepHostname(step);
+    if (isFailed) return `Could not read page: ${hostname}`;
     return isStepLoading ? `Reading page: ${hostname}...` : `Read page: ${hostname}`;
   }
   if (step.type === 'x') {
+    if (isFailed) return `Could not scan social discussions for "${step.query}"`;
     return isStepLoading
       ? `Scanning social discussions for "${step.query}"...`
       : `Scanned social discussions for "${step.query}"`;

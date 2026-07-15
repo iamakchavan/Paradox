@@ -12,6 +12,7 @@ import type { TimelineStepItemProps } from './types';
 
 export const TimelineStepItem = memo(({
   step,
+  stepKey,
   idx,
   totalSteps,
   isExpanded,
@@ -27,40 +28,50 @@ export const TimelineStepItem = memo(({
 
   const content = (
     <>
-      <TimelineStatusIndicator isStepLoading={isStepLoading} isCompleted={isCompleted} />
-      <span className={cn(
-        'text-xs transition-colors duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] flex-1 truncate pr-2 font-medium leading-relaxed',
-        isStepLoading ? 'thinking-shine font-semibold text-foreground' : 'text-foreground/80 group-hover:text-primary'
-      )}>
-        {text}
-      </span>
-      {!isExpanded && hasResults && (
-        <div className="flex -space-x-1 items-center shrink-0 mr-1 select-none">
-          {step.results!.slice(0, 3).map((result, resultIndex) => (
-            <div
-              key={resultIndex}
-              className="w-4 h-4 rounded-full border border-background bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden shrink-0 shadow-3xs"
-              style={{ zIndex: 10 - resultIndex }}
-            >
-              <FaviconImage domain={getSourceDomain(result.url)} className="w-2.5 h-2.5 rounded-xs shrink-0" />
-            </div>
-          ))}
-          {step.results!.length > 3 && (
-            <span
-              className="text-[7.5px] font-bold text-muted-foreground/80 bg-muted border border-border/30 rounded-full w-4 h-4 flex items-center justify-center shrink-0 shadow-3xs pl-[0.5px]"
-              style={{ zIndex: 0 }}
-            >
-              +{step.results!.length - 3}
-            </span>
-          )}
-        </div>
-      )}
-      {isExpandable && (
-        <ChevronDown className={cn(
-          'w-3.5 h-3.5 text-muted-foreground/50 transition-transform duration-200 shrink-0',
-          isExpanded && 'rotate-180'
-        )} />
-      )}
+      <TimelineStatusIndicator
+        isStepLoading={isStepLoading}
+        isCompleted={isCompleted}
+        isFailed={step.status === 'failed'}
+      />
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <span className={cn(
+          'text-xs transition-colors duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] flex-1 truncate pr-2 font-medium leading-relaxed',
+          isStepLoading
+            ? 'thinking-shine font-semibold text-foreground'
+            : step.status === 'failed'
+              ? 'text-muted-foreground/65'
+              : 'text-foreground/80 group-hover:text-primary'
+        )}>
+          {text}
+        </span>
+        {!isExpanded && hasResults && (
+          <div className="flex -space-x-1 items-center shrink-0 mr-1 select-none">
+            {step.results!.slice(0, 3).map((result, resultIndex) => (
+              <div
+                key={resultIndex}
+                className="w-4 h-4 rounded-full border border-background bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center overflow-hidden shrink-0 shadow-3xs"
+                style={{ zIndex: 10 - resultIndex }}
+              >
+                <FaviconImage domain={getSourceDomain(result.url)} className="w-2.5 h-2.5 rounded-xs shrink-0" />
+              </div>
+            ))}
+            {step.results!.length > 3 && (
+              <span
+                className="text-[7.5px] font-bold text-muted-foreground/80 bg-muted border border-border/30 rounded-full w-4 h-4 flex items-center justify-center shrink-0 shadow-3xs pl-[0.5px]"
+                style={{ zIndex: 0 }}
+              >
+                +{step.results!.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+        {isExpandable && (
+          <ChevronDown className={cn(
+            'w-3.5 h-3.5 text-muted-foreground/50 transition-transform duration-200 shrink-0',
+            isExpanded && 'rotate-180'
+          )} />
+        )}
+      </div>
     </>
   );
 
@@ -75,7 +86,7 @@ export const TimelineStepItem = memo(({
       {isExpandable ? (
         <button
           type="button"
-          onClick={() => toggleStep(idx)}
+          onClick={() => toggleStep(stepKey)}
           className="w-full flex items-center gap-3 text-left py-1.5 hover:bg-secondary/40 dark:hover:bg-zinc-800/10 rounded-lg px-2 -mx-2 transition-colors duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] cursor-pointer focus:outline-hidden group"
         >
           {content}

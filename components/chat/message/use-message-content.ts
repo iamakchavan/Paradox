@@ -38,8 +38,9 @@ export function useMessageContent(content: string): ParsedMessageContent {
     let parsedSearchData: SearchData | null = null;
     let toolSteps: string[] = [];
     if (isDeepResearch) {
-      parsedSteps = parseResearchStream(content).steps;
-      mainContent = parseResearchStream(mainContent).cleanContent;
+      const researchStream = parseResearchStream(mainContent);
+      parsedSteps = researchStream.steps;
+      mainContent = researchStream.cleanContent;
     } else {
       const streamData = extractSearchData(content);
       searchLoadingQuery = streamData.searchLoadingQuery;

@@ -14,11 +14,12 @@ export interface ResearchSource {
 
 export interface TimelineStepItemProps {
   step: ResearchStep;
+  stepKey: string;
   idx: number;
   totalSteps: number;
   isExpanded: boolean;
   isStepLoading: boolean;
   isLoading: boolean;
   shouldShowLines: boolean;
-  toggleStep: (idx: number) => void;
+  toggleStep: (key: string) => void;
 }

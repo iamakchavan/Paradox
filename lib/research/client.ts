@@ -1,4 +1,9 @@
 import { RESEARCH_LIMITS } from './config';
+import {
+  createDeadlineSignal,
+  fetchJsonWithPolicy,
+  isAbortError,
+} from './request-policy';
 
 export interface SearchResult {
   title: string;
@@ -12,46 +17,83 @@ export interface SearchKeys {
   firecrawlKey?: string | null;
 }
 
-// Global/session memory cache for scraped page contents to avoid double scraping
-const SCRAPE_CACHE = new Map<string, string>();
+type ScrapeProvider = 'firecrawl' | 'exa';
 
-const createTimeoutSignal = (ms: number): AbortSignal => {
-  const controller = new AbortController();
-  setTimeout(() => controller.abort(), ms);
-  return controller.signal;
-};
+export interface ScrapeSession {
+  preferredProvider: ScrapeProvider;
+  consecutiveFailures: Record<ScrapeProvider, number>;
+}
 
-// Defensive request dispatcher with exponential backoff + jitter to combat 429 rate limiting
-// Creates a fresh AbortSignal on each try to avoid pre-aborted signal reuse.
-async function fetchWithRetry(
-  url: string,
-  options: Omit<RequestInit, 'signal'>,
-  timeoutMs: number,
-  retries = 3,
-  delayMs = 1000
-): Promise<Response> {
-  const signal = createTimeoutSignal(timeoutMs);
-  try {
-    const response = await fetch(url, { ...options, signal });
+export function createScrapeSession(): ScrapeSession {
+  return {
+    preferredProvider: 'firecrawl',
+    consecutiveFailures: { firecrawl: 0, exa: 0 },
+  };
+}
 
-    if (response.status === 429 && retries > 0) {
-      const retryAfter = response.headers.get('retry-after');
-      // If header is missing, add randomized jitter (up to 500ms) to spread requests
-      const waitTime = retryAfter ? parseInt(retryAfter, 10) * 1000 : delayMs + Math.random() * 500;
-      console.warn(`[Deep Research API] Rate limited (429). Retrying in ${waitTime}ms...`);
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-      return fetchWithRetry(url, options, timeoutMs, retries - 1, delayMs * 2);
-    }
+function getAvailableScrapeProviders(
+  keys: SearchKeys,
+  session: ScrapeSession,
+): ScrapeProvider[] {
+  const available: ScrapeProvider[] = [];
+  if (keys.firecrawlKey) available.push('firecrawl');
+  if (keys.exaKey) available.push('exa');
+  if (!available.includes(session.preferredProvider)) return available;
+  return [
+    session.preferredProvider,
+    ...available.filter(provider => provider !== session.preferredProvider),
+  ];
+}
 
-    return response;
-  } catch (error) {
-    if (retries > 0) {
-      const waitTime = delayMs + Math.random() * 500;
-      console.warn(`[Deep Research API] Request failed. Retrying in ${waitTime}ms...`, error);
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-      return fetchWithRetry(url, options, timeoutMs, retries - 1, delayMs * 2);
-    }
-    throw error;
+function recordScrapeFailure(
+  session: ScrapeSession,
+  provider: ScrapeProvider,
+  availableProviders: ScrapeProvider[],
+): void {
+  session.consecutiveFailures[provider] += 1;
+  if (provider !== session.preferredProvider || session.consecutiveFailures[provider] < 2) return;
+  const fallback = availableProviders.find(candidate => candidate !== provider);
+  if (fallback) {
+    session.preferredProvider = fallback;
+    console.warn(`[Deep Research] ${provider} is degraded; preferring ${fallback} for subsequent reads.`);
+  }
+}
+
+function recordScrapeSuccess(session: ScrapeSession, provider: ScrapeProvider): void {
+  session.consecutiveFailures[provider] = 0;
+}
+
+interface ScrapeCacheEntry {
+  content: string;
+  expiresAt: number;
+}
+
+// Edge isolates may be reused between requests, so keep this cache explicitly
+// bounded. Re-inserting a hit gives the Map inexpensive LRU behavior.
+const SCRAPE_CACHE = new Map<string, ScrapeCacheEntry>();
+
+function getCachedScrape(url: string): string | null {
+  const entry = SCRAPE_CACHE.get(url);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    SCRAPE_CACHE.delete(url);
+    return null;
+  }
+  SCRAPE_CACHE.delete(url);
+  SCRAPE_CACHE.set(url, entry);
+  return entry.content;
+}
+
+function cacheScrape(url: string, content: string): void {
+  SCRAPE_CACHE.delete(url);
+  SCRAPE_CACHE.set(url, {
+    content,
+    expiresAt: Date.now() + RESEARCH_LIMITS.SCRAPE_CACHE_TTL_MS,
+  });
+  while (SCRAPE_CACHE.size > RESEARCH_LIMITS.SCRAPE_CACHE_MAX_ENTRIES) {
+    const oldestKey = SCRAPE_CACHE.keys().next().value as string | undefined;
+    if (!oldestKey) break;
+    SCRAPE_CACHE.delete(oldestKey);
   }
 }
 
@@ -65,7 +107,13 @@ function sanitizeTitle(title: string): string {
 }
 
 // 1. Tavily Search Wrapper
-async function getTavilyResults(query: string, apiKey: string, maxResults = 5, isSocial = false): Promise<SearchResult[]> {
+async function getTavilyResults(
+  query: string,
+  apiKey: string,
+  maxResults = 5,
+  isSocial = false,
+  signal?: AbortSignal,
+): Promise<SearchResult[]> {
   const body: any = {
     api_key: apiKey,
     query,
@@ -76,17 +124,16 @@ async function getTavilyResults(query: string, apiKey: string, maxResults = 5, i
     body.include_domains = ['twitter.com', 'x.com', 'reddit.com'];
   }
 
-  const response = await fetchWithRetry('https://api.tavily.com/search', {
+  const data: any = await fetchJsonWithPolicy('https://api.tavily.com/search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-  }, RESEARCH_LIMITS.API_TIMEOUT_MS);
-
-  if (!response.ok) {
-    throw new Error(`Tavily API returned status ${response.status}`);
-  }
-
-  const data = await response.json();
+  }, {
+    label: 'Tavily search',
+    timeoutMs: RESEARCH_LIMITS.API_TIMEOUT_MS,
+    maxAttempts: RESEARCH_LIMITS.REQUEST_MAX_ATTEMPTS,
+    signal,
+  });
   if (!data.results || !Array.isArray(data.results)) return [];
 
   return data.results.map((r: any) => ({
@@ -97,7 +144,13 @@ async function getTavilyResults(query: string, apiKey: string, maxResults = 5, i
 }
 
 // 2. Exa Search Wrapper
-async function getExaResults(query: string, apiKey: string, maxResults = 8, isSocial = false): Promise<SearchResult[]> {
+async function getExaResults(
+  query: string,
+  apiKey: string,
+  maxResults = 8,
+  isSocial = false,
+  signal?: AbortSignal,
+): Promise<SearchResult[]> {
   const body: any = {
     query,
     numResults: maxResults,
@@ -109,7 +162,7 @@ async function getExaResults(query: string, apiKey: string, maxResults = 8, isSo
     body.includeDomains = ['twitter.com', 'x.com', 'reddit.com'];
   }
 
-  const response = await fetchWithRetry('https://api.exa.ai/search', {
+  const data: any = await fetchJsonWithPolicy('https://api.exa.ai/search', {
     method: 'POST',
     headers: {
       'x-api-key': apiKey,
@@ -117,13 +170,12 @@ async function getExaResults(query: string, apiKey: string, maxResults = 8, isSo
       'accept': 'application/json',
     },
     body: JSON.stringify(body),
-  }, RESEARCH_LIMITS.API_TIMEOUT_MS);
-
-  if (!response.ok) {
-    throw new Error(`Exa API returned status ${response.status}`);
-  }
-
-  const data = await response.json();
+  }, {
+    label: 'Exa search',
+    timeoutMs: RESEARCH_LIMITS.API_TIMEOUT_MS,
+    maxAttempts: RESEARCH_LIMITS.REQUEST_MAX_ATTEMPTS,
+    signal,
+  });
   if (!data.results || !Array.isArray(data.results)) return [];
 
   return data.results.map((r: any) => ({
@@ -137,8 +189,13 @@ async function getExaResults(query: string, apiKey: string, maxResults = 8, isSo
 }
 
 // 3. Firecrawl Search Wrapper
-async function getFirecrawlResults(query: string, apiKey: string, maxResults = 5): Promise<SearchResult[]> {
-  const response = await fetchWithRetry('https://api.firecrawl.dev/v1/search', {
+async function getFirecrawlResults(
+  query: string,
+  apiKey: string,
+  maxResults = 5,
+  signal?: AbortSignal,
+): Promise<SearchResult[]> {
+  const data: any = await fetchJsonWithPolicy('https://api.firecrawl.dev/v1/search', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
@@ -149,13 +206,12 @@ async function getFirecrawlResults(query: string, apiKey: string, maxResults = 5
       limit: maxResults,
       scrapeOptions: { formats: ['markdown'] },
     }),
-  }, RESEARCH_LIMITS.API_TIMEOUT_MS + 5000);
-
-  if (!response.ok) {
-    throw new Error(`Firecrawl Search API returned status ${response.status}`);
-  }
-
-  const data = await response.json();
+  }, {
+    label: 'Firecrawl search',
+    timeoutMs: RESEARCH_LIMITS.API_TIMEOUT_MS + 5000,
+    maxAttempts: RESEARCH_LIMITS.REQUEST_MAX_ATTEMPTS,
+    signal,
+  });
   const rawData = data.success && Array.isArray(data.data) ? data.data : Array.isArray(data.data) ? data.data : [];
 
   return rawData.map((r: any) => ({
@@ -170,15 +226,17 @@ export async function executeWebSearch(
   query: string,
   keys: SearchKeys,
   maxResults = 5,
-  isSocial = false
+  isSocial = false,
+  signal?: AbortSignal,
 ): Promise<SearchResult[]> {
   if (!query || !query.trim()) return [];
 
   // 1. Tavily
   if (keys.tavilyKey) {
     try {
-      return await getTavilyResults(query, keys.tavilyKey, maxResults, isSocial);
+      return await getTavilyResults(query, keys.tavilyKey, maxResults, isSocial, signal);
     } catch (err: any) {
+      if (signal?.aborted || isAbortError(err)) throw err;
       console.warn(`[Deep Research] Tavily search fallback triggered due to: ${err.message}`);
     }
   }
@@ -186,8 +244,9 @@ export async function executeWebSearch(
   // 2. Exa
   if (keys.exaKey) {
     try {
-      return await getExaResults(query, keys.exaKey, maxResults, isSocial);
+      return await getExaResults(query, keys.exaKey, maxResults, isSocial, signal);
     } catch (err: any) {
+      if (signal?.aborted || isAbortError(err)) throw err;
       console.warn(`[Deep Research] Exa search fallback triggered due to: ${err.message}`);
     }
   }
@@ -195,8 +254,9 @@ export async function executeWebSearch(
   // 3. Firecrawl
   if (keys.firecrawlKey) {
     try {
-      return await getFirecrawlResults(query, keys.firecrawlKey, maxResults);
+      return await getFirecrawlResults(query, keys.firecrawlKey, maxResults, signal);
     } catch (err: any) {
+      if (signal?.aborted || isAbortError(err)) throw err;
       console.warn(`[Deep Research] Firecrawl search failed: ${err.message}`);
     }
   }
@@ -204,80 +264,115 @@ export async function executeWebSearch(
   return [];
 }
 
-// Scrape Page contents using Firecrawl or Exa
+async function scrapeWithFirecrawl(
+  url: string,
+  apiKey: string,
+  signal: AbortSignal,
+): Promise<string> {
+  const data: any = await fetchJsonWithPolicy('https://api.firecrawl.dev/v1/scrape', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      url,
+      formats: ['markdown'],
+      onlyMainContent: true,
+    }),
+  }, {
+    label: 'Firecrawl scrape',
+    timeoutMs: RESEARCH_LIMITS.SCRAPE_TIMEOUT_MS,
+    maxAttempts: RESEARCH_LIMITS.REQUEST_MAX_ATTEMPTS,
+    retryTimeouts: false,
+    signal,
+  });
+  return data.success && data.data?.markdown ? data.data.markdown.slice(0, 8000) : '';
+}
+
+async function scrapeWithExa(
+  url: string,
+  apiKey: string,
+  signal: AbortSignal,
+): Promise<string> {
+  const data: any = await fetchJsonWithPolicy('https://api.exa.ai/contents', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'Content-Type': 'application/json',
+      'accept': 'application/json',
+    },
+    body: JSON.stringify({ urls: [url], text: true }),
+  }, {
+    label: 'Exa contents',
+    timeoutMs: RESEARCH_LIMITS.SCRAPE_TIMEOUT_MS,
+    maxAttempts: RESEARCH_LIMITS.REQUEST_MAX_ATTEMPTS,
+    retryTimeouts: false,
+    signal,
+  });
+  return data.results?.[0]?.text ? data.results[0].text.slice(0, 8000) : '';
+}
+
+// Reads a page through an adaptive provider chain. Each provider receives its
+// own budget so a degraded primary cannot consume the fallback's opportunity.
 export async function executeScrapePage(
   url: string,
-  keys: SearchKeys
+  keys: SearchKeys,
+  signal?: AbortSignal,
+  session: ScrapeSession = createScrapeSession(),
 ): Promise<string> {
   if (!url) return '';
 
-  // Return cached result if available to save credit count
-  if (SCRAPE_CACHE.has(url)) {
+  const cachedContent = getCachedScrape(url);
+  if (cachedContent !== null) {
     console.log(`[Deep Research] Cache hit for URL: ${url}`);
-    return SCRAPE_CACHE.get(url) || '';
+    return cachedContent;
   }
 
-  // 1. Firecrawl Scrape API
-  if (keys.firecrawlKey) {
-    try {
-      console.log(`[Deep Research] Scraping via Firecrawl: ${url}`);
-      const response = await fetchWithRetry('https://api.firecrawl.dev/v1/scrape', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${keys.firecrawlKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url,
-          formats: ['markdown'],
-          onlyMainContent: true,
-        }),
-      }, RESEARCH_LIMITS.SCRAPE_TIMEOUT_MS);
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data?.markdown) {
-          const content = data.data.markdown.slice(0, 8000);
-          SCRAPE_CACHE.set(url, content);
+  const urlBudget = createDeadlineSignal(signal, RESEARCH_LIMITS.SCRAPE_URL_BUDGET_MS);
+  const providers = getAvailableScrapeProviders(keys, session);
+  try {
+    for (const provider of providers) {
+      const providerBudget = createDeadlineSignal(
+        urlBudget.signal,
+        RESEARCH_LIMITS.SCRAPE_PROVIDER_BUDGET_MS,
+      );
+      const startedAt = Date.now();
+      try {
+        console.log(`[Deep Research] Reading via ${provider}: ${url}`);
+        const content = provider === 'firecrawl'
+          ? await scrapeWithFirecrawl(url, keys.firecrawlKey!, providerBudget.signal)
+          : await scrapeWithExa(url, keys.exaKey!, providerBudget.signal);
+        if (content) {
+          cacheScrape(url, content);
+          recordScrapeSuccess(session, provider);
+          console.log(
+            `[Deep Research] ${provider} read succeeded for ${url} (${content.length} chars, ${Date.now() - startedAt}ms).`,
+          );
           return content;
         }
+        recordScrapeFailure(session, provider, providers);
+        console.warn(`[Deep Research] ${provider} returned no readable content for ${url}.`);
+      } catch (err: any) {
+        if (urlBudget.signal.aborted) throw err;
+        recordScrapeFailure(session, provider, providers);
+        console.warn(`[Deep Research] ${provider} read failed for ${url}: ${err.message}`);
+      } finally {
+        providerBudget.dispose();
       }
-    } catch (err: any) {
-      console.warn(`[Deep Research] Firecrawl scrape failed for ${url}: ${err.message}`);
     }
-  }
 
-  // 2. Exa Contents API
-  if (keys.exaKey) {
-    try {
-      console.log(`[Deep Research] Fallback: Scraping via Exa Contents: ${url}`);
-      const response = await fetchWithRetry('https://api.exa.ai/contents', {
-        method: 'POST',
-        headers: {
-          'x-api-key': keys.exaKey,
-          'Content-Type': 'application/json',
-          'accept': 'application/json',
-        },
-        body: JSON.stringify({
-          urls: [url],
-          text: true,
-        }),
-      }, RESEARCH_LIMITS.SCRAPE_TIMEOUT_MS);
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.results && data.results[0]?.text) {
-          const content = data.results[0].text.slice(0, 8000);
-          SCRAPE_CACHE.set(url, content);
-          return content;
-        }
-      }
-    } catch (err: any) {
-      console.warn(`[Deep Research] Exa contents extraction failed for ${url}: ${err.message}`);
+    return '';
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    if (urlBudget.didTimeout()) {
+      console.warn(`[Deep Research] Scrape budget exhausted for ${url}; continuing with search snippets.`);
+      return '';
     }
+    throw error;
+  } finally {
+    urlBudget.dispose();
   }
-
-  return '';
 }
 
 // Local TF-IDF overlapping relevance calculator to rank URL priority
@@ -316,7 +411,8 @@ export function rankUrlRelevance(
 export async function executeMapPage(
   url: string,
   keys: SearchKeys,
-  limit = 20
+  limit = 20,
+  signal?: AbortSignal,
 ): Promise<string[]> {
   if (!url) return [];
 
@@ -324,7 +420,7 @@ export async function executeMapPage(
   if (keys.firecrawlKey) {
     try {
       console.log(`[Deep Research] Mapping URL via Firecrawl: ${url}`);
-      const response = await fetchWithRetry('https://api.firecrawl.dev/v1/map', {
+      const data: any = await fetchJsonWithPolicy('https://api.firecrawl.dev/v1/map', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${keys.firecrawlKey}`,
@@ -334,20 +430,21 @@ export async function executeMapPage(
           url,
           limit,
         }),
-      }, RESEARCH_LIMITS.API_TIMEOUT_MS + 10000);
+      }, {
+        label: 'Firecrawl map',
+        timeoutMs: RESEARCH_LIMITS.API_TIMEOUT_MS + 10000,
+        maxAttempts: RESEARCH_LIMITS.REQUEST_MAX_ATTEMPTS,
+        signal,
+      });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && Array.isArray(data.links)) {
-          return data.links.slice(0, limit);
-        }
-        if (Array.isArray(data.links)) {
-          return data.links.slice(0, limit);
-        }
-      } else {
-        console.warn(`[Deep Research] Firecrawl Map API returned status ${response.status}`);
+      if (data.success && Array.isArray(data.links)) {
+        return data.links.slice(0, limit);
+      }
+      if (Array.isArray(data.links)) {
+        return data.links.slice(0, limit);
       }
     } catch (err: any) {
+      if (signal?.aborted || isAbortError(err)) throw err;
       console.warn(`[Deep Research] Firecrawl map failed for ${url}: ${err.message}`);
     }
   }
@@ -361,7 +458,7 @@ export async function executeMapPage(
         domain = new URL(url).hostname;
       } catch {}
       
-      const response = await fetchWithRetry('https://api.exa.ai/search', {
+      const data: any = await fetchJsonWithPolicy('https://api.exa.ai/search', {
         method: 'POST',
         headers: {
           'x-api-key': keys.exaKey,
@@ -372,19 +469,21 @@ export async function executeMapPage(
           query: `site:${domain}`,
           numResults: limit,
         }),
-      }, RESEARCH_LIMITS.API_TIMEOUT_MS);
+      }, {
+        label: 'Exa map fallback',
+        timeoutMs: RESEARCH_LIMITS.API_TIMEOUT_MS,
+        maxAttempts: RESEARCH_LIMITS.REQUEST_MAX_ATTEMPTS,
+        signal,
+      });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.results && Array.isArray(data.results)) {
-          return data.results.map((r: any) => r.url).slice(0, limit);
-        }
+      if (data.results && Array.isArray(data.results)) {
+        return data.results.map((r: any) => r.url).slice(0, limit);
       }
     } catch (err: any) {
+      if (signal?.aborted || isAbortError(err)) throw err;
       console.warn(`[Deep Research] Exa fallback map failed: ${err.message}`);
     }
   }
 
   return [];
 }
-

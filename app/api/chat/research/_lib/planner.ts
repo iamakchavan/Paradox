@@ -1,5 +1,7 @@
 import { generateText, Output } from 'ai';
 import { z } from 'zod';
+import { isAbortError } from '@/lib/research/request-policy';
+import { serializeResearchEvent } from '@/lib/research/events';
 import type {
   ResearchPlanResult,
   ResearchStreamEmitter,
@@ -10,6 +12,7 @@ interface PlanResearchOptions {
   aiModel: any;
   providerOptions: Record<string, any>;
   emit: ResearchStreamEmitter;
+  signal?: AbortSignal;
 }
 
 const QUERY_PREFIX =
@@ -34,6 +37,7 @@ async function resolveAndCleanQuery(
   rawQuery: string,
   formattedMessages: any[],
   aiModel: any,
+  signal?: AbortSignal,
 ): Promise<string> {
   const cleaned = cleanInitialQuery(rawQuery);
   const pronounRegex =
@@ -59,6 +63,7 @@ Rules:
       model: aiModel,
       system: deRefPrompt,
       messages: formattedMessages,
+      abortSignal: signal,
     });
 
     const resolved = cleanResolvedQuery(deRefResponse.text);
@@ -67,6 +72,7 @@ Rules:
       return resolved;
     }
   } catch (error) {
+    if (isAbortError(error)) throw error;
     console.error('[DEEP RESEARCH PLANNER] Error in resolveAndCleanQuery:', error);
   }
 
@@ -124,6 +130,7 @@ async function generatePlan(
   aiModel: any,
   plannerSystemPrompt: string,
   providerOptions: Record<string, any>,
+  signal?: AbortSignal,
 ): Promise<ResearchPlanResult> {
   try {
     console.log('[DEEP RESEARCH PLANNER] Invoking planner model for query:', lastUserQuery);
@@ -159,11 +166,13 @@ async function generatePlan(
         }),
       }),
       providerOptions,
+      abortSignal: signal,
     });
 
     console.log('[DEEP RESEARCH PLANNER] Planned:', JSON.stringify(plannerResponse.output, null, 2));
     return plannerResponse.output;
   } catch (plannerError) {
+    if (isAbortError(plannerError)) throw plannerError;
     console.error(
       '[DEEP RESEARCH PLANNER] Failed to generate structured plan, trying text fallback:',
       plannerError,
@@ -191,6 +200,7 @@ Do NOT include markdown formatting, markdown code blocks (such as \`\`\`json), o
       model: aiModel,
       system: textPlannerPrompt,
       messages: formattedMessages,
+      abortSignal: signal,
     });
 
     const cleanText = textResponse.text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -220,6 +230,7 @@ Do NOT include markdown formatting, markdown code blocks (such as \`\`\`json), o
     );
     return planResult;
   } catch (fallbackError) {
+    if (isAbortError(fallbackError)) throw fallbackError;
     console.error(
       '[DEEP RESEARCH PLANNER] Text fallback failed as well, invoking fallback de-referencing query:',
       fallbackError,
@@ -242,11 +253,13 @@ Rules:
       model: aiModel,
       system: deRefPrompt,
       messages: formattedMessages,
+      abortSignal: signal,
     });
     if (deRefResponse.text.trim()) {
       deReferencedQuery = deRefResponse.text.trim().replace(/^"|"$/g, '');
     }
   } catch (deRefError) {
+    if (isAbortError(deRefError)) throw deRefError;
     console.error('[DEEP RESEARCH PLANNER] Query de-referencing failed:', deRefError);
   }
 
@@ -264,8 +277,9 @@ export async function planResearch({
   aiModel,
   providerOptions,
   emit,
+  signal,
 }: PlanResearchOptions): Promise<ResearchPlanResult> {
-  emit('<research-step type="plan" status="started" />');
+  emit(serializeResearchEvent({ type: 'plan', status: 'started', id: 'research-plan', order: -1 }));
 
   const lastUserQuery = getLastUserQuery(formattedMessages);
   const planResult = await generatePlan(
@@ -274,20 +288,23 @@ export async function planResearch({
     aiModel,
     buildPlannerSystemPrompt(),
     providerOptions,
+    signal,
   );
 
-  emit(
-    `<research-step type="plan" status="completed"${
-      !planResult.researchNeeded ? ' query="skipped"' : ''
-    } />`,
-  );
+  emit(serializeResearchEvent({
+    type: 'plan',
+    status: 'completed',
+    id: 'research-plan',
+    order: -1,
+    query: !planResult.researchNeeded ? 'skipped' : undefined,
+  }));
 
   if (planResult.plan.length > 0) {
     console.log('[DEEP RESEARCH PLANNER] Pre-cleaning/de-referencing planned queries...');
     planResult.plan = await Promise.all(
       planResult.plan.map(async (step) => ({
         ...step,
-        query: await resolveAndCleanQuery(step.query, formattedMessages, aiModel),
+        query: await resolveAndCleanQuery(step.query, formattedMessages, aiModel, signal),
       })),
     );
     console.log(

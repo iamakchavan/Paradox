@@ -5,9 +5,11 @@ import { motion } from 'framer-motion';
 export function TimelineStatusIndicator({
   isStepLoading,
   isCompleted,
+  isFailed,
 }: {
   isStepLoading: boolean;
   isCompleted: boolean;
+  isFailed: boolean;
 }) {
   return (
     <div className="w-5 h-5 flex items-center justify-center shrink-0 z-10 select-none">
@@ -24,6 +26,19 @@ export function TimelineStatusIndicator({
             style={{ animationDuration: '2s' }}
           >
             <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
+          </svg>
+        </div>
+      ) : isFailed ? (
+        <div className="flex h-4 w-4 items-center justify-center text-muted-foreground/55">
+          <svg
+            className="h-3 w-3"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          >
+            <path d="M7 7l10 10M17 7L7 17" />
           </svg>
         </div>
       ) : isCompleted ? (

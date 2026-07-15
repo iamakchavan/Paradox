@@ -1,9 +1,33 @@
+import type { ResearchEventStatus, ResearchEventType } from './events';
+
 export interface ResearchStep {
-  type: 'search' | 'browse' | 'x' | 'plan' | 'synthesis' | 'scrape' | 'map';
-  status: 'started' | 'completed';
+  type: ResearchEventType;
+  status: Exclude<ResearchEventStatus, 'updated'>;
+  id?: string;
+  parentId?: string;
+  order?: number;
+  sequence?: number;
   query?: string;
   url?: string;
   results?: Array<{ title: string; url: string; content: string }>;
+}
+
+function decodeAttribute(value: string): string {
+  return value
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&amp;/g, '&');
+}
+
+function parseAttributes(source: string): Record<string, string> {
+  const attributes: Record<string, string> = {};
+  const attributeRegex = /([\w-]+)="([^"]*)"/g;
+  let match: RegExpExecArray | null;
+  while ((match = attributeRegex.exec(source)) !== null) {
+    attributes[match[1]] = decodeAttribute(match[2]);
+  }
+  return attributes;
 }
 
 export function parseResearchStream(content: string): {
@@ -14,16 +38,23 @@ export function parseResearchStream(content: string): {
   let cleanContent = content;
 
   // Regex to extract all search results
-  const resultsRegex = /<search-results>([\s\S]*?)<\/search-results>/g;
-  const resultsList: Array<Array<{ title: string; url: string; content: string }>> = [];
+  const resultsRegex = /<search-results(?:\s+step-id="([^"]+)")?>([\s\S]*?)<\/search-results>/g;
+  const resultsByStepId = new Map<string, Array<{ title: string; url: string; content: string }>>();
+  const legacyResults: Array<Array<{ title: string; url: string; content: string }>> = [];
   let resultsMatch;
   while ((resultsMatch = resultsRegex.exec(content)) !== null) {
     try {
-      const parsed = JSON.parse(resultsMatch[1]);
-      if (Array.isArray(parsed)) {
-        resultsList.push(parsed);
-      } else if (parsed && Array.isArray(parsed.results)) {
-        resultsList.push(parsed.results);
+      const parsed = JSON.parse(resultsMatch[2]);
+      const results = Array.isArray(parsed)
+        ? parsed
+        : parsed && Array.isArray(parsed.results)
+          ? parsed.results
+          : null;
+      if (!results) continue;
+      if (resultsMatch[1]) {
+        resultsByStepId.set(decodeAttribute(resultsMatch[1]), results);
+      } else {
+        legacyResults.push(results);
       }
     } catch (e) {
       console.warn('[Parser] Failed to parse search results JSON:', e);
@@ -34,50 +65,88 @@ export function parseResearchStream(content: string): {
   cleanContent = cleanContent.replace(resultsRegex, '');
 
   // Regex for research steps
-  const stepRegex = /<research-step\s+type="([^"]+)"\s+status="([^"]+)"(?:\s+query="([^"]*)")?(?:\s+url="([^"]*)")?\s*\/?>/g;
+  const stepRegex = /<research-step\b([^>]*)\/?>/g;
   
   let stepMatch;
   let searchResultIndex = 0;
 
   while ((stepMatch = stepRegex.exec(content)) !== null) {
-    const type = stepMatch[1] as 'search' | 'browse' | 'x' | 'plan' | 'synthesis' | 'scrape' | 'map';
-    const status = stepMatch[2] as 'started' | 'completed';
-    const query = stepMatch[3] ? stepMatch[3].replace(/&quot;/g, '"') : undefined;
-    const url = stepMatch[4] ? stepMatch[4].replace(/&quot;/g, '"') : undefined;
+    const attributes = parseAttributes(stepMatch[1]);
+    const type = attributes.type as ResearchEventType;
+    const status = attributes.status as ResearchEventStatus;
+    if (!type || !status) continue;
+    const id = attributes.id;
+    const parentId = attributes['parent-id'];
+    const parsedOrder = attributes.order === undefined ? undefined : Number(attributes.order);
+    const order = parsedOrder !== undefined && Number.isFinite(parsedOrder) ? parsedOrder : undefined;
+    const query = attributes.query;
+    const url = attributes.url;
 
     if (status === 'started') {
       steps.push({
         type,
         status: 'started',
+        id,
+        parentId,
+        order,
+        sequence: steps.length,
         query,
         url,
       });
-    } else if (status === 'completed') {
-      // Find the last started step of the same type that isn't completed yet
-      const matchingStep = [...steps]
-        .reverse()
-        .find((s) => 
-          s.type === type && 
-          s.status === 'started' && 
-          (type === 'plan' || type === 'synthesis'
-            ? true
-            : (url ? s.url === url : query ? s.query === query : true))
-        );
-
+    } else if (status === 'updated') {
+      const matchingStep = id ? steps.find(step => step.id === id) : undefined;
       if (matchingStep) {
-        matchingStep.status = 'completed';
+        if (parentId) matchingStep.parentId = parentId;
+        if (order !== undefined) matchingStep.order = order;
         if (query) matchingStep.query = query;
         if (url) matchingStep.url = url;
-        if ((type === 'search' || type === 'x') && searchResultIndex < resultsList.length) {
-          matchingStep.results = resultsList[searchResultIndex];
-          searchResultIndex++;
+      }
+    } else if (status === 'completed' || status === 'failed') {
+      const matchingStep = [...steps]
+        .reverse()
+        .find((step) => {
+          if (step.status !== 'started') return false;
+          if (id) return step.id === id;
+          return step.type === type && (
+            type === 'plan' || type === 'synthesis'
+              ? true
+              : url
+                ? step.url === url
+                : query
+                  ? step.query === query
+                  : true
+          );
+        });
+
+      if (matchingStep) {
+        matchingStep.status = status;
+        if (id) matchingStep.id = id;
+        if (parentId) matchingStep.parentId = parentId;
+        if (order !== undefined) matchingStep.order = order;
+        if (query) matchingStep.query = query;
+        if (url) matchingStep.url = url;
+        if (id && resultsByStepId.has(id)) {
+          matchingStep.results = resultsByStepId.get(id);
+        } else if ((type === 'search' || type === 'x' || type === 'scrape' || type === 'map')
+          && searchResultIndex < legacyResults.length) {
+          matchingStep.results = legacyResults[searchResultIndex++];
         }
       } else {
-        // Fallback: if no started step found, just push a completed one
-        const step: ResearchStep = { type, status: 'completed', query, url };
-        if ((type === 'search' || type === 'x') && searchResultIndex < resultsList.length) {
-          step.results = resultsList[searchResultIndex];
-          searchResultIndex++;
+        const step: ResearchStep = {
+          type,
+          status,
+          id,
+          parentId,
+          order,
+          sequence: steps.length,
+          query,
+          url,
+        };
+        if (id && resultsByStepId.has(id)) {
+          step.results = resultsByStepId.get(id);
+        } else if ((type === 'search' || type === 'x' || type === 'scrape' || type === 'map')
+          && searchResultIndex < legacyResults.length) {
+          step.results = legacyResults[searchResultIndex++];
         }
         steps.push(step);
       }

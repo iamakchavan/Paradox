@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from 'lucide-react';
+import { ChevronUp } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FaviconImage } from '../FaviconImage';
 import type { ResearchSource } from './types';
@@ -15,37 +15,44 @@ export function ResearchSources({
   setShowAllSources: (show: boolean) => void;
 }) {
   if (sources.length === 0) return null;
-  const visibleSources = sources.length > 4 && !showAllSources ? sources.slice(0, 3) : sources.slice(0, 4);
+
+  const visibleSources = sources.length > 4 && !showAllSources
+    ? sources.slice(0, 3)
+    : sources.slice(0, 4);
 
   return (
-    <div className="pt-3.5 mt-3.5 border-t border-zinc-200/60 dark:border-zinc-800/40">
-      <div className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 select-none tracking-wider uppercase mb-1.5 px-1">
-        Sources ({sources.length})
+    <div className="border-t border-foreground/[0.06] px-3 pb-3 pt-2.5">
+      <div className="mb-2 px-1 text-[11px] font-normal text-muted-foreground/65 select-none">
+        Sources
       </div>
-      <div className="px-1 pb-1 -mx-1">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pt-2">
+
+      <div className="overflow-hidden rounded-lg bg-foreground/[0.025] ring-1 ring-inset ring-foreground/[0.055]">
+        <div className="grid grid-cols-2 gap-px bg-foreground/[0.055] sm:grid-cols-3 md:grid-cols-4">
           {visibleSources.map((source, index) => (
-            <ResearchSourceCard key={index} source={source} citationIndex={index + 1} />
+            <ResearchSourceItem key={source.url} source={source} citationIndex={index + 1} />
           ))}
+
           {sources.length > 4 && !showAllSources && (
             <button
+              type="button"
               onClick={() => setShowAllSources(true)}
-              className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-100/50 dark:bg-zinc-900/40 hover:bg-zinc-200/50 dark:hover:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] cursor-pointer group shadow-3xs text-left"
+              className="group flex min-h-[72px] cursor-pointer flex-col justify-between bg-background/80 p-3 text-left transition-colors duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] hover:bg-background/55 focus-visible:outline-none focus-visible:bg-background/55"
             >
-              <div className="flex items-center gap-1 select-none">
+              <div className="flex -space-x-1 select-none">
                 {sources.slice(3, 6).map((source, index) => (
                   <div
-                    key={index}
-                    className="w-5 h-5 rounded-full bg-zinc-200/50 dark:bg-white/5 flex items-center justify-center shrink-0 border border-border/10 overflow-hidden"
+                    key={source.url}
+                    className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-background ring-1 ring-background"
+                    style={{ zIndex: 3 - index }}
                   >
-                    <FaviconImage domain={source.domain} className="w-3.5 h-3.5 rounded-full" />
+                    <FaviconImage domain={source.domain} className="h-3.5 w-3.5 rounded-full" />
                   </div>
                 ))}
                 {sources.length > 6 && (
-                  <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 font-mono pl-0.5">+</span>
+                  <span className="pl-2 text-[10px] text-muted-foreground/60">+</span>
                 )}
               </div>
-              <span className="text-[11px] font-semibold text-zinc-650 dark:text-zinc-350 group-hover:text-zinc-800 dark:group-hover:text-zinc-100 transition-colors">
+              <span className="text-[11px] font-medium text-foreground/70 transition-colors group-hover:text-foreground">
                 View {sources.length - 3} more
               </span>
             </button>
@@ -59,20 +66,19 @@ export function ResearchSources({
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.25, ease: 'easeInOut' }}
-              className="overflow-hidden px-1 pb-1 -mx-1"
+              className="overflow-hidden"
             >
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pt-2">
+              <div className="grid grid-cols-2 gap-px border-t border-foreground/[0.055] bg-foreground/[0.055] sm:grid-cols-3 md:grid-cols-4">
                 {sources.slice(4).map((source, index) => (
-                  <ResearchSourceCard key={index + 4} source={source} citationIndex={index + 5} />
+                  <ResearchSourceItem key={source.url} source={source} citationIndex={index + 5} />
                 ))}
                 <button
+                  type="button"
                   onClick={() => setShowAllSources(false)}
-                  className="flex flex-col justify-center items-center h-[80px] p-2.5 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800/50 bg-zinc-50/10 dark:bg-zinc-950/5 hover:bg-zinc-100/50 dark:hover:bg-zinc-900/40 hover:border-zinc-400 dark:hover:border-zinc-700 transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] cursor-pointer group shadow-3xs"
+                  className="group flex min-h-[72px] cursor-pointer items-center justify-center gap-1.5 bg-background/80 p-3 text-[11px] font-medium text-muted-foreground transition-colors duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] hover:bg-background/55 hover:text-foreground focus-visible:outline-none focus-visible:bg-background/55"
                 >
-                  <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-200 transition-colors rotate-180 mb-1" />
-                  <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-800 dark:group-hover:text-zinc-200 transition-colors">
-                    Show less
-                  </span>
+                  <ChevronUp className="h-3.5 w-3.5" />
+                  <span>Show less</span>
                 </button>
               </div>
             </motion.div>
@@ -83,7 +89,7 @@ export function ResearchSources({
   );
 }
 
-function ResearchSourceCard({
+function ResearchSourceItem({
   source,
   citationIndex,
 }: {
@@ -95,16 +101,19 @@ function ResearchSourceCard({
       href={source.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex flex-col justify-between h-[80px] p-2.5 rounded-xl border border-zinc-200/60 dark:border-zinc-800/40 bg-zinc-50/30 dark:bg-zinc-950/20 hover:bg-white dark:hover:bg-zinc-900/40 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-2xs transition-[background-color,border-color,box-shadow] duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] no-underline group cursor-pointer"
+      className="group flex min-h-[72px] cursor-pointer flex-col justify-between bg-background/80 p-3 no-underline transition-colors duration-[var(--motion-duration-content)] ease-[var(--motion-ease-out)] hover:bg-background/55 focus-visible:outline-none focus-visible:bg-background/55"
     >
-      <h4 className="font-semibold text-zinc-800 dark:text-zinc-200 text-[11px] leading-snug line-clamp-2 group-hover:text-primary transition-colors flex-1">
+      <h4 className="line-clamp-2 flex-1 text-[11px] font-medium leading-snug text-foreground/80 transition-colors group-hover:text-foreground">
         {source.title || source.domain}
       </h4>
-      <div className="flex items-center gap-1.5 min-w-0 mt-1.5 select-none">
-        <FaviconImage domain={source.domain} className="w-3.5 h-3.5 rounded-xs" />
-        <span className="text-[9.5px] text-zinc-400 dark:text-zinc-500 font-medium truncate flex-1">{source.domain}</span>
-        <span className="text-zinc-300 dark:text-zinc-700/60 font-medium shrink-0">·</span>
-        <span className="text-[9.5px] font-bold text-zinc-400 dark:text-zinc-500 shrink-0 font-mono">{citationIndex}</span>
+      <div className="mt-2 flex min-w-0 items-center gap-1.5 select-none">
+        <FaviconImage domain={source.domain} className="h-3.5 w-3.5 rounded-xs" />
+        <span className="flex-1 truncate text-[9.5px] font-normal text-muted-foreground/65">
+          {source.domain}
+        </span>
+        <span className="shrink-0 text-[9.5px] font-normal tabular-nums text-muted-foreground/45">
+          {citationIndex}
+        </span>
       </div>
     </a>
   );

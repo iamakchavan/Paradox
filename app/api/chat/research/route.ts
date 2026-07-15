@@ -41,10 +41,7 @@ export async function POST(req: Request) {
     }
 
     const formattedMessages = formatResearchMessages(messages);
-    console.log(
-      '[DEEP RESEARCH] formattedMessages:',
-      JSON.stringify(formattedMessages, null, 2),
-    );
+    console.log(`[DEEP RESEARCH] Prepared ${formattedMessages.length} messages.`);
 
     return createResearchStreamResponse({
       formattedMessages,
@@ -53,6 +50,7 @@ export async function POST(req: Request) {
       searchKeys,
       plannerProviderOptions: buildPlannerProviderOptions(modelConfig, model),
       synthesisProviderOptions: buildSynthesisProviderOptions(modelConfig, model),
+      signal: req.signal,
     });
   } catch (error: any) {
     console.error('[Deep Research API] Top-level error:', error);
