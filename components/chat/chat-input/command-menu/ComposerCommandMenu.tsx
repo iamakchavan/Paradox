@@ -46,7 +46,7 @@ export function ComposerCommandMenu({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 6, scale: 0.99 }}
           transition={motionTransitions.popover}
-          className="absolute inset-x-1 z-0 origin-bottom"
+          className="absolute inset-x-3 z-0 origin-bottom"
           style={{ bottom: 'calc(100% - 24px)' }}
         >
           <div
