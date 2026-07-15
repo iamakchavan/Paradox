@@ -2,6 +2,11 @@ import { generateText, Output } from 'ai';
 import { z } from 'zod';
 import { isAbortError } from '@/lib/research/request-policy';
 import { serializeResearchEvent } from '@/lib/research/events';
+import {
+  isPermanentProviderError,
+  ResearchPlanningError,
+  validateResearchPlan,
+} from './planning-policy';
 import type {
   ResearchPlanResult,
   ResearchStreamEmitter,
@@ -73,6 +78,7 @@ Rules:
     }
   } catch (error) {
     if (isAbortError(error)) throw error;
+    if (isPermanentProviderError(error)) throw new ResearchPlanningError(error);
     console.error('[DEEP RESEARCH PLANNER] Error in resolveAndCleanQuery:', error);
   }
 
@@ -132,6 +138,8 @@ async function generatePlan(
   providerOptions: Record<string, any>,
   signal?: AbortSignal,
 ): Promise<ResearchPlanResult> {
+  let lastPlanningError: unknown;
+
   try {
     console.log('[DEEP RESEARCH PLANNER] Invoking planner model for query:', lastUserQuery);
     const plannerResponse = await generateText({
@@ -170,9 +178,13 @@ async function generatePlan(
     });
 
     console.log('[DEEP RESEARCH PLANNER] Planned:', JSON.stringify(plannerResponse.output, null, 2));
-    return plannerResponse.output;
+    return validateResearchPlan(plannerResponse.output);
   } catch (plannerError) {
     if (isAbortError(plannerError)) throw plannerError;
+    if (isPermanentProviderError(plannerError)) {
+      throw new ResearchPlanningError(plannerError);
+    }
+    lastPlanningError = plannerError;
     console.error(
       '[DEEP RESEARCH PLANNER] Failed to generate structured plan, trying text fallback:',
       plannerError,
@@ -228,48 +240,20 @@ Do NOT include markdown formatting, markdown code blocks (such as \`\`\`json), o
       '[DEEP RESEARCH PLANNER] Text fallback planned successfully:',
       JSON.stringify(planResult, null, 2),
     );
-    return planResult;
+    return validateResearchPlan(planResult);
   } catch (fallbackError) {
     if (isAbortError(fallbackError)) throw fallbackError;
+    if (isPermanentProviderError(fallbackError)) {
+      throw new ResearchPlanningError(fallbackError);
+    }
+    lastPlanningError = fallbackError;
     console.error(
-      '[DEEP RESEARCH PLANNER] Text fallback failed as well, invoking fallback de-referencing query:',
+      '[DEEP RESEARCH PLANNER] Text fallback failed; research will not execute without a valid plan:',
       fallbackError,
     );
   }
 
-  let deReferencedQuery = lastUserQuery.trim();
-  try {
-    const deRefPrompt = `
-Analyze this user query: "${lastUserQuery}"
-And the conversation history.
-Your job is to resolve any pronouns (like "these authors", "it", "they") in the user query into specific names/terms using the context from the conversation history, and return a clean, self-contained search query.
-
-Rules:
-- Output ONLY the clean, self-contained search query text.
-- Do not include "search for...", quote marks, or explanations.
-- If no pronouns or context need resolution, output the original query.
-`;
-    const deRefResponse = await generateText({
-      model: aiModel,
-      system: deRefPrompt,
-      messages: formattedMessages,
-      abortSignal: signal,
-    });
-    if (deRefResponse.text.trim()) {
-      deReferencedQuery = deRefResponse.text.trim().replace(/^"|"$/g, '');
-    }
-  } catch (deRefError) {
-    if (isAbortError(deRefError)) throw deRefError;
-    console.error('[DEEP RESEARCH PLANNER] Query de-referencing failed:', deRefError);
-  }
-
-  const cleanSearchQuery = deReferencedQuery
-    .replace(/^(research|search for|lookup|look up)\s+/i, '')
-    .trim();
-  return {
-    researchNeeded: true,
-    plan: [{ query: cleanSearchQuery, type: 'search', scrapeUrls: true }],
-  };
+  throw new ResearchPlanningError(lastPlanningError);
 }
 
 export async function planResearch({
@@ -281,15 +265,43 @@ export async function planResearch({
 }: PlanResearchOptions): Promise<ResearchPlanResult> {
   emit(serializeResearchEvent({ type: 'plan', status: 'started', id: 'research-plan', order: -1 }));
 
-  const lastUserQuery = getLastUserQuery(formattedMessages);
-  const planResult = await generatePlan(
-    lastUserQuery,
-    formattedMessages,
-    aiModel,
-    buildPlannerSystemPrompt(),
-    providerOptions,
-    signal,
-  );
+  let planResult: ResearchPlanResult;
+  try {
+    const lastUserQuery = getLastUserQuery(formattedMessages);
+    planResult = await generatePlan(
+      lastUserQuery,
+      formattedMessages,
+      aiModel,
+      buildPlannerSystemPrompt(),
+      providerOptions,
+      signal,
+    );
+
+    if (planResult.plan.length > 0) {
+      console.log('[DEEP RESEARCH PLANNER] Pre-cleaning/de-referencing planned queries...');
+      planResult.plan = await Promise.all(
+        planResult.plan.map(async (step) => ({
+          ...step,
+          query: await resolveAndCleanQuery(step.query, formattedMessages, aiModel, signal),
+        })),
+      );
+      planResult = validateResearchPlan(planResult);
+      console.log(
+        '[DEEP RESEARCH PLANNER] Cleaned plan queries:',
+        JSON.stringify(planResult.plan, null, 2),
+      );
+    }
+  } catch (error) {
+    if (!isAbortError(error)) {
+      emit(serializeResearchEvent({
+        type: 'plan',
+        status: 'failed',
+        id: 'research-plan',
+        order: -1,
+      }));
+    }
+    throw error;
+  }
 
   emit(serializeResearchEvent({
     type: 'plan',
@@ -298,20 +310,6 @@ export async function planResearch({
     order: -1,
     query: !planResult.researchNeeded ? 'skipped' : undefined,
   }));
-
-  if (planResult.plan.length > 0) {
-    console.log('[DEEP RESEARCH PLANNER] Pre-cleaning/de-referencing planned queries...');
-    planResult.plan = await Promise.all(
-      planResult.plan.map(async (step) => ({
-        ...step,
-        query: await resolveAndCleanQuery(step.query, formattedMessages, aiModel, signal),
-      })),
-    );
-    console.log(
-      '[DEEP RESEARCH PLANNER] Cleaned plan queries:',
-      JSON.stringify(planResult.plan, null, 2),
-    );
-  }
 
   return planResult;
 }

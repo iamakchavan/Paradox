@@ -29,6 +29,7 @@ export const TimelineStepItem = memo(({
   const content = (
     <>
       <TimelineStatusIndicator
+        stepType={step.type}
         isStepLoading={isStepLoading}
         isCompleted={isCompleted}
         isFailed={step.status === 'failed'}

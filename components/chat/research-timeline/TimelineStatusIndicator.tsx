@@ -1,12 +1,16 @@
 "use client";
 
 import { motion } from 'framer-motion';
+import type { ResearchEventType } from '@/lib/research/events';
+import { ResearchStepLoader } from './ResearchStepLoader';
 
 export function TimelineStatusIndicator({
+  stepType,
   isStepLoading,
   isCompleted,
   isFailed,
 }: {
+  stepType: ResearchEventType;
   isStepLoading: boolean;
   isCompleted: boolean;
   isFailed: boolean;
@@ -14,19 +18,11 @@ export function TimelineStatusIndicator({
   return (
     <div className="w-5 h-5 flex items-center justify-center shrink-0 z-10 select-none">
       {isStepLoading ? (
-        <div className="relative w-4 h-4 flex items-center justify-center">
-          <motion.div
-            animate={{ scale: [0.8, 1.2, 0.8] }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-            className="absolute w-2 h-2 rounded-full bg-zinc-800 dark:bg-zinc-200"
-          />
-          <svg
-            className="w-4 h-4 text-zinc-650 dark:text-zinc-350 animate-spin"
-            viewBox="0 0 16 16"
-            style={{ animationDuration: '2s' }}
-          >
-            <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
-          </svg>
+        <div
+          aria-hidden="true"
+          className="relative flex h-5 w-5 items-center justify-center"
+        >
+          <ResearchStepLoader stepType={stepType} />
         </div>
       ) : isFailed ? (
         <div className="flex h-4 w-4 items-center justify-center text-muted-foreground/55">

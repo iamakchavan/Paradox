@@ -61,6 +61,7 @@ export function isExpandableResearchStep(step: ResearchStep) {
 export function getResearchStepPresentation(step: ResearchStep, isStepLoading: boolean) {
   const isFailed = step.status === 'failed';
   if (step.type === 'plan') {
+    if (isFailed) return 'Could not formulate a research strategy';
     const isSkipped = step.query === 'skipped';
     return isStepLoading
       ? 'Formulating research strategy...'

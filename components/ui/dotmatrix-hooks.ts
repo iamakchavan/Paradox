@@ -44,16 +44,18 @@ export function useCyclePhase({ active, cycleMsBase, speed = 1 }: UseCyclePhaseO
     const raw = cycleMsBase / safeSpeed;
     const cycleMs = raw > 0 && Number.isFinite(raw) ? raw : 1000;
     const start = performance.now();
-    let rafId = 0;
+    let lastUpdate = -Infinity;
+    const minimumFrameInterval = 1000 / 30;
 
-    const tick = (now: number) => {
+    const updatePhase = (now: number) => {
+      if (now - lastUpdate < minimumFrameInterval) return;
+      lastUpdate = now;
       const elapsed = ((now - start) % cycleMs + cycleMs) % cycleMs;
       setPhase(elapsed / cycleMs);
-      rafId = requestAnimationFrame(tick);
     };
 
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
+    updatePhase(start);
+    return subscribeFrame(updatePhase);
   }, [active, cycleMsBase, speed]);
 
   return phase;
