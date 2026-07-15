@@ -1,4 +1,5 @@
 import type { ResearchEventStatus, ResearchEventType } from './events';
+import { normalizeSourceCollection } from './source-normalization';
 
 export interface ResearchStep {
   type: ResearchEventType;
@@ -11,6 +12,8 @@ export interface ResearchStep {
   url?: string;
   results?: Array<{ title: string; url: string; content: string }>;
 }
+
+type ResearchResult = NonNullable<ResearchStep['results']>[number];
 
 function decodeAttribute(value: string): string {
   return value
@@ -39,8 +42,8 @@ export function parseResearchStream(content: string): {
 
   // Regex to extract all search results
   const resultsRegex = /<search-results(?:\s+step-id="([^"]+)")?>([\s\S]*?)<\/search-results>/g;
-  const resultsByStepId = new Map<string, Array<{ title: string; url: string; content: string }>>();
-  const legacyResults: Array<Array<{ title: string; url: string; content: string }>> = [];
+  const resultsByStepId = new Map<string, ResearchResult[]>();
+  const legacyResults: ResearchResult[][] = [];
   let resultsMatch;
   while ((resultsMatch = resultsRegex.exec(content)) !== null) {
     try {
@@ -51,10 +54,11 @@ export function parseResearchStream(content: string): {
           ? parsed.results
           : null;
       if (!results) continue;
+      const normalizedResults = normalizeSourceCollection(results as ResearchResult[]);
       if (resultsMatch[1]) {
-        resultsByStepId.set(decodeAttribute(resultsMatch[1]), results);
+        resultsByStepId.set(decodeAttribute(resultsMatch[1]), normalizedResults);
       } else {
-        legacyResults.push(results);
+        legacyResults.push(normalizedResults);
       }
     } catch (e) {
       console.warn('[Parser] Failed to parse search results JSON:', e);

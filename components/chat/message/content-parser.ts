@@ -1,4 +1,5 @@
 import type { ResearchStep } from '@/lib/research/parser';
+import { normalizeSourceCollection } from '@/lib/research/source-normalization';
 import type { SearchData } from './types';
 
 export function processThinkingContent(content: string) {
@@ -47,7 +48,11 @@ export function extractSearchData(content: string) {
   const resultsMatch = content.match(/<search-results>([\s\S]*?)<\/search-results>/);
   if (resultsMatch) {
     try {
-      searchData = JSON.parse(resultsMatch[1]);
+      const parsed = JSON.parse(resultsMatch[1]) as SearchData;
+      searchData = {
+        ...parsed,
+        results: normalizeSourceCollection(Array.isArray(parsed.results) ? parsed.results : []),
+      };
       cleanContent = cleanContent.replace(/<search-results>[\s\S]*?<\/search-results>/g, '');
     } catch (error) {
       console.warn('Failed to parse search results:', error);

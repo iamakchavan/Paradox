@@ -14,6 +14,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { MobileBottomSheet } from '@/components/ui/mobile-bottom-sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
+import { normalizeExternalSourceUrl } from '@/lib/research/source-normalization';
 import { FaviconImage } from '../FaviconImage';
 import { SourcesSheetHeader } from '../SourcesSheetHeader';
 import { useMessageMarkdownContext } from './markdown-context';
@@ -223,22 +224,24 @@ GroupedCitationPill.displayName = 'GroupedCitationPill';
 export const MarkdownLink = memo(({ href, children }: { href?: string; children?: ReactNode }) => {
   const context = useMessageMarkdownContext();
   if (!href) return null;
-  if (href.startsWith('http://') || href.startsWith('https://')) {
+  const normalizedHref = normalizeExternalSourceUrl(href);
+  if (normalizedHref) {
     let domain = '';
-    try { domain = new URL(href).hostname.replace('www.', ''); } catch { domain = href; }
+    try { domain = new URL(normalizedHref).hostname.replace('www.', ''); } catch { domain = normalizedHref; }
     const label = String(children || '').trim();
     const citation = /^\d+$/.test(label)
       || (label.length <= 40 && !/\s{2,}/.test(label) && (label === domain || label.includes('.') || label === ''))
       || label === '';
     if (citation) {
-      return <SingleCitationPill item={{ href, domain, label }} searchMap={context?.searchMap ?? null} />;
+      return <SingleCitationPill item={{ href: normalizedHref, domain, label }} searchMap={context?.searchMap ?? null} />;
     }
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline decoration-primary/40 underline-offset-2">
+      <a href={normalizedHref} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline decoration-primary/40 underline-offset-2">
         {children}
       </a>
     );
   }
+  if (/^\/(?:goto|redirect|url)(?:\/|\?|$)/i.test(href)) return <span>{children}</span>;
   return <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{children}</a>;
 });
 MarkdownLink.displayName = 'MarkdownLink';
@@ -251,12 +254,12 @@ export function groupCitationChildren(children: ReactNode, searchMap: SearchMap)
     const type = child.type as { displayName?: string };
     if (type !== MarkdownLink && type?.displayName !== 'MarkdownLink') return false;
     const href = child.props.href || '';
-    if (!href.startsWith('http://') && !href.startsWith('https://')) return false;
+    if (!normalizeExternalSourceUrl(href)) return false;
     const label = String(child.props.children || '').trim();
     return /^\d+$/.test(label) || (label.length <= 40 && (label.includes('.') || label === '')) || label === '';
   };
   const itemFrom = (child: ReactElement<{ href?: string; children?: ReactNode }>): CitationItem => {
-    const href = child.props.href || '';
+    const href = normalizeExternalSourceUrl(child.props.href || '') || '';
     let domain = '';
     try { domain = new URL(href).hostname.replace('www.', ''); } catch { domain = href; }
     return { href, domain, label: String(child.props.children || '').trim() };

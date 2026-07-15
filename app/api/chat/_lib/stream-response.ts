@@ -1,5 +1,9 @@
 import { streamText } from 'ai';
 import type { MCPIntegration } from '@/lib/db';
+import {
+  normalizeExternalSourceUrl,
+  normalizeSourceCollection,
+} from '@/lib/research/source-normalization';
 import { extractTitleFromMarkdown, getFriendlyTitleFromUrl } from './source-utils';
 import type { SearchResultData } from './types';
 
@@ -183,15 +187,19 @@ export function createChatStreamResponse({
             if (part.toolName === 'webSearch') {
               const toolResult =
                 (part as any).output || (part as any).result || { query: '', results: [] };
-              console.log(
-                `[CHAT] Tool result data results count: ${toolResult.results?.length || 0}`,
+              const normalizedResults = normalizeSourceCollection(
+                Array.isArray(toolResult.results) ? toolResult.results : [],
               );
-              if (toolResult.results && toolResult.results.length > 0) {
+              console.log(
+                `[CHAT] Tool result data results count: ${normalizedResults.length}`,
+              );
+              if (normalizedResults.length > 0) {
+                const normalizedToolResult = { ...toolResult, results: normalizedResults };
                 safeEnqueue(
-                  encoder.encode(`<search-results>${JSON.stringify(toolResult)}</search-results>`),
+                  encoder.encode(`<search-results>${JSON.stringify(normalizedToolResult)}</search-results>`),
                 );
                 gotSearchResults = true;
-                lastSearchResultData = toolResult;
+                lastSearchResultData = normalizedToolResult;
               }
             } else if (part.toolName === 'browsePage') {
               const toolResult =
@@ -261,7 +269,8 @@ export function createChatStreamResponse({
             if (rawData && typeof rawData === 'object') {
               const citations = findCitations(rawData);
               citations?.forEach((url) => {
-                if (url && typeof url === 'string') accumulatedCitations.add(url);
+                const normalizedUrl = normalizeExternalSourceUrl(url);
+                if (normalizedUrl) accumulatedCitations.add(normalizedUrl);
               });
             }
           } else if (part.type === 'error') {

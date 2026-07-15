@@ -64,9 +64,9 @@ export function DesktopSourcesPanel() {
 
         <div
           ref={scrollContainerRef}
-          className="relative flex-1 overflow-y-auto px-5 pb-16 pt-[72px] sidebar-scroll"
+          className="relative min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-5 pb-16 pt-[72px] sidebar-scroll"
         >
-          <div className="grid">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)]">
             <AnimatePresence initial={false} mode="sync">
               <motion.div
                 key={sourceSetKey}
@@ -74,7 +74,7 @@ export function DesktopSourcesPanel() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={motionTransitions.contentSwap}
-                className="col-start-1 row-start-1"
+                className="col-start-1 row-start-1 min-w-0 overflow-hidden"
               >
                 <SourceList sources={sources} />
               </motion.div>

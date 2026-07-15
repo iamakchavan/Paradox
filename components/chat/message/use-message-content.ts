@@ -2,6 +2,7 @@
 
 import { useMemo, useRef } from 'react';
 import { parseResearchStream, type ResearchStep } from '@/lib/research/parser';
+import { normalizeSourceCollection } from '@/lib/research/source-normalization';
 import { preprocessLaTeX } from '@/utils/latex';
 import {
   areSearchDataEqual,
@@ -70,11 +71,9 @@ export function useMessageContent(content: string): ParsedMessageContent {
     const results: SearchResult[] = [];
     if (parsed.searchData?.results) results.push(...parsed.searchData.results);
     parsed.steps.forEach(step => {
-      step.results?.forEach(result => {
-        if (!results.some(existing => existing.url === result.url)) results.push(result);
-      });
+      if (step.results) results.push(...step.results);
     });
-    return results;
+    return normalizeSourceCollection(results);
   }, [parsed.searchData, parsed.steps]);
 
   const searchMap = useMemo(() => {

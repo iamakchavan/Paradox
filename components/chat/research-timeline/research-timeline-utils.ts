@@ -1,4 +1,5 @@
 import type { ResearchStep } from '@/lib/research/parser';
+import { normalizeSourceCollection } from '@/lib/research/source-normalization';
 import type { ResearchSource } from './types';
 
 function compareResearchSteps(first: ResearchStep, second: ResearchStep) {
@@ -116,23 +117,18 @@ export function getSourceDomain(url: string) {
 }
 
 export function collectUniqueResearchSources(steps: ResearchStep[]): ResearchSource[] {
-  const sources = new Map<string, ResearchSource>();
+  const sourceResults: Array<{ title: string; url: string; content: string }> = [];
   steps.forEach(step => {
-    step.results?.forEach(result => {
-      if (!result.url) return;
-      try {
-        const domain = new URL(result.url).hostname.replace('www.', '');
-        sources.set(result.url, {
-          title: result.title || domain,
-          url: result.url,
-          domain,
-        });
-      } catch {
-        // Invalid source URLs were ignored by the original timeline.
-      }
-    });
+    if (step.results) sourceResults.push(...step.results);
   });
-  return Array.from(sources.values());
+  return normalizeSourceCollection(sourceResults).map(result => {
+    const domain = new URL(result.url).hostname.replace('www.', '');
+    return {
+      title: result.title || domain,
+      url: result.url,
+      domain,
+    };
+  });
 }
 
 export function formatResearchDuration(seconds: number) {

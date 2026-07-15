@@ -4,6 +4,7 @@ import {
   fetchJsonWithPolicy,
   isAbortError,
 } from './request-policy';
+import { normalizeSourceCollection, normalizeSourceUrls } from './source-normalization';
 
 export interface SearchResult {
   title: string;
@@ -234,7 +235,10 @@ export async function executeWebSearch(
   // 1. Tavily
   if (keys.tavilyKey) {
     try {
-      return await getTavilyResults(query, keys.tavilyKey, maxResults, isSocial, signal);
+      const rawResults = await getTavilyResults(query, keys.tavilyKey, maxResults, isSocial, signal);
+      const results = normalizeSourceCollection(rawResults);
+      if (rawResults.length === 0 || results.length > 0) return results;
+      console.warn('[Deep Research] Tavily returned only invalid source URLs; trying fallback search.');
     } catch (err: any) {
       if (signal?.aborted || isAbortError(err)) throw err;
       console.warn(`[Deep Research] Tavily search fallback triggered due to: ${err.message}`);
@@ -244,7 +248,10 @@ export async function executeWebSearch(
   // 2. Exa
   if (keys.exaKey) {
     try {
-      return await getExaResults(query, keys.exaKey, maxResults, isSocial, signal);
+      const rawResults = await getExaResults(query, keys.exaKey, maxResults, isSocial, signal);
+      const results = normalizeSourceCollection(rawResults);
+      if (rawResults.length === 0 || results.length > 0) return results;
+      console.warn('[Deep Research] Exa returned only invalid source URLs; trying fallback search.');
     } catch (err: any) {
       if (signal?.aborted || isAbortError(err)) throw err;
       console.warn(`[Deep Research] Exa search fallback triggered due to: ${err.message}`);
@@ -254,7 +261,10 @@ export async function executeWebSearch(
   // 3. Firecrawl
   if (keys.firecrawlKey) {
     try {
-      return await getFirecrawlResults(query, keys.firecrawlKey, maxResults, signal);
+      const rawResults = await getFirecrawlResults(query, keys.firecrawlKey, maxResults, signal);
+      const results = normalizeSourceCollection(rawResults);
+      if (rawResults.length === 0 || results.length > 0) return results;
+      console.warn('[Deep Research] Firecrawl returned only invalid source URLs.');
     } catch (err: any) {
       if (signal?.aborted || isAbortError(err)) throw err;
       console.warn(`[Deep Research] Firecrawl search failed: ${err.message}`);
@@ -438,10 +448,10 @@ export async function executeMapPage(
       });
 
       if (data.success && Array.isArray(data.links)) {
-        return data.links.slice(0, limit);
+        return normalizeSourceUrls(data.links).slice(0, limit);
       }
       if (Array.isArray(data.links)) {
-        return data.links.slice(0, limit);
+        return normalizeSourceUrls(data.links).slice(0, limit);
       }
     } catch (err: any) {
       if (signal?.aborted || isAbortError(err)) throw err;
@@ -477,7 +487,7 @@ export async function executeMapPage(
       });
 
       if (data.results && Array.isArray(data.results)) {
-        return data.results.map((r: any) => r.url).slice(0, limit);
+        return normalizeSourceUrls(data.results.map((r: any) => r.url)).slice(0, limit);
       }
     } catch (err: any) {
       if (signal?.aborted || isAbortError(err)) throw err;
