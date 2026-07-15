@@ -4,11 +4,24 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { MODELS_REGISTRY } from '@/lib/models';
+import type { ComposerCommandDefinition } from './command-menu/registry';
+import { useComposerCommandMenu } from './command-menu/use-composer-command-menu';
 import { isMobileOrTablet } from './icons';
 import type { ChatInputProps } from './types';
 
 export function useChatInputController(props: ChatInputProps) {
+  const {
+    handleFileUpload,
+    handleSubmit,
+    onExpandedChange,
+    onToggleResearch,
+    onToggleSearch,
+    selectedImages,
+    selectedPDFs,
+    setMessage: setExternalMessage,
+  } = props;
   const [localMessage, setLocalMessage] = useState(props.message || '');
+  const [caretPosition, setCaretPosition] = useState((props.message || '').length);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounterRef = useRef(0);
@@ -24,7 +37,9 @@ export function useChatInputController(props: ChatInputProps) {
   const activeApps = mcpServers.filter(server => server.isEnabled && server.status === 'connected');
 
   useEffect(() => {
-    setLocalMessage(props.message || '');
+    const nextMessage = props.message || '';
+    setLocalMessage(nextMessage);
+    setCaretPosition(nextMessage.length);
   }, [props.message]);
 
   const expanded = useMemo(() => {
@@ -43,8 +58,8 @@ export function useChatInputController(props: ChatInputProps) {
   }, [isFocused, isMobile, localMessage.length, props.researchEnabled, props.searchEnabled, props.selectedImages.length, props.selectedPDFs.length]);
 
   useEffect(() => {
-    props.onExpandedChange?.(expanded);
-  }, [expanded, props.onExpandedChange]);
+    onExpandedChange?.(expanded);
+  }, [expanded, onExpandedChange]);
 
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textareaRef.current;
@@ -125,7 +140,7 @@ export function useChatInputController(props: ChatInputProps) {
       dragCounterRef.current = 0;
       const files = Array.from(event.dataTransfer?.files || []);
       if (files.length === 0) return;
-      props.handleFileUpload({ target: { files } } as unknown as React.ChangeEvent<HTMLInputElement>);
+      handleFileUpload({ target: { files } } as unknown as React.ChangeEvent<HTMLInputElement>);
     };
     window.addEventListener('dragenter', dragEnter);
     window.addEventListener('dragleave', dragLeave);
@@ -137,7 +152,7 @@ export function useChatInputController(props: ChatInputProps) {
       window.removeEventListener('dragover', dragOver);
       window.removeEventListener('drop', drop);
     };
-  }, [props.handleFileUpload]);
+  }, [handleFileUpload]);
 
   useEffect(() => {
     if (!props.searchEnabled) setIsSearchCapsuleHovered(false);
@@ -168,12 +183,57 @@ export function useChatInputController(props: ChatInputProps) {
     && !props.nvidiaApiKey
     && !props.inceptionApiKey;
 
+  const updateMessage = useCallback((value: string, nextCaretPosition: number) => {
+    setLocalMessage(value);
+    setCaretPosition(nextCaretPosition);
+    setExternalMessage?.(value);
+  }, [setExternalMessage]);
+
+  const executeComposerCommand = useCallback((command: ComposerCommandDefinition) => {
+    switch (command.action.type) {
+      case 'set-mode':
+        if (command.action.mode === 'search') onToggleSearch?.(true);
+        if (command.action.mode === 'research') onToggleResearch?.(true);
+        break;
+    }
+  }, [onToggleResearch, onToggleSearch]);
+
+  const commandMenu = useComposerCommandMenu({
+    value: localMessage,
+    caretPosition,
+    disabled: !isFocused
+      || props.isLoading
+      || isDragging
+      || showAttachDropdown
+      || showMobileAttachSheet
+      || isInputDisabled,
+    textareaRef,
+    onValueChange: updateMessage,
+    onExecute: executeComposerCommand,
+  });
+  const dismissCommandMenu = commandMenu.dismiss;
+
+  const setAttachDropdownOpen = useCallback((show: boolean) => {
+    if (show) dismissCommandMenu();
+    setShowAttachDropdown(show);
+  }, [dismissCommandMenu]);
+  const setMobileAttachSheetOpen = useCallback((show: boolean) => {
+    if (show) dismissCommandMenu();
+    setShowMobileAttachSheet(show);
+  }, [dismissCommandMenu]);
+  const setAppsSubmenuOpen = useCallback((show: boolean) => {
+    if (show) dismissCommandMenu();
+    setShowAppsSubmenu(show);
+  }, [dismissCommandMenu]);
+
   const submit = useCallback(() => {
-    if (!localMessage.trim() && props.selectedImages.length === 0 && props.selectedPDFs.length === 0) return;
+    if (!localMessage.trim() && selectedImages.length === 0 && selectedPDFs.length === 0) return;
+    dismissCommandMenu();
     if (isMobileOrTablet()) textareaRef.current?.blur();
-    props.handleSubmit(localMessage);
+    handleSubmit(localMessage);
     setLocalMessage('');
-  }, [localMessage, props.handleSubmit, props.selectedImages.length, props.selectedPDFs.length]);
+    setCaretPosition(0);
+  }, [dismissCommandMenu, handleSubmit, localMessage, selectedImages.length, selectedPDFs.length]);
 
   const attach = useCallback((type: 'image' | 'pdf' | 'all') => {
     if (fileInputRef.current) {
@@ -184,21 +244,34 @@ export function useChatInputController(props: ChatInputProps) {
     }
     setShowAttachDropdown(false);
     setShowMobileAttachSheet(false);
-  }, []);
+    dismissCommandMenu();
+  }, [dismissCommandMenu]);
 
-  const handleTextChange = useCallback((value: string) => {
-    setLocalMessage(value);
-    props.setMessage?.(value);
+  const handleTextChange = useCallback((value: string, nextCaretPosition: number) => {
+    updateMessage(value, nextCaretPosition);
     adjustTextareaHeight();
-  }, [adjustTextareaHeight, props.setMessage]);
+  }, [adjustTextareaHeight, updateMessage]);
+  const handleSelectionChange = useCallback((nextCaretPosition: number) => {
+    setCaretPosition(nextCaretPosition);
+  }, []);
   const handleFocus = useCallback(() => {
     setIsFocused(true);
     const textarea = textareaRef.current;
     if (!textarea) return;
+
+    const selectionStart = textarea.selectionStart;
+    const selectionEnd = textarea.selectionEnd;
+    setCaretPosition(selectionStart);
+
+    // Preserve deliberate pointer, touch, and programmatic selections. The
+    // delayed reset is only needed for the legacy auto-focus-at-zero case.
+    if (textarea.value.length === 0 || selectionStart !== 0 || selectionEnd !== 0) return;
+
     const length = textarea.value.length;
     const moveToEnd = () => {
       textarea.setSelectionRange(length, length);
       textarea.scrollTop = textarea.scrollHeight;
+      setCaretPosition(length);
     };
     setTimeout(moveToEnd, 50);
     setTimeout(moveToEnd, 150);
@@ -227,12 +300,12 @@ export function useChatInputController(props: ChatInputProps) {
       const reader = new FileReader();
       reader.onload = loadEvent => {
         if (loadEvent.target?.result) {
-          props.handleFileUpload({ target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>);
+          handleFileUpload({ target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>);
         }
       };
       reader.readAsDataURL(file);
     }
-  }, [props.handleFileUpload]);
+  }, [handleFileUpload]);
 
   return {
     localMessage,
@@ -243,11 +316,11 @@ export function useChatInputController(props: ChatInputProps) {
     isMobile,
     expanded,
     showAttachDropdown,
-    setShowAttachDropdown,
+    setShowAttachDropdown: setAttachDropdownOpen,
     showMobileAttachSheet,
-    setShowMobileAttachSheet,
+    setShowMobileAttachSheet: setMobileAttachSheetOpen,
     showAppsSubmenu,
-    setShowAppsSubmenu,
+    setShowAppsSubmenu: setAppsSubmenuOpen,
     isSearchCapsuleHovered,
     setIsSearchCapsuleHovered,
     isResearchCapsuleHovered,
@@ -258,8 +331,10 @@ export function useChatInputController(props: ChatInputProps) {
     attach,
     adjustTextareaHeight,
     handleTextChange,
+    handleSelectionChange,
     handleFocus,
     handleBlur,
     handlePaste,
+    commandMenu,
   };
 }

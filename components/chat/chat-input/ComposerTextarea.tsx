@@ -13,7 +13,12 @@ interface Props {
   isInputDisabled: boolean;
   searchEnabled: boolean;
   researchEnabled: boolean;
-  onChange: (value: string) => void;
+  commandMenuOpen: boolean;
+  commandMenuListboxId: string;
+  commandMenuActiveOptionId?: string;
+  onChange: (value: string, caretPosition: number) => void;
+  onSelectionChange: (caretPosition: number) => void;
+  onCommandKeyDown: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onFocus: () => void;
   onBlur: () => void;
   onPaste: (event: React.ClipboardEvent<HTMLTextAreaElement>) => void;
@@ -27,15 +32,24 @@ export function ComposerTextarea(props: Props) {
         ref={props.textareaRef}
         rows={1}
         value={props.value}
-        onChange={event => props.onChange(event.target.value)}
+        onChange={event => props.onChange(event.target.value, event.target.selectionStart)}
+        onSelect={event => props.onSelectionChange(event.currentTarget.selectionStart)}
         onFocus={props.onFocus}
         onBlur={props.onBlur}
         onKeyDown={event => {
+          props.onCommandKeyDown(event);
+          if (event.defaultPrevented) return;
           if (event.key !== 'Enter' || props.isMobile || event.shiftKey) return;
           event.preventDefault();
           if (!props.isLoading && !props.isSendDisabled) props.onSubmit();
         }}
         onPaste={props.onPaste}
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={props.commandMenuOpen}
+        aria-controls={props.commandMenuOpen ? props.commandMenuListboxId : undefined}
+        aria-activedescendant={props.commandMenuOpen ? props.commandMenuActiveOptionId : undefined}
+        aria-haspopup="listbox"
         placeholder={props.searchEnabled
           ? 'Search the web'
           : props.researchEnabled ? 'Run deep research...' : 'Ask anything...'}
