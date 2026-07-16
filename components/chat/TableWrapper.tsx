@@ -1,10 +1,10 @@
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
-import { Download, Copy, Check } from 'lucide-react';
+import { useRef, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
+import { Download, Copy, Check, Table2 } from 'lucide-react';
 import { tableToCSV, tableToTSV } from '@/utils/table';
 import { processThinkingContent } from '@/utils/chat';
 
 interface TableWrapperProps {
-  children: React.ReactNode;
+  children: ReactNode;
   isStreaming: boolean;
   messageContent: string;
 }
@@ -15,12 +15,14 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
   const [copied, setCopied] = useState<boolean>(false);
   
   useEffect(() => {
-    if (tableRef.current) {
-      const table = tableRef.current;
-      const csv = tableToCSV(table);
-      setTableData(csv);
+    if (isStreaming || !tableRef.current) {
+      setTableData('');
+      return;
     }
-  }, []);
+
+    const table = tableRef.current;
+    setTableData(tableToCSV(table));
+  }, [isStreaming, messageContent]);
 
   const handleDownload = useCallback(() => {
     if (tableData) {
@@ -69,17 +71,19 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
     }
   }, []);
 
-  const ActionButtons = useMemo(() => {
+  const TableActions = useMemo(() => {
     if (!tableData || 
         !processThinkingContent(messageContent).mainContent || 
         isStreaming) {
       return null;
     }
     return (
-      <div className="absolute top-full right-0 mt-1.5 flex items-center gap-1.5 opacity-0 group-hover/table:opacity-100 max-md:opacity-100 transition-opacity duration-200 z-10">
+      <div className="flex items-center gap-1">
         <button
+          type="button"
           onClick={handleCopy}
-          className="p-1 bg-background/95 hover:bg-secondary border border-border/50 rounded-lg shadow-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none"
+          className="flex h-7 w-7 cursor-pointer select-none items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-black/[0.055] hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15 dark:text-zinc-400 dark:hover:bg-white/[0.07] dark:hover:text-zinc-100"
+          aria-label="Copy table"
           title="Copy table to clipboard"
         >
           {copied ? (
@@ -89,8 +93,10 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
           )}
         </button>
         <button
+          type="button"
           onClick={handleDownload}
-          className="p-1 bg-background/95 hover:bg-secondary border border-border/50 rounded-lg shadow-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none"
+          className="flex h-7 w-7 cursor-pointer select-none items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-black/[0.055] hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15 dark:text-zinc-400 dark:hover:bg-white/[0.07] dark:hover:text-zinc-100"
+          aria-label="Download table as CSV"
           title="Download as CSV"
         >
           <Download className="w-3.5 h-3.5" />
@@ -100,13 +106,24 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
   }, [tableData, messageContent, isStreaming, handleDownload, handleCopy, copied]);
 
   return (
-    <div data-not-typeset className="my-6 relative group/table table-container border-y border-zinc-200/50 dark:border-zinc-800/40 bg-zinc-50/5 dark:bg-zinc-950/10">
-      <div className="overflow-x-auto custom-scrollbar">
-        <table ref={tableRef} className="min-w-max md:min-w-full w-full text-left border-collapse table-auto">
-          {children}
-        </table>
+    <div data-not-typeset className="table-container my-6">
+      <div className="overflow-hidden rounded-[10px] border border-zinc-200/90 bg-white dark:border-white/[0.1] dark:bg-zinc-950">
+        <div className="flex h-11 items-center justify-between border-b border-zinc-200/75 px-3 dark:border-white/[0.075]">
+          <div className="flex min-w-0 select-none items-center gap-2">
+            <Table2 className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" strokeWidth={1.8} />
+            <span className="text-[12px] font-medium text-zinc-700 dark:text-zinc-300">Table</span>
+          </div>
+          {TableActions}
+        </div>
+        <div className="overflow-x-auto custom-scrollbar">
+          <table
+            ref={tableRef}
+            className="w-max min-w-full table-auto border-separate border-spacing-0 text-left text-[13px]"
+          >
+            {children}
+          </table>
+        </div>
       </div>
-      {ActionButtons}
     </div>
   );
 };
