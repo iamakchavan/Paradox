@@ -45,6 +45,12 @@ export function ModelDetailsPane({
               <span className="text-zinc-400 dark:text-zinc-500">Context Limit</span>
               <span className="font-medium text-zinc-800 dark:text-zinc-200">{model.contextWindow}</span>
             </div>
+            {model.maxOutputTokens && (
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-400 dark:text-zinc-500">Max Output</span>
+                <span className="font-medium text-zinc-800 dark:text-zinc-200">{model.maxOutputTokens}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center">
               <span className="text-zinc-400 dark:text-zinc-500">Cost (1M tokens)</span>
               <span className="font-medium text-zinc-800 dark:text-zinc-200">
