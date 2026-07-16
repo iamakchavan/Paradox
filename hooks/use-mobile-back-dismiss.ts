@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 interface UseMobileBackDismissOptions {
   isOpen: boolean;
@@ -24,6 +24,7 @@ export function useMobileBackDismiss({
   const onDismissRef = useRef(onDismiss);
   const onBeforeDismissRef = useRef(onBeforeDismiss);
   const getDismissHistoryDeltaRef = useRef(getDismissHistoryDelta);
+  const pendingDismissActionRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     onDismissRef.current = onDismiss;
@@ -43,6 +44,7 @@ export function useMobileBackDismiss({
     const entryId = `${entryPrefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     historyEntryRef.current = entryId;
     dismissedByHistoryRef.current = false;
+    pendingDismissActionRef.current = null;
 
     window.history.pushState(
       { ...(window.history.state || {}), [stateKey]: entryId },
@@ -59,6 +61,14 @@ export function useMobileBackDismiss({
 
       dismissedByHistoryRef.current = true;
       historyEntryRef.current = null;
+
+      const pendingAction = pendingDismissActionRef.current;
+      pendingDismissActionRef.current = null;
+      if (pendingAction) {
+        pendingAction();
+        return;
+      }
+
       onDismissRef.current();
     };
 
@@ -77,4 +87,25 @@ export function useMobileBackDismiss({
       }
     };
   }, [entryPrefix, isMobile, isOpen, stateKey]);
+
+  // Navigation-sensitive actions must run after the synthetic modal entry is removed.
+  const runAfterHistoryDismiss = useCallback((action: () => void) => {
+    if (pendingDismissActionRef.current) return;
+
+    if (
+      !isOpen ||
+      !isMobile ||
+      typeof window === 'undefined' ||
+      historyEntryRef.current === null ||
+      window.history.state?.[stateKey] !== historyEntryRef.current
+    ) {
+      action();
+      return;
+    }
+
+    pendingDismissActionRef.current = action;
+    window.history.back();
+  }, [isMobile, isOpen, stateKey]);
+
+  return { runAfterHistoryDismiss };
 }

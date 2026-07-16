@@ -1157,6 +1157,29 @@ html, body {
   -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
 }
 
+/* Material-aware footer scrim for the translucent command palette surface. */
+.command-palette-footer-blur {
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(255, 255, 255, 0.78) 42%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  mask-image: linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.88) 48%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.88) 48%, transparent 100%);
+}
+
+.dark .command-palette-footer-blur {
+  background: linear-gradient(
+    to top,
+    rgba(9, 9, 11, 0.94) 0%,
+    rgba(9, 9, 11, 0.78) 42%,
+    rgba(9, 9, 11, 0) 100%
+  );
+}
+
 @media (min-width: 768px) {
   .model-dropdown-portal {
     container-type: inline-size;

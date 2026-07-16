@@ -14,6 +14,7 @@ export function Sidebar({
   activeChatId,
   onSelectChat,
   onNewChat,
+  onActiveChatDeleted,
   className,
   onCollapse,
   isSearchActive = false,
@@ -29,7 +30,7 @@ export function Sidebar({
   const management = useSidebarChatManagement({
     activeChatId,
     chats: history.chats,
-    onNewChat,
+    onActiveChatDeleted: onActiveChatDeleted ?? onNewChat,
   });
 
   return (

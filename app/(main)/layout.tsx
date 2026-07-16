@@ -194,6 +194,11 @@ export default function MainLayout({
             router.push(`/chat/${id}`);
           }}
           onNewChat={handleNewChat}
+          onActiveChatDeleted={() => {
+            setIsSearchActive(false);
+            setIsSettingsActive(false);
+            router.replace('/chat');
+          }}
           onCollapse={() => {
             setIsSidebarCollapsed(true);
             localStorage.setItem('sidebar-collapsed', 'true');

@@ -8,11 +8,11 @@ import type { ChatSession } from '@/lib/db';
 export function useSidebarChatManagement({
   activeChatId,
   chats,
-  onNewChat,
+  onActiveChatDeleted,
 }: {
   activeChatId: string | null;
   chats: ChatSession[] | undefined;
-  onNewChat: () => void;
+  onActiveChatDeleted: () => void;
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -43,7 +43,7 @@ export function useSidebarChatManagement({
       mode: 'capsule',
     });
     if (activeChatId === deleteTargetId) {
-      onNewChat();
+      onActiveChatDeleted();
     }
     setDeleteTargetId(null);
   };

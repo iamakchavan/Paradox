@@ -18,6 +18,7 @@ interface ChatHeaderProps {
   activeChatId: string | null;
   onSelectChat: (id: string) => void;
   onNewChat: () => void;
+  onActiveChatDeleted?: () => void;
   isLibraryPageActive: boolean;
   setIsLibraryPageActive: (active: boolean) => void;
   selectedModelId: string;
@@ -37,6 +38,7 @@ export function ChatHeader({
   activeChatId,
   onSelectChat,
   onNewChat,
+  onActiveChatDeleted = onNewChat,
   isLibraryPageActive,
   setIsLibraryPageActive,
   selectedModelId,
@@ -133,6 +135,10 @@ export function ChatHeader({
                   }}
                   onNewChat={() => {
                     onNewChat();
+                    setIsMobileSidebarOpen(false);
+                  }}
+                  onActiveChatDeleted={() => {
+                    onActiveChatDeleted();
                     setIsMobileSidebarOpen(false);
                   }}
                   onCollapse={() => setIsMobileSidebarOpen(false)}

@@ -157,7 +157,7 @@ export default function ChatPage() {
     setIsSettingsActive(true);
   }, [router, setIsSettingsActive]);
 
-  const { handleNewChat, handleSubmit, handleBranchOff } = useChatActions({
+  const { handleNewChat, handleActiveChatDeleted, handleSubmit, handleBranchOff } = useChatActions({
     chatId,
     messages,
     streamingMessage,
@@ -216,6 +216,7 @@ export default function ChatPage() {
         activeChatId={chatId}
         onSelectChat={selectChat}
         onNewChat={handleNewChat}
+        onActiveChatDeleted={handleActiveChatDeleted}
         isLibraryPageActive={false}
         setIsLibraryPageActive={() => router.push('/library')}
         selectedModelId={selectedModelId}

@@ -4,6 +4,7 @@ export interface SidebarProps {
   activeChatId: string | null;
   onSelectChat: (chatId: string) => void;
   onNewChat: () => void;
+  onActiveChatDeleted?: () => void;
   className?: string;
   onCollapse?: () => void;
   isSearchActive?: boolean;

@@ -34,7 +34,7 @@ export function DeleteConfirmModal({
 }: DeleteConfirmModalProps) {
   const isMobile = useIsMobile();
 
-  useMobileBackDismiss({
+  const { runAfterHistoryDismiss } = useMobileBackDismiss({
     isOpen,
     isMobile,
     stateKey: 'paradoxDeleteModal',
@@ -194,7 +194,7 @@ export function DeleteConfirmModal({
                     style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 8 : 10 }}
                   >
                     <motion.button
-                      onClick={onConfirm}
+                      onClick={() => runAfterHistoryDismiss(onConfirm)}
                       whileTap={{ scale: 0.975 }}
                       transition={spring}
                       style={{

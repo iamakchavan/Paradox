@@ -45,11 +45,15 @@ export function useChatActions(options: Options) {
     selectedModelIdRef.current = options.selectedModelId;
   }, [options.selectedModelId]);
 
-  const handleNewChat = useCallback(() => {
+  const resetToNewChat = useCallback((replaceRoute: boolean) => {
     const current = optionsRef.current;
     current.handleStop();
     current.closeSidebarSurfaces();
-    router.push('/chat');
+    if (replaceRoute) {
+      router.replace('/chat');
+    } else {
+      router.push('/chat');
+    }
     current.setMessages([]);
     current.setError(null);
     current.setIsInitialView(true);
@@ -57,6 +61,14 @@ export function useChatActions(options: Options) {
     current.setSelectedModelId('sonar');
     current.initialMessageCountRef.current = 0;
   }, [router]);
+
+  const handleNewChat = useCallback(() => {
+    resetToNewChat(false);
+  }, [resetToNewChat]);
+
+  const handleActiveChatDeleted = useCallback(() => {
+    resetToNewChat(true);
+  }, [resetToNewChat]);
 
   const handleSubmit = useCallback(async (text: string) => {
     const current = optionsRef.current;
@@ -176,5 +188,5 @@ export function useChatActions(options: Options) {
     }
   }, [router, showToast]);
 
-  return { handleNewChat, handleSubmit, handleBranchOff };
+  return { handleNewChat, handleActiveChatDeleted, handleSubmit, handleBranchOff };
 }
