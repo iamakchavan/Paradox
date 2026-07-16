@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { Settings, SquarePen } from 'lucide-react';
+import { Folder, Puzzle, Settings, SquarePen } from 'lucide-react';
 import { MOTION_EASE_OUT } from '@/lib/motion';
 import { cn } from '@/lib/utils';
+import type { CommandActionId } from './registry';
 
 export type CommandPaletteItem =
-  | { type: 'action'; id: 'new-chat' | 'settings'; title: string }
+  | { type: 'action'; id: CommandActionId; title: string }
   | { type: 'chat'; id: string; title: string; updatedAt: number; createdAt: number };
 
 interface CommandPaletteRowProps {
@@ -30,6 +31,21 @@ function getRelativeTime(timestamp: number) {
   if (hours < 36) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
   if (days < 7) return `${days} ${days === 1 ? 'day' : 'days'} ago`;
   return `${days} days ago`;
+}
+
+function CommandActionIcon({ id }: { id: CommandActionId }) {
+  const iconProps = { className: 'h-[14px] w-[14px]', strokeWidth: 1.9 };
+
+  switch (id) {
+    case 'library':
+      return <Folder {...iconProps} />;
+    case 'apps-tools':
+      return <Puzzle {...iconProps} />;
+    case 'settings':
+      return <Settings {...iconProps} />;
+    default:
+      return <SquarePen {...iconProps} />;
+  }
 }
 
 export function CommandPaletteRow({
@@ -75,11 +91,7 @@ export function CommandPaletteRow({
               isSelected ? 'text-zinc-700 dark:text-zinc-200' : 'text-zinc-400 dark:text-zinc-500',
             )}
           >
-            {item.id === 'settings' ? (
-              <Settings className="h-[14px] w-[14px]" strokeWidth={1.9} />
-            ) : (
-              <SquarePen className="h-[14px] w-[14px]" strokeWidth={1.9} />
-            )}
+            <CommandActionIcon id={item.id} />
           </span>
           <span className="truncate text-[13px] font-medium">{item.title}</span>
         </div>

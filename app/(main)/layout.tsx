@@ -158,6 +158,13 @@ export default function MainLayout({
     setIsSettingsActive(true);
   }, [pathname, router]);
 
+  const handleNavigateFromCommandPalette = useCallback((href: string) => {
+    setIsSearchActive(false);
+    setIsSettingsActive(false);
+    setIsMobileSidebarOpen(false);
+    router.push(href);
+  }, [router]);
+
   const sidebarContextValue = useMemo(() => ({
     isSidebarCollapsed,
     setIsSidebarCollapsed,
@@ -261,6 +268,7 @@ export default function MainLayout({
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
         onOpenSettings={handleOpenSettingsFromCommandPalette}
+        onNavigate={handleNavigateFromCommandPalette}
       />
       {!(isMobileSidebarOpen && isSettingsActive) && (
         <SettingsModal

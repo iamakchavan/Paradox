@@ -36,7 +36,7 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "sidebar-parent w-full md:w-[270px] bg-background flex flex-col h-dvh flex-shrink-0 relative overflow-hidden border-r border-foreground/[0.06]",
+        "sidebar-parent relative flex h-dvh w-full flex-shrink-0 flex-col overflow-hidden border-r border-black/[0.055] bg-zinc-50 dark:border-white/[0.055] dark:bg-zinc-950 md:w-[270px]",
         className
       )}
     >
@@ -50,10 +50,17 @@ export function Sidebar({
         onLibraryClick={onLibraryClick}
         isIntegrationsActive={isIntegrationsActive}
         onIntegrationsClick={onIntegrationsClick}
+        isNewChatActive={
+          activeChatId === null &&
+          !isSearchActive &&
+          !isLibraryActive &&
+          !isSettingsActive &&
+          !isIntegrationsActive
+        }
         hasChats={history.hasChats}
       />
 
-      <div className="mx-3 my-1 border-t border-foreground/[0.04]" />
+      <div className="mx-4 mt-1 border-t border-foreground/[0.055]" />
 
       <SidebarHistory
         activeChatId={activeChatId}

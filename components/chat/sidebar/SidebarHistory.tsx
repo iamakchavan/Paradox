@@ -44,62 +44,62 @@ export function SidebarHistory({
   );
 
   return (
-    <div className="flex-1 overflow-y-auto px-3 pb-20 select-none sidebar-scroll">
+    <div className="sidebar-scroll flex-1 select-none overflow-y-auto px-3 pb-24 pt-1">
       {chats === undefined ? (
         <div className="flex items-center justify-center py-16">
-          <div className="w-3 h-3 border border-foreground/30 border-t-transparent rounded-full animate-spin" />
+          <div className="h-3 w-3 animate-spin rounded-full border border-foreground/25 border-t-transparent" />
         </div>
       ) : totalChatCount === 0 ? (
-        <div className="text-center py-20 px-6">
-          <p className="text-[12px] text-foreground/35">No conversations yet</p>
+        <div className="px-6 py-16 text-center">
+          <p className="text-[12px] text-foreground/38">No conversations yet</p>
         </div>
       ) : chats.length === 0 ? (
-        <div className="text-center py-20 px-6 text-[12px] text-foreground/35">
+        <div className="px-6 py-16 text-center text-[12px] text-foreground/38">
           No results for &quot;{searchQuery}&quot;
         </div>
       ) : (
         <>
           <button
             onClick={() => setHistoryCollapsed((collapsed) => !collapsed)}
-            className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-semibold text-foreground/45 hover:text-foreground/70 transition-colors duration-150 cursor-pointer mt-1"
+            className="mt-0.5 flex h-8 w-full cursor-pointer items-center justify-between rounded-lg px-2.5 text-[11.5px] font-semibold text-foreground/48 transition-colors duration-[var(--motion-duration-fast)] hover:text-foreground/72"
           >
             <span>History</span>
             <ChevronDown
               className={cn(
-                "w-3.5 h-3.5 transition-transform duration-200",
+                "h-3.5 w-3.5 text-foreground/34 transition-transform duration-200",
                 historyCollapsed && "-rotate-90"
               )}
             />
           </button>
 
           {!historyCollapsed && (
-            <div className="space-y-[3px]">
+            <div className="space-y-1">
               {groupedChats.Today.length > 0 && (
-                <div className="mb-1">
-                  <p className="text-[11px] font-semibold text-foreground/35 px-3 py-1 mt-2 mb-0.5">Today</p>
+                <section className="mb-1" aria-labelledby="sidebar-history-today">
+                  <p id="sidebar-history-today" className="mb-0.5 mt-1 px-2.5 py-1 text-[10.5px] font-medium text-foreground/34">Today</p>
                   {groupedChats.Today.map(renderChat)}
-                </div>
+                </section>
               )}
 
               {groupedChats.Yesterday.length > 0 && (
-                <div className="mb-1">
-                  <p className="text-[11px] font-semibold text-foreground/35 px-3 py-1 mt-2 mb-0.5">Yesterday</p>
+                <section className="mb-1" aria-labelledby="sidebar-history-yesterday">
+                  <p id="sidebar-history-yesterday" className="mb-0.5 mt-2 px-2.5 py-1 text-[10.5px] font-medium text-foreground/34">Yesterday</p>
                   {groupedChats.Yesterday.map(renderChat)}
-                </div>
+                </section>
               )}
 
               {groupedChats.Earlier.length > 0 && (
-                <div className="mb-1">
-                  <p className="text-[11px] font-semibold text-foreground/35 px-3 py-1 mt-2 mb-0.5">Earlier</p>
+                <section className="mb-1" aria-labelledby="sidebar-history-earlier">
+                  <p id="sidebar-history-earlier" className="mb-0.5 mt-2 px-2.5 py-1 text-[10.5px] font-medium text-foreground/34">Earlier</p>
                   {groupedChats.Earlier.map(renderChat)}
-                </div>
+                </section>
               )}
             </div>
           )}
 
           {hasMore && (
-            <div ref={sentinelRef} className="h-5 flex items-center justify-center mt-1">
-              <div className="w-2.5 h-2.5 border border-foreground/30 border-t-transparent rounded-full animate-spin" />
+            <div ref={sentinelRef} className="mt-1 flex h-5 items-center justify-center">
+              <div className="h-2.5 w-2.5 animate-spin rounded-full border border-foreground/25 border-t-transparent" />
             </div>
           )}
         </>

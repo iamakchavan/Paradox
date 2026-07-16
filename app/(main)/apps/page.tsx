@@ -48,7 +48,10 @@ export default function AppsPage() {
         hideModelSelector={true}
       />
 
-      <div className="flex-1 w-full pt-24 pb-24 flex flex-col h-full min-h-0 overflow-y-auto chat-scrollbar">
+      <div
+        tabIndex={-1}
+        className="flex h-full min-h-0 w-full flex-1 flex-col overflow-y-auto pb-24 pt-24 outline-none chat-scrollbar"
+      >
         <div className="max-w-4xl mx-auto w-full px-6 md:px-8">
           <div className="mb-8">
             <h1 className="text-2xl font-semibold mb-1.5 text-zinc-900 dark:text-zinc-100">Tools & Connectors</h1>

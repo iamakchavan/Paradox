@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type ChatSession } from '@/lib/db';
@@ -14,29 +13,22 @@ import {
   CommandPaletteRow,
   type CommandPaletteItem,
 } from '@/components/chat/command-palette/CommandPaletteRow';
+import {
+  COMMAND_ACTIONS,
+  COMMAND_ACTIONS_BY_ID,
+} from '@/components/chat/command-palette/registry';
 
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenSettings: () => void;
+  onNavigate: (href: string) => void;
 }
-
-type CommandActionId = 'new-chat' | 'settings';
-
-const COMMAND_ACTIONS: Array<{
-  id: CommandActionId;
-  title: string;
-  keywords: string[];
-}> = [
-  { id: 'new-chat', title: 'Create New Chat', keywords: ['new', 'chat', 'create', 'start'] },
-  { id: 'settings', title: 'Settings', keywords: ['settings', 'preferences', 'appearance', 'api keys', 'providers', 'search scrape'] },
-];
 
 const EXIT_CLEANUP_FALLBACK_MS = 400;
 const EMPTY_CHATS: ChatSession[] = [];
 
-export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPaletteProps) {
-  const router = useRouter();
+export function CommandPalette({ isOpen, onClose, onOpenSettings, onNavigate }: CommandPaletteProps) {
   const reduceMotion = useReducedMotion();
   const entranceReady = usePreparedEntrance(isOpen);
   const [searchQuery, setSearchQuery] = useState('');
@@ -178,18 +170,20 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings }: CommandPalet
     if (!item) return;
 
     if (item.type === 'action') {
-      if (item.id === 'new-chat') {
-        router.push('/chat');
-        onClose();
-      } else if (item.id === 'settings') {
-        onClose();
+      const action = COMMAND_ACTIONS_BY_ID.get(item.id);
+      if (!action) return;
+
+      onClose();
+      if (action.destination.type === 'settings') {
         requestAnimationFrame(() => onOpenSettings());
+      } else {
+        onNavigate(action.destination.href);
       }
     } else {
-      router.push(`/chat/${item.id}`);
       onClose();
+      onNavigate(`/chat/${item.id}`);
     }
-  }, [flatItems, onClose, onOpenSettings, router]);
+  }, [flatItems, onClose, onNavigate, onOpenSettings]);
 
   // Radix handles Escape; this listener owns list navigation and selection.
   useEffect(() => {

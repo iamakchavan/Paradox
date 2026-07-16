@@ -29,13 +29,13 @@ export function SidebarChatRow({
     <div
       onClick={onSelect}
       className={cn(
-        "group relative w-full h-[34px] px-3 rounded-lg flex items-center justify-between text-[13px] transition-[background-color,color,border-color,box-shadow] duration-[var(--motion-duration-fast)] cursor-pointer border select-none",
+        "group relative flex h-[34px] w-full cursor-pointer select-none items-center justify-between rounded-lg px-2.5 text-[12.5px] transition-[background-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
         isActive
-          ? "bg-white dark:bg-zinc-900 border-zinc-200/50 dark:border-zinc-800/60 shadow-sm text-foreground font-medium"
-          : "border-transparent text-foreground/65 hover:text-foreground hover:bg-foreground/[0.03]"
+          ? "bg-foreground/[0.065] font-medium text-foreground"
+          : "text-foreground/60 hover:bg-foreground/[0.035] hover:text-foreground/86"
       )}
     >
-      <span className="truncate flex-1 pr-1">{chat.title}</span>
+      <span className="min-w-0 flex-1 truncate pr-1">{chat.title}</span>
 
       <div className="flex items-center flex-shrink-0">
         <DropdownMenu>
@@ -45,7 +45,7 @@ export function SidebarChatRow({
               onPointerDown={(event) => event.stopPropagation()}
               className={cn(
                 "opacity-100 md:opacity-0 md:group-hover:opacity-100 data-[state=open]:opacity-100 transition-[opacity,background-color,color] duration-[var(--motion-duration-fast)]",
-                "h-6 w-6 flex items-center justify-center rounded-md text-foreground/40 hover:text-foreground/80 hover:bg-foreground/[0.05]"
+                "flex h-6 w-6 items-center justify-center rounded-md text-foreground/38 hover:bg-foreground/[0.055] hover:text-foreground/75"
               )}
               title="More options"
             >
