@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DesktopSettingsContent } from './modal/DesktopSettingsContent';
 import { MobileSettingsContent } from './modal/MobileSettingsContent';
-import { desktopSettingsSpring, mobileSettingsSpring } from './modal/settings-modal-config';
+import { desktopSettingsSpring } from './modal/settings-modal-config';
 import type { SettingsModalProps } from './modal/types';
 import { useSettingsModalController } from './modal/use-settings-modal-controller';
 import { motionTransitions } from '@/lib/motion';
@@ -59,16 +59,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     dragConstraints={{ top: 0, bottom: 0 }}
                     dragElastic={{ top: 0, bottom: 0.85 }}
                     onDragEnd={(_, info) => {
-                      if (info.offset.y > 120 || info.velocity.y > 400) onClose();
+                      if (info.offset.y > 120 || info.velocity.y > 400) {
+                        controller.close();
+                      }
                     }}
                     initial={{ y: '100%' }}
                     animate={{ y: mobileEntranceReady ? 0 : '100%' }}
-                    exit={{ y: '100%' }}
-                    transition={mobileSettingsSpring}
+                    exit={{ y: '100%', transition: motionTransitions.mobileSheetExit }}
+                    transition={motionTransitions.mobileSheetEnter}
                     className="fixed bottom-0 left-0 right-0"
                     style={{
                       zIndex: 51,
-                      background: 'light-dark(#ffffff, #1c1c1e)',
+                      background: 'light-dark(#ffffff, hsl(var(--surface-panel)))',
                       borderRadius: '16px 16px 0 0',
                       boxShadow: '0 -12px 48px rgba(0,0,0,0.12)',
                       maxWidth: 520,
@@ -81,6 +83,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                       flexDirection: 'column',
                       outline: 'none',
                       backfaceVisibility: 'hidden',
+                      contain: 'layout',
                       willChange: 'transform',
                     }}
                   >
@@ -95,7 +98,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
                     exit={{ opacity: 0, scale: 0.96, x: '-50%', y: 'calc(-50% - 18px)' }}
                     transition={desktopSettingsSpring}
-                    className="fixed left-1/2 top-1/2 z-50 flex h-[560px] w-[calc(100vw-2rem)] max-w-[780px] overflow-hidden rounded-[22px] border border-zinc-200/80 bg-white shadow-[0_28px_90px_rgba(0,0,0,0.18)] outline-none dark:border-white/10 dark:bg-zinc-950 dark:shadow-[0_28px_100px_rgba(0,0,0,0.65)]"
+                    className="fixed left-1/2 top-1/2 z-50 flex h-[560px] w-[calc(100vw-2rem)] max-w-[780px] overflow-hidden rounded-[22px] border border-zinc-200/80 bg-white shadow-[0_28px_90px_rgba(0,0,0,0.18)] outline-none dark:border-white/[0.09] dark:bg-[hsl(var(--surface-panel))] dark:shadow-[0_28px_100px_rgba(0,0,0,0.55)]"
                     style={{ fontFamily: 'inherit' }}
                   >
                     <DesktopSettingsContent controller={controller} />

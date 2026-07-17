@@ -2,6 +2,7 @@
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useCallback } from 'react';
 import { ArtifactWorkspace } from '@/components/artifacts/ArtifactWorkspace';
 import { useDeferredArtifactRender } from '@/hooks/artifacts/use-deferred-artifact-render';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -32,11 +33,14 @@ export function MobileArtifactWorkspace() {
       closeWorkspace();
     },
   });
+  const dismissWorkspace = useCallback(() => {
+    runAfterHistoryDismiss(closeWorkspace);
+  }, [closeWorkspace, runAfterHistoryDismiss]);
 
   return (
     <AnimatePresence>
       {isOpen && artifactId && (
-        <DialogPrimitive.Root open onOpenChange={open => { if (!open) closeWorkspace(); }}>
+        <DialogPrimitive.Root open onOpenChange={open => { if (!open) dismissWorkspace(); }}>
           <DialogPrimitive.Portal>
             <DialogPrimitive.Content asChild>
               <motion.div
@@ -63,7 +67,7 @@ export function MobileArtifactWorkspace() {
                   artifactId={artifactId}
                   isMobile
                   renderDocument={isDocumentReady}
-                  onClose={closeWorkspace}
+                  onClose={dismissWorkspace}
                   onBack={returnLibraryChatId
                     ? () => runAfterHistoryDismiss(() => openArtifactLibrary(returnLibraryChatId))
                     : undefined}

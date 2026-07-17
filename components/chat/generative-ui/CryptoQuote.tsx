@@ -42,9 +42,9 @@ export default function CryptoQuote({
   const hasMarkPrice = markPrice && markPrice.toLowerCase() !== 'unknown' && markPrice.trim() !== '';
 
   return (
-    <div className="w-full max-w-[320px] sm:max-w-[350px] bg-zinc-50/20 dark:bg-zinc-950/5 border border-zinc-200/50 dark:border-zinc-800/40 rounded-2xl shadow-3xs overflow-hidden select-none text-foreground animate-in fade-in-50 duration-200">
+    <div className="w-full max-w-[320px] sm:max-w-[350px] bg-zinc-50/20 dark:bg-card/65 border border-zinc-200/50 dark:border-white/[0.07] rounded-2xl shadow-3xs overflow-hidden select-none text-foreground animate-in fade-in-50 duration-200">
       {/* Top Panel: Core Asset Info & Pricing */}
-      <div className="p-4 flex flex-col gap-3 bg-white dark:bg-zinc-950">
+      <div className="p-4 flex flex-col gap-3 bg-white dark:bg-card">
         <div className="flex justify-between items-start">
           {/* Left Column: Asset Identifier */}
           <div className="flex flex-col min-w-0">
@@ -119,7 +119,7 @@ export default function CryptoQuote({
       </div>
 
       {/* Bottom Panel: Dual-line action footer with square CTA button */}
-      <div className="px-4 py-3 flex justify-between items-center bg-zinc-50/40 dark:bg-zinc-950/20 border-t border-zinc-100 dark:border-zinc-900/60">
+      <div className="px-4 py-3 flex justify-between items-center bg-zinc-50/40 dark:bg-secondary/35 border-t border-zinc-100 dark:border-white/[0.06]">
         <div className="flex flex-col min-w-0 flex-1 mr-2">
           <span className="text-[13px] font-medium text-zinc-850 dark:text-zinc-200 tracking-tight leading-tight truncate">
             Trade on Crypto.com

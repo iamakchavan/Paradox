@@ -1,4 +1,5 @@
 import { createMCPClient } from '@ai-sdk/mcp';
+import { jsonSchema } from 'ai';
 import type { MCPIntegration } from '@/lib/db';
 import type { ModelConfig } from '@/lib/models';
 import {
@@ -52,6 +53,19 @@ function hasAnySearchKey(searchKeys: SearchKeys): boolean {
   return Boolean(searchKeys.tavilyKey || searchKeys.exaKey || searchKeys.firecrawlKey);
 }
 
+function getCachedToolSchema(inputSchema: unknown): Record<string, any> {
+  const schema =
+    inputSchema && typeof inputSchema === 'object' && !Array.isArray(inputSchema)
+      ? { ...(inputSchema as Record<string, any>) }
+      : {};
+
+  return {
+    ...schema,
+    type: schema.type || 'object',
+    properties: schema.properties || {},
+  };
+}
+
 async function bindMcpTools(
   tools: Record<string, any>,
   mcpServers: MCPIntegration[] | undefined,
@@ -67,13 +81,9 @@ async function bindMcpTools(
     if (server.connectionMode === 'direct') {
       for (const tool of server.cachedTools) {
         tools[tool.name] = {
-          description: tool.description,
-          parameters: {
-            type: 'object',
-            properties: tool.inputSchema?.properties || {},
-            required: tool.inputSchema?.required || [],
-            additionalProperties: tool.inputSchema?.additionalProperties,
-          },
+          description:
+            tool.description?.trim() || `Use ${server.name} to run ${tool.name}.`,
+          inputSchema: jsonSchema(getCachedToolSchema(tool.inputSchema)),
         };
       }
       continue;
@@ -94,8 +104,14 @@ async function bindMcpTools(
       const serverTools = await mcpClient.tools();
       for (const [name, config] of Object.entries(serverTools)) {
         const resolvedKey = name.replace(/:/g, '_');
+        const resolvedDescription =
+          typeof (config as any).description === 'string' &&
+          (config as any).description.trim()
+            ? (config as any).description.trim()
+            : `Use ${server.name} to run ${resolvedKey}.`;
         tools[resolvedKey] = {
           ...config,
+          description: resolvedDescription,
           execute: async (args: any) => {
             try {
               const rawResult = await Promise.race([

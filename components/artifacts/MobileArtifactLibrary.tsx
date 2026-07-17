@@ -54,7 +54,7 @@ export function MobileArtifactLibrary({ activeChatId: routeChatId }: Props) {
       className="h-[72dvh] min-h-[320px] [contain:layout_paint] md:hidden"
     >
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 z-20 h-24 bg-gradient-to-b from-background via-background/95 to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-0 z-20 h-24 progressive-blur-top"
         aria-hidden="true"
       />
       <header className="absolute inset-x-0 top-6 z-30 flex items-start gap-3 px-5 pb-3 pt-2">

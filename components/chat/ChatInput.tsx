@@ -53,10 +53,10 @@ export const ChatInput = ({
           onSelectCommand={controller.commandMenu.selectCommand}
         />
         <div className={cn(
-          'relative z-10 w-full flex flex-col bg-background/95 backdrop-blur-md border rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.15)] group transition-[border-color,background-color,box-shadow] duration-300',
+          'relative z-10 w-full flex flex-col bg-background/95 dark:bg-[hsl(var(--surface-raised)/0.95)] backdrop-blur-md border rounded-[28px] shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_10px_34px_rgba(0,0,0,0.28)] group transition-[border-color,background-color,box-shadow] duration-300',
           controller.isDragging
             ? 'border-2 border-dashed border-blue-500/50 dark:border-blue-400/50 bg-blue-500/[0.03] dark:bg-blue-500/[0.05] overflow-hidden py-5'
-            : 'border-border/80 overflow-visible hover:border-zinc-300 dark:hover:border-zinc-700 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 focus-within:ring-4 focus-within:ring-zinc-500/[0.04] dark:focus-within:ring-zinc-400/[0.04] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.25)]',
+            : 'border-border/80 dark:border-white/[0.08] overflow-visible hover:border-zinc-300 dark:hover:border-white/[0.14] focus-within:border-zinc-400 dark:focus-within:border-white/[0.2] focus-within:ring-4 focus-within:ring-zinc-500/[0.04] dark:focus-within:ring-white/[0.035] focus-within:shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:focus-within:shadow-[0_14px_42px_rgba(0,0,0,0.34)]',
         )}>
           {controller.isDragging ? (
             <DropOverlay />

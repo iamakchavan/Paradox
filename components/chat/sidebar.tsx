@@ -36,7 +36,7 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "sidebar-parent relative flex h-dvh w-full flex-shrink-0 flex-col overflow-hidden border-r border-black/[0.055] bg-zinc-50 dark:border-white/[0.055] dark:bg-zinc-950 md:w-[270px]",
+        "sidebar-parent relative flex h-dvh w-full flex-shrink-0 flex-col overflow-hidden border-r border-black/[0.055] bg-zinc-50 dark:border-white/[0.06] dark:bg-[hsl(var(--surface-sidebar))] md:w-[270px]",
         className
       )}
     >

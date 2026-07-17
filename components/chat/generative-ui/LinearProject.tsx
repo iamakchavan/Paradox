@@ -46,9 +46,9 @@ export default function LinearProject({
   const strokeDashoffset = circumference - (cleanProgress / 100) * circumference;
 
   return (
-    <div className="w-full max-w-[320px] sm:max-w-[350px] bg-zinc-50/20 dark:bg-zinc-950/5 border border-zinc-200/50 dark:border-zinc-800/40 rounded-2xl shadow-3xs overflow-hidden select-none text-foreground animate-in fade-in-50 duration-200">
+    <div className="w-full max-w-[320px] sm:max-w-[350px] bg-zinc-50/20 dark:bg-card/65 border border-zinc-200/50 dark:border-white/[0.07] rounded-2xl shadow-3xs overflow-hidden select-none text-foreground animate-in fade-in-50 duration-200">
       {/* Top Panel: Project Information & Progress Indicator */}
-      <div className="p-4 flex justify-between items-start bg-white dark:bg-zinc-950">
+      <div className="p-4 flex justify-between items-start bg-white dark:bg-card">
         {/* Left Column: Project Name & Timeline details */}
         <div className="flex flex-col min-w-0 flex-1 mr-3">
           <span className="text-[10px] sm:text-[11px] text-zinc-400 dark:text-zinc-500 font-medium leading-none">
@@ -97,7 +97,7 @@ export default function LinearProject({
       </div>
 
       {/* Bottom Panel: Dual-line action footer with square CTA button */}
-      <div className="px-4 py-3 flex justify-between items-center bg-zinc-50/40 dark:bg-zinc-950/20 border-t border-zinc-100 dark:border-zinc-900/60">
+      <div className="px-4 py-3 flex justify-between items-center bg-zinc-50/40 dark:bg-secondary/35 border-t border-zinc-100 dark:border-white/[0.06]">
         <div className="flex flex-col min-w-0 flex-1 mr-2">
           <span className="text-[13px] font-medium text-zinc-800 dark:text-zinc-200 tracking-tight leading-tight truncate">
             View Project Roadmap

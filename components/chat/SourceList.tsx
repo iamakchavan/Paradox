@@ -35,7 +35,7 @@ export function SourceList({ sources }: { sources: AnswerSource[] }) {
             href={source.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex min-w-0 w-full gap-3 overflow-hidden py-4 no-underline transition-opacity active:opacity-70"
+            className="group flex min-w-0 w-full gap-3 overflow-hidden py-4 no-underline transition-opacity [content-visibility:auto] [contain-intrinsic-size:0_104px] active:opacity-70"
           >
             <div className="mt-0.5 flex h-6 w-6 shrink-0 items-start justify-center">
               <FaviconImage domain={domain} className="h-4 w-4 rounded-sm" />

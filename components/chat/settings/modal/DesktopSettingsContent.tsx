@@ -47,7 +47,7 @@ export function DesktopSettingsContent({ controller }: { controller: SettingsMod
 
         <div className="relative flex-1 flex flex-col min-w-0 overflow-hidden">
           <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-[78px] items-center justify-between px-7">
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white via-white/95 to-transparent backdrop-blur-xl [mask-image:linear-gradient(to_bottom,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] dark:from-zinc-950 dark:via-zinc-950/95" />
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white via-white/95 to-transparent backdrop-blur-xl [mask-image:linear-gradient(to_bottom,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] dark:from-[hsl(var(--surface-panel))] dark:via-[hsl(var(--surface-panel)/0.95)]" />
             <div className="relative z-10 min-w-0">
               <h2 className="text-[16px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {SETTINGS_TABS.find(tab => tab.id === controller.activeTab)?.label}
@@ -83,7 +83,7 @@ export function DesktopSettingsContent({ controller }: { controller: SettingsMod
           </div>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-24 items-end justify-end gap-2 px-7 pb-5">
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-xl [mask-image:linear-gradient(to_top,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] dark:from-zinc-950 dark:via-zinc-950/95" />
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-white via-white/95 to-transparent backdrop-blur-xl [mask-image:linear-gradient(to_top,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_0%,rgba(0,0,0,0.9)_35%,rgba(0,0,0,0.35)_72%,transparent_100%)] dark:from-[hsl(var(--surface-panel))] dark:via-[hsl(var(--surface-panel)/0.95)]" />
             <DialogPrimitive.Close asChild>
               <button className="pointer-events-auto relative z-10 h-9 rounded-full px-4 text-[12px] font-medium text-zinc-500 transition-[background-color,color,transform] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] hover:bg-zinc-100 hover:text-zinc-900 cursor-pointer active:scale-[0.97] motion-reduce:transform-none dark:text-zinc-500 dark:hover:bg-white/[0.06] dark:hover:text-zinc-100">
                 Cancel

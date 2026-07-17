@@ -35,9 +35,9 @@ export default function MeetingCard({
   const isConfirmed = displayStatus.toLowerCase() === 'confirmed';
 
   return (
-    <div className="w-full max-w-[320px] sm:max-w-[350px] bg-zinc-50/20 dark:bg-zinc-950/5 border border-zinc-200/50 dark:border-zinc-800/40 rounded-2xl shadow-3xs overflow-hidden select-none text-foreground animate-in fade-in-50 duration-200">
+    <div className="w-full max-w-[320px] sm:max-w-[350px] bg-zinc-50/20 dark:bg-card/65 border border-zinc-200/50 dark:border-white/[0.07] rounded-2xl shadow-3xs overflow-hidden select-none text-foreground animate-in fade-in-50 duration-200">
       {/* Top Panel: Core Details */}
-      <div className="p-4 flex flex-col gap-3 bg-white dark:bg-zinc-950">
+      <div className="p-4 flex flex-col gap-3 bg-white dark:bg-card">
         <div className="flex flex-col min-w-0">
           {hasTitle ? (
             <span className="text-[13px] font-semibold tracking-tight text-foreground leading-tight truncate">
@@ -80,7 +80,7 @@ export default function MeetingCard({
       </div>
 
       {/* Bottom Panel: Action CTA */}
-      <div className="px-4 py-3 flex justify-between items-center bg-zinc-50/40 dark:bg-zinc-950/20 border-t border-zinc-100 dark:border-zinc-900/60">
+      <div className="px-4 py-3 flex justify-between items-center bg-zinc-50/40 dark:bg-secondary/35 border-t border-zinc-100 dark:border-white/[0.06]">
         <div className="flex flex-col min-w-0 flex-1 mr-2">
           <span className="text-xs font-semibold tracking-tight text-foreground leading-tight truncate">
             Join on {displayLocation}

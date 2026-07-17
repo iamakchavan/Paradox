@@ -187,25 +187,31 @@
   }
  
   .dark {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 0%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 0%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 6%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 6%;
-    --muted-foreground: 0 0% 65%;
-    --accent: 0 0% 6%;
-    --accent-foreground: 0 0% 98%;
+    --background: 240 6% 6.5%;
+    --foreground: 240 5% 92%;
+    --card: 240 5% 8.5%;
+    --card-foreground: 240 5% 92%;
+    --popover: 240 5% 10%;
+    --popover-foreground: 240 5% 92%;
+    --primary: 240 5% 94%;
+    --primary-foreground: 240 6% 8%;
+    --secondary: 240 4% 13%;
+    --secondary-foreground: 240 5% 92%;
+    --muted: 240 4% 12%;
+    --muted-foreground: 240 4% 63%;
+    --accent: 240 4% 15%;
+    --accent-foreground: 240 5% 94%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 10%;
-    --input: 0 0% 10%;
-    --ring: 0 0% 98%;
+    --destructive-foreground: 240 5% 96%;
+    --border: 240 4% 18%;
+    --input: 240 4% 18%;
+    --ring: 240 5% 72%;
+    --surface-canvas: 240 6% 6.5%;
+    --surface-sidebar: 240 6% 7.5%;
+    --surface-panel: 240 5% 9%;
+    --surface-raised: 240 5% 11%;
+    --surface-subtle: 240 4% 13%;
+    --surface-hover: 240 4% 16%;
   }
 
   * {
@@ -283,8 +289,8 @@
 }
 
 .dark .typeset-chat {
-  --typeset-chat-text: rgb(161 161 170);
-  --typeset-chat-strong: rgb(212 212 216);
+  --typeset-chat-text: rgb(176 176 184);
+  --typeset-chat-strong: rgb(228 228 231);
   --typeset-chat-heading: rgb(34 211 238);
 }
 
@@ -345,7 +351,7 @@
 }
 
 .prose {
-  @apply text-zinc-800 dark:text-zinc-400;
+  @apply text-zinc-800 dark:text-zinc-300/80;
   font-weight: 400;
   font-size: 15.5px;
   line-height: 1.75;
@@ -384,7 +390,7 @@
 }
 
 .prose strong {
-  @apply text-zinc-900 dark:text-zinc-300 font-semibold;
+  @apply text-zinc-900 dark:text-zinc-200 font-semibold;
 }
 
 /* Headings and numbered list titles are styled cyan */
@@ -1092,10 +1098,10 @@
 .progressive-blur {
   background: linear-gradient(
     to top,
-    hsl(var(--background)) 0%,
-    hsl(var(--background) / 0.96) 20%,
-    hsl(var(--background) / 0.85) 40%,
-    hsl(var(--background) / 0.3) 70%,
+    hsl(var(--progressive-blur-surface, var(--background))) 0%,
+    hsl(var(--progressive-blur-surface, var(--background)) / 0.96) 20%,
+    hsl(var(--progressive-blur-surface, var(--background)) / 0.85) 40%,
+    hsl(var(--progressive-blur-surface, var(--background)) / 0.3) 70%,
     transparent 100%
   );
   backdrop-filter: blur(20px);
@@ -1145,16 +1151,25 @@ html, body {
 .progressive-blur-top {
   background: linear-gradient(
     to bottom,
-    hsl(var(--background)) 0%,
-    hsl(var(--background) / 0.96) 20%,
-    hsl(var(--background) / 0.85) 40%,
-    hsl(var(--background) / 0.3) 70%,
+    hsl(var(--progressive-blur-surface, var(--background))) 0%,
+    hsl(var(--progressive-blur-surface, var(--background)) / 0.96) 20%,
+    hsl(var(--progressive-blur-surface, var(--background)) / 0.85) 40%,
+    hsl(var(--progressive-blur-surface, var(--background)) / 0.3) 70%,
     transparent 100%
   );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
+}
+
+/* Let reusable scrims blend into the surface that owns them. */
+.dark .progressive-blur-panel-surface {
+  --progressive-blur-surface: var(--surface-panel);
+}
+
+.dark .progressive-blur-sidebar-surface {
+  --progressive-blur-surface: var(--surface-sidebar);
 }
 
 /* Material-aware footer scrim for the translucent command palette surface. */
@@ -1174,9 +1189,9 @@ html, body {
 .dark .command-palette-footer-blur {
   background: linear-gradient(
     to top,
-    rgba(9, 9, 11, 0.94) 0%,
-    rgba(9, 9, 11, 0.78) 42%,
-    rgba(9, 9, 11, 0) 100%
+    hsl(var(--surface-panel) / 0.96) 0%,
+    hsl(var(--surface-panel) / 0.8) 42%,
+    hsl(var(--surface-panel) / 0) 100%
   );
 }
 

@@ -13,7 +13,7 @@ export function SidebarFooter({ isSettingsActive, onSettingsClick }: SidebarFoot
   const { resolvedTheme, setTheme } = useTheme();
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-28 pointer-events-none flex items-end justify-center gap-2 pb-4 z-20">
+    <div className="progressive-blur-sidebar-surface absolute bottom-0 left-0 right-0 h-28 pointer-events-none flex items-end justify-center gap-2 pb-4 z-20">
       <div className="absolute inset-0 progressive-blur pointer-events-none" />
       <button
         onClick={onSettingsClick}

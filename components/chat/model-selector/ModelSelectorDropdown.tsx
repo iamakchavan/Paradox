@@ -40,7 +40,7 @@ export function ModelSelectorDropdown({
       }}
       transition={{ duration: 0.18, ease: MOTION_EASE_OUT }}
       className={cn(
-        'model-dropdown-portal fixed z-50 flex max-h-[500px] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-background p-0 text-foreground shadow-[0_12px_38px_rgba(0,0,0,0.06)] select-none will-change-[transform,opacity] dark:border-zinc-800 dark:shadow-[0_12px_38px_rgba(0,0,0,0.3)]',
+        'model-dropdown-portal fixed z-50 flex max-h-[500px] flex-col overflow-hidden rounded-xl border border-zinc-200 bg-background p-0 text-foreground shadow-[0_12px_38px_rgba(0,0,0,0.06)] select-none will-change-[transform,opacity] dark:border-white/[0.09] dark:bg-[hsl(var(--surface-panel))] dark:shadow-[0_16px_44px_rgba(0,0,0,0.42)]',
         controller.isMobile
           ? 'w-[calc(100vw-32px)] h-[390px] left-4 right-4'
           : 'h-[450px]',

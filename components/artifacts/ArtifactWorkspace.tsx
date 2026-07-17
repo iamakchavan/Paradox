@@ -36,13 +36,16 @@ export function ArtifactWorkspace({
   const [copied, setCopied] = useState(false);
   const [isMobileSourcesOpen, setIsMobileSourcesOpen] = useState(false);
 
-  useMobileBackDismiss({
+  const { runAfterHistoryDismiss } = useMobileBackDismiss({
     isOpen: isMobileSourcesOpen,
     isMobile,
     stateKey: 'paradoxArtifactSources',
     entryPrefix: 'artifact-sources',
     onDismiss: () => setIsMobileSourcesOpen(false),
   });
+  const dismissMobileSources = useCallback(() => {
+    runAfterHistoryDismiss(() => setIsMobileSourcesOpen(false));
+  }, [runAfterHistoryDismiss]);
 
   const copyReport = useCallback(async () => {
     if (!bundle?.version.markdown) return;
@@ -148,14 +151,14 @@ export function ArtifactWorkspace({
       {isMobile && (
         <MobileBottomSheet
           open={isMobileSourcesOpen}
-          onOpenChange={setIsMobileSourcesOpen}
+          onOpenChange={open => { if (!open) dismissMobileSources(); }}
           title="Sources"
           description={sourceDescription}
           className="h-[82dvh] min-h-[320px] md:hidden"
         >
           <SourcesSheetHeader
             description={sourceDescription}
-            onClose={() => setIsMobileSourcesOpen(false)}
+            onClose={dismissMobileSources}
           />
           <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-[72px] sidebar-scroll">
             <SourceList sources={bundle.version.sources} />

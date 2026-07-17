@@ -107,8 +107,8 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
 
   return (
     <div data-not-typeset className="table-container my-6">
-      <div className="overflow-hidden rounded-[10px] border border-zinc-200/90 bg-white dark:border-white/[0.1] dark:bg-zinc-950">
-        <div className="flex h-11 items-center justify-between border-b border-zinc-200/75 px-3 dark:border-white/[0.075]">
+      <div className="overflow-hidden rounded-[10px] border border-zinc-200/90 bg-white dark:border-white/[0.075] dark:bg-[hsl(var(--surface-panel))]">
+        <div className="flex h-11 items-center justify-between border-b border-zinc-200/75 px-3 dark:border-white/[0.06]">
           <div className="flex min-w-0 select-none items-center gap-2">
             <Table2 className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" strokeWidth={1.8} />
             <span className="text-[12px] font-medium text-zinc-700 dark:text-zinc-300">Table</span>

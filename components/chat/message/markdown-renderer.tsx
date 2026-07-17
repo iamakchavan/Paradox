@@ -55,14 +55,14 @@ const MarkdownPre = memo(({ children }: { children?: ReactNode }) => <>{children
 MarkdownPre.displayName = 'MarkdownPre';
 
 const MarkdownTableHead = memo(({ children }: { children?: ReactNode }) => (
-  <thead className="bg-zinc-50/90 text-zinc-600 dark:bg-white/[0.035] dark:text-zinc-300">
+  <thead className="bg-zinc-50/90 text-zinc-600 dark:bg-[hsl(var(--surface-subtle))] dark:text-zinc-300/80">
     {children}
   </thead>
 ));
 MarkdownTableHead.displayName = 'MarkdownTableHead';
 
 const MarkdownTableBody = memo(({ children }: { children?: ReactNode }) => (
-  <tbody className="bg-white dark:bg-zinc-950 [&>tr:nth-child(even)]:bg-zinc-50/45 dark:[&>tr:nth-child(even)]:bg-white/[0.012] [&>tr:not(:last-child)>*]:border-b [&>tr:not(:last-child)>*]:border-zinc-200/65 dark:[&>tr:not(:last-child)>*]:border-white/[0.065]">
+  <tbody className="bg-white dark:bg-[hsl(var(--surface-panel))] [&>tr:nth-child(even)]:bg-zinc-50/45 dark:[&>tr:nth-child(even)]:bg-[hsl(var(--surface-raised)/0.28)] [&>tr:not(:last-child)>*]:border-b [&>tr:not(:last-child)>*]:border-zinc-200/65 dark:[&>tr:not(:last-child)>*]:border-white/[0.055]">
     {children}
   </tbody>
 ));
@@ -73,7 +73,7 @@ MarkdownTableRow.displayName = 'MarkdownTableRow';
 
 const MarkdownTableHeaderCell = memo(({ children, style, ...props }: any) => (
   <th
-    className="min-w-[13rem] max-w-[30rem] whitespace-normal break-words border-b border-zinc-200/75 px-4 py-2.5 text-left text-[11.5px] font-medium leading-4 tracking-normal text-zinc-600 first:min-w-[9rem] first:max-w-[14rem] dark:border-white/[0.075] dark:text-zinc-300 [overflow-wrap:anywhere]"
+    className="min-w-[13rem] max-w-[30rem] whitespace-normal break-words border-b border-zinc-200/75 px-4 py-2.5 text-left text-[11.5px] font-medium leading-4 tracking-normal text-zinc-600 first:min-w-[9rem] first:max-w-[14rem] dark:border-white/[0.06] dark:text-zinc-300/80 [overflow-wrap:anywhere]"
     style={{ ...style, ...props.style, textAlign: 'left' }}
     {...props}
   >
@@ -84,7 +84,7 @@ MarkdownTableHeaderCell.displayName = 'MarkdownTableHeaderCell';
 
 const MarkdownTableCell = memo(({ children, style, ...props }: any) => (
   <td
-    className="min-w-[13rem] max-w-[30rem] whitespace-normal break-words px-4 py-3 text-left align-top text-[13px] leading-[1.55] text-zinc-600 first:min-w-[9rem] first:max-w-[14rem] first:font-medium first:text-zinc-800 dark:text-zinc-400 dark:first:text-zinc-200 [overflow-wrap:anywhere]"
+    className="min-w-[13rem] max-w-[30rem] whitespace-normal break-words px-4 py-3 text-left align-top text-[13px] leading-[1.55] text-zinc-600 first:min-w-[9rem] first:max-w-[14rem] first:font-medium first:text-zinc-800 dark:text-zinc-300/75 dark:first:text-zinc-200 [overflow-wrap:anywhere]"
     style={{ ...style, ...props.style, textAlign: 'left' }}
     {...props}
   >

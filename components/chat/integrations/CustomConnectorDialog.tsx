@@ -29,7 +29,7 @@ export function CustomConnectorDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={nextOpen => { if (!nextOpen) onCloseAndReset(); }}>
-      <IntegrationDialogContent className="w-[92%] max-w-[500px] overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white p-0 text-foreground shadow-2xl focus:outline-none focus-visible:outline-none dark:border-zinc-900 dark:bg-zinc-950">
+      <IntegrationDialogContent className="w-[92%] max-w-[500px] overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white p-0 text-foreground shadow-2xl focus:outline-none focus-visible:outline-none dark:border-white/[0.09] dark:bg-[hsl(var(--surface-panel))]">
         <div className="flex w-full items-start justify-between gap-4 px-6 pb-5 pt-6 text-left">
           <div className="min-w-0 text-left">
             <DialogTitle className="text-base font-semibold leading-tight text-zinc-900 dark:text-zinc-100">Custom connector</DialogTitle>
@@ -151,7 +151,7 @@ function SelectField<T extends string>({ label, placeholder, value, onValueChang
         <SelectTrigger className="h-10 rounded-[14px] border border-zinc-200 bg-zinc-50/70 px-3.5 text-xs shadow-none focus:border-zinc-400 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:border-zinc-800 dark:bg-zinc-900/45 dark:focus:border-zinc-600">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent className="overflow-hidden rounded-[14px] border border-zinc-200 bg-white p-1 text-zinc-800 shadow-xl dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
+        <SelectContent className="overflow-hidden rounded-[14px] border border-zinc-200 bg-white p-1 text-zinc-800 shadow-xl dark:border-white/[0.09] dark:bg-[hsl(var(--surface-raised))] dark:text-zinc-200">
           {options.map(([optionValue, optionLabel]) => <SelectItem key={optionValue} value={optionValue} className="rounded-[10px] text-xs cursor-pointer">{optionLabel}</SelectItem>)}
         </SelectContent>
       </Select>

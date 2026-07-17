@@ -129,7 +129,7 @@ export function ChatHeader({
                 </Button>
               </SheetTrigger>
             )}
-              <SheetContent side="left" className="w-[305px] max-w-[85vw] border-r-0 bg-zinc-50 p-0 backdrop-blur-none dark:bg-zinc-950 [&>button]:hidden">
+              <SheetContent side="left" className="w-[305px] max-w-[85vw] border-r-0 bg-zinc-50 p-0 backdrop-blur-none dark:bg-[hsl(var(--surface-sidebar))] [&>button]:hidden">
                 <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
                 <SheetDescription className="sr-only">
                   Allows user to switch chats and select options

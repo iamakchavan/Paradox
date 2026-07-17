@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ApiKeys } from '@/hooks/use-api-keys';
 import { useApiKeys } from '@/hooks/use-api-keys';
 import { useCustomToast } from '@/components/ui/custom-toast';
+import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
 import { SETTINGS_FIELDS } from './settings-modal-config';
 import type { SettingsInputKeys, SettingsTabId } from './types';
 
@@ -30,19 +31,12 @@ export function useSettingsModalController({
 }) {
   const { keys: apiKeys, updateKey } = useApiKeys();
   const { showToast } = useCustomToast();
-  const historyEntryRef = useRef<string | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const onCloseRef = useRef(onClose);
   const mobileViewRef = useRef<SettingsTabId | null>(null);
   const mobileViewHistoryEntryRef = useRef<string | null>(null);
-  const closedByHistoryRef = useRef(false);
   const [activeTab, setActiveTab] = useState<SettingsTabId>('appearance');
   const [mobileView, setMobileView] = useState<SettingsTabId | null>(null);
   const [inputKeys, setInputKeys] = useState<SettingsInputKeys>(EMPTY_INPUT_KEYS);
-
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
 
   useEffect(() => {
     mobileViewRef.current = mobileView;
@@ -50,6 +44,8 @@ export function useSettingsModalController({
 
   useEffect(() => {
     if (isOpen) {
+      mobileViewRef.current = null;
+      mobileViewHistoryEntryRef.current = null;
       setInputKeys({
         geminiApiKey: apiKeys.geminiApiKey || '',
         perplexityApiKey: apiKeys.perplexityApiKey || '',
@@ -66,87 +62,41 @@ export function useSettingsModalController({
     }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const save = useCallback(() => {
-    SETTINGS_FIELDS.forEach(({ key, storageKey }) => {
-      const value = (inputKeys[key] || '').trim();
-      if (value) {
-        localStorage.setItem(storageKey, value);
-        updateKey(key, value);
-      } else {
-        localStorage.removeItem(storageKey);
-        updateKey(key, null);
-      }
-    });
-    showToast({
-      title: 'Settings Saved',
-      message: 'Your settings have been saved successfully.',
-      type: 'success',
-      mode: 'capsule',
-    });
-    onClose();
-  }, [inputKeys, updateKey, showToast, onClose]);
-
-  const close = useCallback(() => {
-    if (isOpen) onClose();
-  }, [isOpen, onClose]);
-
-  useEffect(() => {
-    if (!isOpen || !isMobile || typeof window === 'undefined') return;
-
-    const entryId = `settings-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    historyEntryRef.current = entryId;
-    mobileViewRef.current = null;
-    mobileViewHistoryEntryRef.current = null;
-    closedByHistoryRef.current = false;
-    setMobileView(null);
-
-    window.history.pushState(
-      { ...(window.history.state || {}), paradoxModal: entryId },
-      '',
-      window.location.href
-    );
-
-    const handlePopState = (event: PopStateEvent) => {
-      const nextState = event.state || {};
-      const viewEntryId = mobileViewHistoryEntryRef.current;
-      if (
-        mobileViewRef.current
-        && viewEntryId
-        && nextState.paradoxModal === entryId
-        && nextState.paradoxModalView !== viewEntryId
-      ) {
-        mobileViewHistoryEntryRef.current = null;
-        setMobileView(null);
-        return;
-      }
-
-      if (historyEntryRef.current !== entryId) return;
-      closedByHistoryRef.current = true;
-      historyEntryRef.current = null;
+  const beforeDismiss = useCallback((event: PopStateEvent) => {
+    const viewEntryId = mobileViewHistoryEntryRef.current;
+    if (
+      mobileViewRef.current
+      && viewEntryId
+      && event.state?.paradoxModalView !== viewEntryId
+    ) {
       mobileViewHistoryEntryRef.current = null;
       setMobileView(null);
-      onCloseRef.current();
-    };
+      return true;
+    }
+    return false;
+  }, []);
 
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      if (historyEntryRef.current === entryId) {
-        const viewEntryId = mobileViewHistoryEntryRef.current;
-        const state = window.history.state || {};
-        historyEntryRef.current = null;
-        mobileViewHistoryEntryRef.current = null;
-        mobileViewRef.current = null;
-        if (!closedByHistoryRef.current) {
-          if (viewEntryId && state.paradoxModalView === viewEntryId) {
-            window.history.go(-2);
-          } else if (state.paradoxModal === entryId) {
-            window.history.go(-1);
-          }
-        }
-      }
-    };
-  }, [isOpen, isMobile]);
+  const getDismissHistoryDelta = useCallback(() => {
+    const viewEntryId = mobileViewHistoryEntryRef.current;
+    if (
+      viewEntryId
+      && typeof window !== 'undefined'
+      && window.history.state?.paradoxModalView === viewEntryId
+    ) {
+      return -2;
+    }
+    return -1;
+  }, []);
+
+  const { runAfterHistoryDismiss } = useMobileBackDismiss({
+    isOpen,
+    isMobile,
+    stateKey: 'paradoxModal',
+    entryPrefix: 'settings',
+    onDismiss: onClose,
+    onBeforeDismiss: beforeDismiss,
+    getDismissHistoryDelta,
+  });
 
   useEffect(() => {
     if (!isOpen || !isMobile || !mobileView || typeof window === 'undefined') return;
@@ -167,6 +117,30 @@ export function useSettingsModalController({
       setMobileView(null);
     }
   };
+
+  const close = useCallback(() => {
+    if (isOpen) runAfterHistoryDismiss(onClose);
+  }, [isOpen, onClose, runAfterHistoryDismiss]);
+
+  const save = useCallback(() => {
+    SETTINGS_FIELDS.forEach(({ key, storageKey }) => {
+      const value = (inputKeys[key] || '').trim();
+      if (value) {
+        localStorage.setItem(storageKey, value);
+        updateKey(key, value);
+      } else {
+        localStorage.removeItem(storageKey);
+        updateKey(key, null);
+      }
+    });
+    showToast({
+      title: 'Settings Saved',
+      message: 'Your settings have been saved successfully.',
+      type: 'success',
+      mode: 'capsule',
+    });
+    runAfterHistoryDismiss(onClose);
+  }, [inputKeys, onClose, runAfterHistoryDismiss, showToast, updateKey]);
 
   return {
     apiKeys: apiKeys as ApiKeys,

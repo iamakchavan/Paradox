@@ -16,7 +16,7 @@ export function ArtifactLibraryPanel({ chatId }: Props) {
   const description = `${artifacts.length} ${artifacts.length === 1 ? 'artifact' : 'artifacts'} in this chat`;
 
   return (
-    <div className="relative flex h-full min-w-0 flex-col bg-background">
+    <div className="progressive-blur-panel-surface relative flex h-full min-w-0 flex-col bg-background dark:bg-[hsl(var(--surface-panel))]">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-28 progressive-blur-top" aria-hidden="true" />
       <header className="absolute inset-x-0 top-0 z-30 flex h-[72px] items-center gap-3 px-5">
         <div className="min-w-0 flex-1">

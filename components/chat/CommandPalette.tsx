@@ -272,7 +272,7 @@ export function CommandPalette({ isOpen, onClose, onOpenSettings, onNavigate }: 
                   }}
                   style={{ transformOrigin: 'top center', willChange: 'transform, opacity' }}
                   className={cn(
-                    'fixed left-1/2 top-[14dvh] z-50 flex w-[calc(100vw-2rem)] max-w-[620px] flex-col overflow-hidden rounded-[16px] border border-black/[0.09] bg-white/[0.92] text-zinc-900 shadow-[0_1px_0_rgba(255,255,255,0.92)_inset,0_16px_48px_rgba(0,0,0,0.18)] outline-none backdrop-blur-[28px] backdrop-saturate-[1.25] dark:border-white/[0.11] dark:bg-zinc-950/[0.9] dark:text-zinc-100 dark:shadow-[0_1px_0_rgba(255,255,255,0.055)_inset,0_20px_60px_rgba(0,0,0,0.66)]',
+                    'fixed left-1/2 top-[14dvh] z-50 flex w-[calc(100vw-2rem)] max-w-[620px] flex-col overflow-hidden rounded-[16px] border border-black/[0.09] bg-white/[0.92] text-zinc-900 shadow-[0_1px_0_rgba(255,255,255,0.92)_inset,0_16px_48px_rgba(0,0,0,0.18)] outline-none backdrop-blur-[28px] backdrop-saturate-[1.25] dark:border-white/[0.1] dark:bg-[hsl(var(--surface-panel)/0.95)] dark:text-zinc-100 dark:shadow-[0_1px_0_rgba(255,255,255,0.055)_inset,0_22px_64px_rgba(0,0,0,0.58)]',
                     !isOpen && 'pointer-events-none',
                   )}
                 >

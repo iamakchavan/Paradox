@@ -174,7 +174,7 @@ export const CodeBlock = ({ language, codeString, isStreaming = false }: CodeBlo
   }, [codeString, languageLabel]);
 
   const toolbar = (
-    <div className="flex h-10 items-center justify-between border-b border-zinc-200/75 px-3 dark:border-zinc-800/65 dark:bg-zinc-900/90">
+    <div className="flex h-10 items-center justify-between border-b border-zinc-200/75 px-3 dark:border-white/[0.07] dark:bg-[hsl(var(--surface-subtle)/0.7)]">
       <div className="flex min-w-0 select-none items-center gap-2">
         <Code2 className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" strokeWidth={1.8} />
         <span className="truncate font-mono text-[11.5px] font-medium lowercase text-zinc-600 dark:text-zinc-300">
@@ -230,10 +230,10 @@ export const CodeBlock = ({ language, codeString, isStreaming = false }: CodeBlo
   return (
     <div
       data-not-typeset
-      className="my-6 overflow-hidden rounded-[10px] border border-zinc-200/90 bg-white dark:border-zinc-800/90 dark:bg-[hsl(240,6%,10%)]"
+      className="my-6 overflow-hidden rounded-[10px] border border-zinc-200/90 bg-white dark:border-white/[0.09] dark:bg-[hsl(var(--surface-panel))]"
     >
       {toolbar}
-      <div className="bg-zinc-50/80 dark:bg-[hsl(240,6%,10%)]">
+      <div className="bg-zinc-50/80 dark:bg-[hsl(var(--surface-panel))]">
         {isStreaming ? (
           <pre
             className={cn(

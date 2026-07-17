@@ -14,7 +14,7 @@ export function ModelDetailsPane({
   onCopy: (event: React.MouseEvent, modelId: string) => void;
 }) {
   return (
-    <div className="model-selector-details-pane min-w-0 flex-1 p-5 flex flex-col justify-between bg-zinc-50/10 dark:bg-zinc-950/5 h-full">
+    <div className="model-selector-details-pane min-w-0 flex-1 p-5 flex flex-col justify-between bg-zinc-50/10 dark:bg-[hsl(var(--surface-panel))] h-full">
       {model ? (
         <div className="flex flex-col h-full justify-between">
           <div className="space-y-2">

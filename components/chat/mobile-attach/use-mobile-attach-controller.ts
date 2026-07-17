@@ -21,7 +21,6 @@ export function useMobileAttachController({
   const [view, setView] = useState<MobileAttachView>('main');
   const viewRef = useRef<MobileAttachView>('main');
   const viewHistoryEntryRef = useRef<string | null>(null);
-  const isManagingConnectorsRef = useRef(false);
   const selectedAppsCount = useMemo(
     () => activeApps.filter(app => selectedMcpIds.includes(app.id)).length,
     [activeApps, selectedMcpIds]
@@ -65,7 +64,6 @@ export function useMobileAttachController({
   }, []);
 
   const beforeDismiss = useCallback((event: PopStateEvent) => {
-    if (isManagingConnectorsRef.current) return false;
     const viewEntryId = viewHistoryEntryRef.current;
     if (
       viewRef.current === 'apps'
@@ -91,30 +89,7 @@ export function useMobileAttachController({
     return -1;
   }, []);
 
-  const manageConnectors = useCallback(() => {
-    if (typeof window === 'undefined') {
-      onManageConnectors();
-      return;
-    }
-    const state = window.history.state || {};
-    const hasSheetHistory = state.paradoxMobileAttachSheet || state.paradoxMobileAttachSheetView;
-    if (!hasSheetHistory) {
-      onManageConnectors();
-      return;
-    }
-    isManagingConnectorsRef.current = true;
-    const handleHistoryCleaned = () => {
-      window.removeEventListener('popstate', handleHistoryCleaned);
-      window.setTimeout(() => {
-        isManagingConnectorsRef.current = false;
-        onManageConnectors();
-      }, 0);
-    };
-    window.addEventListener('popstate', handleHistoryCleaned);
-    window.history.go(getDismissHistoryDelta());
-  }, [getDismissHistoryDelta, onManageConnectors]);
-
-  useMobileBackDismiss({
+  const { runAfterHistoryDismiss } = useMobileBackDismiss({
     isOpen,
     isMobile: true,
     stateKey: 'paradoxMobileAttachSheet',
@@ -124,11 +99,20 @@ export function useMobileAttachController({
     getDismissHistoryDelta,
   });
 
+  const dismissSheet = useCallback(() => {
+    runAfterHistoryDismiss(onClose);
+  }, [onClose, runAfterHistoryDismiss]);
+
+  const manageConnectors = useCallback(() => {
+    runAfterHistoryDismiss(onManageConnectors);
+  }, [onManageConnectors, runAfterHistoryDismiss]);
+
   return {
     view,
     setView,
     selectedAppsCount,
     backToMain,
+    dismissSheet,
     manageConnectors,
   };
 }

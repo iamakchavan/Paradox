@@ -15,7 +15,7 @@ export function SkillDetailDialog({ skill, onClose }: { skill: IntegrationToolVi
 
   return (
     <Dialog open={Boolean(skill)} onOpenChange={open => { if (!open) onClose(); }}>
-      <IntegrationDialogContent className="w-[92%] max-w-xl overflow-hidden rounded-2xl border border-zinc-200/80 bg-white p-0 text-foreground shadow-2xl focus:outline-none focus-visible:outline-none dark:border-zinc-900 dark:bg-zinc-950">
+      <IntegrationDialogContent className="w-[92%] max-w-xl overflow-hidden rounded-2xl border border-zinc-200/80 bg-white p-0 text-foreground shadow-2xl focus:outline-none focus-visible:outline-none dark:border-white/[0.09] dark:bg-[hsl(var(--surface-panel))]">
         <div className="flex items-start justify-between gap-4 px-6 pb-5 pt-6 text-left">
           <div className="min-w-0 pt-0.5">
             <DialogTitle className="break-words pr-2 text-base font-semibold leading-snug text-zinc-900 dark:text-zinc-100">

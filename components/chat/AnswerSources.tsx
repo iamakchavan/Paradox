@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 
 import { MobileBottomSheet } from "@/components/ui/mobile-bottom-sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -23,13 +23,17 @@ export const AnswerSources = memo(({ sources }: { sources: AnswerSource[] }) => 
   const { toggleSources } = useSourcesPanel();
   const cleanSources = useMemo(() => dedupeSources(sources), [sources]);
 
-  useMobileBackDismiss({
+  const { runAfterHistoryDismiss } = useMobileBackDismiss({
     isOpen: isMobileOpen,
     isMobile,
     stateKey: "paradoxAnswerSources",
     entryPrefix: "answer-sources",
     onDismiss: () => setIsMobileOpen(false),
   });
+  const dismissMobileSources = useCallback(() => {
+    runAfterHistoryDismiss(() => setIsMobileOpen(false));
+  }, [runAfterHistoryDismiss]);
+
   if (cleanSources.length === 0) return null;
 
   const previewSources = cleanSources.slice(0, 3);
@@ -70,14 +74,14 @@ export const AnswerSources = memo(({ sources }: { sources: AnswerSource[] }) => 
 
       <MobileBottomSheet
         open={isMobileOpen}
-        onOpenChange={setIsMobileOpen}
+        onOpenChange={open => { if (!open) dismissMobileSources(); }}
         title="Sources"
         description={`${title} checked for this answer`}
         className="h-[82dvh] min-h-[320px] md:hidden"
       >
         <SourcesSheetHeader
           description={`${title} checked for this answer`}
-          onClose={() => setIsMobileOpen(false)}
+          onClose={dismissMobileSources}
         />
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-[72px] sidebar-scroll">
           <SourceList sources={cleanSources} />

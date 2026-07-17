@@ -17,7 +17,7 @@ export const UserMessage = memo(({ message }: { message: ChatMessageData }) => {
   }
   return (
     <div className="flex justify-end mb-12">
-      <div className="bg-white dark:bg-[#121214] text-zinc-800 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-800/30 rounded-[28px] rounded-br-[6px] px-5 py-3 sm:px-6 sm:py-3.5 max-w-[85%] sm:max-w-[70%] text-[15px] sm:text-base leading-relaxed space-y-3">
+      <div className="bg-white dark:bg-[hsl(var(--surface-raised))] text-zinc-800 dark:text-zinc-200/90 border border-zinc-200/80 dark:border-white/[0.06] rounded-[28px] rounded-br-[6px] px-5 py-3 sm:px-6 sm:py-3.5 max-w-[85%] sm:max-w-[70%] text-[15px] sm:text-base leading-relaxed space-y-3">
         {message.images && message.images.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2.5">
             {message.images.map((image, index) => (

@@ -55,18 +55,34 @@ export function useMobileBackDismiss({
     const handlePopState = (event: PopStateEvent) => {
       if (historyEntryRef.current !== entryId) return;
 
-      // A nested modal removes only its own history entry. If this layer's
-      // entry is still present in the destination state, it remains open.
-      if (event.state?.[stateKey] === entryId) return;
+      const parentEntryIsActive = event.state?.[stateKey] === entryId;
+      const pendingAction = pendingDismissActionRef.current;
 
+      // Explicit dismissals may remove both an internal view and its parent
+      // entry in one history operation. Complete that action before an
+      // internal-view handler interprets the pop as a simple "back" request.
+      if (pendingAction && !parentEntryIsActive) {
+        dismissedByHistoryRef.current = true;
+        historyEntryRef.current = null;
+        pendingDismissActionRef.current = null;
+        pendingAction();
+        return;
+      }
+
+      // Give an internal view its first opportunity to consume the entry.
+      // The parent entry can still exist in the destination state while its
+      // child view entry has just been removed.
       if (onBeforeDismissRef.current?.(event)) {
         return;
       }
 
+      // A separately managed nested modal removes only its own history entry.
+      // If this layer's entry is still present, the parent remains open.
+      if (parentEntryIsActive) return;
+
       dismissedByHistoryRef.current = true;
       historyEntryRef.current = null;
 
-      const pendingAction = pendingDismissActionRef.current;
       pendingDismissActionRef.current = null;
       if (pendingAction) {
         pendingAction();
@@ -108,7 +124,7 @@ export function useMobileBackDismiss({
     }
 
     pendingDismissActionRef.current = action;
-    window.history.back();
+    window.history.go(getDismissHistoryDeltaRef.current?.() ?? -1);
   }, [isMobile, isOpen, stateKey]);
 
   return { runAfterHistoryDismiss };

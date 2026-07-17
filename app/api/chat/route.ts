@@ -33,7 +33,9 @@ export async function POST(req: Request) {
 
     let aiModel: any;
     try {
-      aiModel = createChatModel(modelConfig, requestHeaders.providerKeys);
+      aiModel = createChatModel(modelConfig, requestHeaders.providerKeys, {
+        searchEnabled: requestHeaders.searchEnabled,
+      });
     } catch (error: any) {
       console.error(`[CHAT] Model creation failed: ${error.message}`);
       return new Response(JSON.stringify({ error: error.message }), { status: 400 });

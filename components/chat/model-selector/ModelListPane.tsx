@@ -29,7 +29,7 @@ export function ModelListPane({
 }) {
   return (
     <div className={cn(
-      'model-selector-list-pane border-zinc-200/60 dark:border-zinc-800/80 flex flex-col bg-zinc-50/30 dark:bg-zinc-950/20 h-full',
+      'model-selector-list-pane border-zinc-200/60 dark:border-white/[0.07] flex flex-col bg-zinc-50/30 dark:bg-[hsl(var(--surface-sidebar)/0.55)] h-full',
       isMobile ? 'w-full h-full' : 'w-[290px] border-r'
     )}>
       <div className="p-2 border-b border-zinc-200/50 dark:border-zinc-800/50 shrink-0">

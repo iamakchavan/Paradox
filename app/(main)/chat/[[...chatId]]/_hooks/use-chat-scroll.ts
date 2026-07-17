@@ -17,9 +17,36 @@ export function useChatScroll({ chatId, isInitialView, isLoadingRef }: Options) 
   const userScrolledUpRef = useRef(false);
   const showButtonRef = useRef(false);
   const userTouchingRef = useRef(false);
+  const measurementFrameRef = useRef<number | null>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
+  const measureScrollState = useCallback(() => {
+    if (measurementFrameRef.current !== null) return;
+
+    measurementFrameRef.current = requestAnimationFrame(() => {
+      measurementFrameRef.current = null;
+      const container = scrollContainerRef.current;
+      if (!container) return;
+
+      const distance = Math.max(
+        0,
+        container.scrollHeight - (container.scrollTop + container.clientHeight),
+      );
+      const next = distance > 200 && container.scrollHeight > container.clientHeight + 200;
+
+      if (next !== showButtonRef.current) {
+        showButtonRef.current = next;
+        setShowScrollButton(next);
+      }
+      userScrolledUpRef.current = distance > 100;
+    });
+  }, []);
+
   useEffect(() => {
+    if (measurementFrameRef.current !== null) {
+      cancelAnimationFrame(measurementFrameRef.current);
+      measurementFrameRef.current = null;
+    }
     showButtonRef.current = false;
     setShowScrollButton(false);
     initialSnapRef.current = true;
@@ -29,18 +56,7 @@ export function useChatScroll({ chatId, isInitialView, isLoadingRef }: Options) 
 
   useEffect(() => {
     if (isInitialView) return;
-    let rafId: number | null = null;
-    let pendingValue: boolean | null = null;
-    const flush = () => {
-      rafId = null;
-      if (pendingValue !== null) {
-        setShowScrollButton(pendingValue);
-        pendingValue = null;
-      }
-    };
     const handleScroll = () => {
-      const container = scrollContainerRef.current;
-      if (!container) return;
       const isTouchViewport = window.innerWidth < 1024
         || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
         || 'ontouchstart' in window
@@ -51,20 +67,13 @@ export function useChatScroll({ chatId, isInitialView, isLoadingRef }: Options) 
           (activeElement as HTMLElement).blur();
         }
       }
-      const distance = container.scrollHeight - (container.scrollTop + container.clientHeight);
-      const next = distance > 200 && container.scrollHeight > container.clientHeight + 200;
-      if (next !== showButtonRef.current) {
-        showButtonRef.current = next;
-        pendingValue = next;
-        if (rafId === null) rafId = requestAnimationFrame(flush);
-      }
-      userScrolledUpRef.current = distance > 100;
+      measureScrollState();
     };
     const touchStart = () => { userTouchingRef.current = true; };
     const touchEnd = () => { userTouchingRef.current = false; };
     const container = scrollContainerRef.current;
     if (!container) return;
-    handleScroll();
+    measureScrollState();
     container.addEventListener('scroll', handleScroll, { passive: true });
     container.addEventListener('touchstart', touchStart, { passive: true });
     container.addEventListener('touchend', touchEnd, { passive: true });
@@ -74,9 +83,8 @@ export function useChatScroll({ chatId, isInitialView, isLoadingRef }: Options) 
       container.removeEventListener('touchstart', touchStart);
       container.removeEventListener('touchend', touchEnd);
       container.removeEventListener('touchcancel', touchEnd);
-      if (rafId !== null) cancelAnimationFrame(rafId);
     };
-  }, [isInitialView, isLoadingRef]);
+  }, [isInitialView, isLoadingRef, measureScrollState]);
 
   useEffect(() => {
     if (!chatId || isInitialView) return;
@@ -87,14 +95,23 @@ export function useChatScroll({ chatId, isInitialView, isLoadingRef }: Options) 
     userScrolledUpRef.current = false;
     const observer = new ResizeObserver(() => {
       if (initialSnapRef.current) container.scrollTop = container.scrollHeight;
+      measureScrollState();
     });
     observer.observe(content);
+    observer.observe(container);
     return () => observer.disconnect();
-  }, [chatId, isInitialView]);
+  }, [chatId, isInitialView, measureScrollState]);
+
+  useEffect(() => () => {
+    if (measurementFrameRef.current !== null) {
+      cancelAnimationFrame(measurementFrameRef.current);
+    }
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+    measureScrollState();
+  }, [measureScrollState]);
 
   return {
     messagesEndRef,

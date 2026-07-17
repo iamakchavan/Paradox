@@ -45,7 +45,7 @@ export function TemplateConnectorDialog({
   const TemplateIcon = renderedTemplate?.icon;
   return (
     <Dialog open={Boolean(template)} onOpenChange={open => { if (!open) onClose(); }}>
-      <IntegrationDialogContent className="w-[92%] max-w-[500px] overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white p-0 text-foreground shadow-2xl focus:outline-none focus-visible:outline-none dark:border-zinc-900 dark:bg-zinc-950">
+      <IntegrationDialogContent className="w-[92%] max-w-[500px] overflow-hidden rounded-[24px] border border-zinc-200/80 bg-white p-0 text-foreground shadow-2xl focus:outline-none focus-visible:outline-none dark:border-white/[0.09] dark:bg-[hsl(var(--surface-panel))]">
         <div className="flex w-full items-start justify-between gap-4 px-6 pb-5 pt-6 text-left">
           <div className="flex items-center gap-3">
             {TemplateIcon && <ProviderLogo icon={TemplateIcon} variant="dialog" />}

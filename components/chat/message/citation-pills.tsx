@@ -4,6 +4,7 @@ import {
   Children,
   isValidElement,
   memo,
+  useCallback,
   useMemo,
   useState,
   type ReactElement,
@@ -40,7 +41,7 @@ function findSearchResult(item: CitationItem | undefined, searchMap: SearchMap) 
 }
 
 const SingleCitationPill = memo(({ item, searchMap }: { item: CitationItem; searchMap: SearchMap }) => {
-  const matchedResult = useMemo(() => findSearchResult(item, searchMap), [item.href, searchMap]);
+  const matchedResult = findSearchResult(item, searchMap);
   const siteName = useMemo(
     () => matchedResult ? extractSiteName(matchedResult.title) : null,
     [matchedResult],
@@ -96,15 +97,19 @@ const GroupedCitationPill = memo(({ items, searchMap }: { items: CitationItem[];
   const isMobile = useIsMobile();
   const current = items[page];
   const first = items[0];
-  const currentResult = useMemo(() => findSearchResult(current, searchMap), [current?.href, searchMap]);
-  const firstResult = useMemo(() => findSearchResult(first, searchMap), [first?.href, searchMap]);
-  useMobileBackDismiss({
+  const currentResult = findSearchResult(current, searchMap);
+  const firstResult = findSearchResult(first, searchMap);
+  const { runAfterHistoryDismiss } = useMobileBackDismiss({
     isOpen: isDrawerOpen,
     isMobile,
     stateKey: 'paradoxInlineSources',
     entryPrefix: 'inline-sources',
     onDismiss: () => setIsDrawerOpen(false),
   });
+  const dismissDrawer = useCallback(() => {
+    runAfterHistoryDismiss(() => setIsDrawerOpen(false));
+  }, [runAfterHistoryDismiss]);
+
   if (!current) return null;
   const firstSiteName = firstResult ? (extractSiteName(firstResult.title) ?? first.domain) : first.domain;
   const currentSiteName = currentResult ? (extractSiteName(currentResult.title) ?? current.domain) : current.domain;
@@ -178,12 +183,12 @@ const GroupedCitationPill = memo(({ items, searchMap }: { items: CitationItem[];
       </HoverCard>
       <MobileBottomSheet
         open={isDrawerOpen}
-        onOpenChange={setIsDrawerOpen}
+        onOpenChange={open => { if (!open) dismissDrawer(); }}
         title="Sources"
         description={description}
         className="h-[80dvh] min-h-[300px] select-none"
       >
-        <SourcesSheetHeader description={description} onClose={() => setIsDrawerOpen(false)} />
+        <SourcesSheetHeader description={description} onClose={dismissDrawer} />
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-[72px] divide-y divide-border/30">
           {items.map((item, index) => {
             const result = findSearchResult(item, searchMap);
@@ -193,8 +198,8 @@ const GroupedCitationPill = memo(({ items, searchMap }: { items: CitationItem[];
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-col gap-1.5 py-4 no-underline active:opacity-70 transition-opacity duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] select-none"
-                onClick={() => setIsDrawerOpen(false)}
+                className="flex flex-col gap-1.5 py-4 no-underline active:opacity-70 transition-opacity duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] [content-visibility:auto] [contain-intrinsic-size:0_104px] select-none"
+                onClick={dismissDrawer}
               >
                 <div className="flex items-center justify-between w-full min-w-0">
                   <div className="flex items-center gap-1.5 min-w-0">

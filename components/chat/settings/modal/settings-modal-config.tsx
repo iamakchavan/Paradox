@@ -2,7 +2,6 @@ import { Key, Paintbrush } from 'lucide-react';
 import { AI_FIELDS } from '../tabs/AIProvidersTab';
 import { SEARCH_FIELDS } from '../tabs/SearchScrapingTab';
 import type { SettingsTabDefinition } from './types';
-import { MOTION_EASE_DRAWER } from '@/lib/motion';
 
 function WebSearchIcon({ className }: { className?: string }) {
   return (
@@ -25,10 +24,4 @@ export const desktopSettingsSpring = {
   type: 'spring' as const,
   stiffness: 500,
   damping: 30,
-};
-
-export const mobileSettingsSpring = {
-  type: 'tween' as const,
-  ease: MOTION_EASE_DRAWER,
-  duration: 0.32,
 };

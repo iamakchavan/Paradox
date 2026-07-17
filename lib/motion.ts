@@ -31,4 +31,14 @@ export const motionTransitions = {
     duration: 0.42,
     ease: MOTION_EASE_DRAWER,
   } satisfies Transition,
+  mobileSheetEnter: {
+    type: 'tween',
+    duration: 0.32,
+    ease: MOTION_EASE_OUT,
+  } satisfies Transition,
+  mobileSheetExit: {
+    type: 'tween',
+    duration: 0.24,
+    ease: [0.4, 0, 1, 1],
+  } satisfies Transition,
 } as const;

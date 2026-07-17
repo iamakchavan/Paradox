@@ -6,6 +6,10 @@ import type { ModelConfig } from '@/lib/models';
 import { getPerplexityModel } from '@/lib/perplexity';
 import type { ChatRequestHeaders, ProviderKeys } from './types';
 
+interface CreateProviderModelOptions {
+  searchEnabled?: boolean;
+}
+
 export function readChatRequestHeaders(req: Request): ChatRequestHeaders {
   return {
     providerKeys: {
@@ -29,6 +33,7 @@ export function createProviderModel(
   config: ModelConfig,
   keys: ProviderKeys,
   perplexityMode: 'chat' | 'research',
+  options: CreateProviderModelOptions = {},
 ): any {
   const baseModel = (() => {
     if (config.provider === 'google') {
@@ -43,6 +48,7 @@ export function createProviderModel(
       if (!keys.perplexityKey) throw new Error('Perplexity API key is missing');
       return getPerplexityModel(keys.perplexityKey, config.id, perplexityMode, {
         reasoningEffort: config.agentApi?.reasoningEffort,
+        searchEnabled: options.searchEnabled,
       });
     }
     if (config.provider === 'zenmux') {
@@ -84,8 +90,12 @@ export function createProviderModel(
   return baseModel;
 }
 
-export function createChatModel(config: ModelConfig, keys: ProviderKeys): any {
-  return createProviderModel(config, keys, 'chat');
+export function createChatModel(
+  config: ModelConfig,
+  keys: ProviderKeys,
+  options: CreateProviderModelOptions = {},
+): any {
+  return createProviderModel(config, keys, 'chat', options);
 }
 
 export function buildProviderOptions(

@@ -73,9 +73,9 @@ export default function WeatherCard({
   const forecastDays = getForecastDays();
 
   return (
-    <div className="w-full max-w-[320px] sm:max-w-[350px] bg-zinc-50/20 dark:bg-zinc-950/5 border border-zinc-200/50 dark:border-zinc-800/40 rounded-2xl shadow-3xs overflow-hidden select-none text-foreground animate-in fade-in-50 duration-200">
+    <div className="w-full max-w-[320px] sm:max-w-[350px] bg-zinc-50/20 dark:bg-card/65 border border-zinc-200/50 dark:border-white/[0.07] rounded-2xl shadow-3xs overflow-hidden select-none text-foreground animate-in fade-in-50 duration-200">
       {/* Top Panel: Compact Location and Inline Temperature + Icon */}
-      <div className="p-4 flex justify-between items-center bg-white dark:bg-zinc-950">
+      <div className="p-4 flex justify-between items-center bg-white dark:bg-card">
         {/* Left Column: Location & Condition Stack */}
         <div className="flex flex-col min-w-0 flex-1 mr-3">
           {hasLocation ? (
@@ -106,7 +106,7 @@ export default function WeatherCard({
       </div>
 
       {/* Bottom Panel: Today's Climate Stats (Inline and Slim) */}
-      <div className="px-4 py-2.5 flex justify-between items-center bg-zinc-50/40 dark:bg-zinc-950/20 border-t border-zinc-100 dark:border-zinc-900/60 text-[9.5px] font-semibold text-muted-foreground">
+      <div className="px-4 py-2.5 flex justify-between items-center bg-zinc-50/40 dark:bg-secondary/35 border-t border-zinc-100 dark:border-white/[0.06] text-[9.5px] font-semibold text-muted-foreground">
         <span>Humidity: <span className="font-mono text-foreground font-semibold">{displayHumidity}</span></span>
         <span>Wind: <span className="font-mono text-foreground font-semibold">{displayWind}</span></span>
         <span>Baro: <span className="font-mono text-foreground font-semibold">{displayPressure}</span></span>
