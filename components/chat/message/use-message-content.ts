@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef } from 'react';
+import { parseDeepResearchArtifact } from '@/lib/artifacts/deep-research';
 import { parseResearchStream, type ResearchStep } from '@/lib/research/parser';
 import { normalizeSourceCollection } from '@/lib/research/source-normalization';
 import { preprocessLaTeX } from '@/utils/latex';
@@ -50,6 +51,9 @@ export function useMessageContent(content: string): ParsedMessageContent {
       mainContent = extractSearchData(mainContent).cleanContent;
     }
 
+    const artifactEnvelope = parseDeepResearchArtifact(mainContent);
+    mainContent = artifactEnvelope.cleanContent;
+
     let stepsChanged = parsedSteps.length !== previousStepsRef.current.length;
     const stabilizedSteps = parsedSteps.map((step, index) => {
       const previous = previousStepsRef.current[index];
@@ -64,7 +68,15 @@ export function useMessageContent(content: string): ParsedMessageContent {
       ? previousSearchDataRef.current
       : parsedSearchData;
     previousSearchDataRef.current = searchData;
-    return { steps, searchLoadingQuery, searchData, toolSteps, mainContent, researchTime };
+    return {
+      steps,
+      searchLoadingQuery,
+      searchData,
+      toolSteps,
+      mainContent,
+      researchTime,
+      artifact: artifactEnvelope.artifact,
+    };
   }, [content, rawMainContent]);
 
   const allSearchResults = useMemo(() => {

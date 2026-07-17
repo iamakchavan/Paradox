@@ -8,6 +8,7 @@ import { MessageMarkdown } from './markdown-renderer';
 import { MessageActions } from './MessageActions';
 import { ParadoxTaskTimeline } from './ParadoxTaskTimeline';
 import { SearchStatus } from './SearchStatus';
+import { DeepResearchReportCard } from '@/components/artifacts/DeepResearchReportCard';
 import type { ParsedMessageContent } from './types';
 
 interface Props {
@@ -17,6 +18,8 @@ interface Props {
   isStreaming: boolean;
   isThinkingActive: boolean;
   onBranchOff?: (index: number) => void;
+  chatId?: string | null;
+  messageId?: number;
 }
 
 export const AssistantMessage = memo(({
@@ -26,6 +29,8 @@ export const AssistantMessage = memo(({
   isStreaming,
   isThinkingActive,
   onBranchOff,
+  chatId,
+  messageId,
 }: Props) => (
   <div className={cn(
     'px-2 sm:px-4 mb-12 text-foreground message-viewport-contain',
@@ -54,6 +59,16 @@ export const AssistantMessage = memo(({
           steps={parsed.steps}
           isLoading={isStreaming}
           researchTime={parsed.researchTime}
+        />
+      )}
+      {parsed.artifact && chatId && messageId !== undefined && (
+        <DeepResearchReportCard
+          artifact={parsed.artifact}
+          chatId={chatId}
+          messageId={messageId}
+          sources={parsed.allSearchResults}
+          researchTime={parsed.researchTime}
+          isMessageStreaming={isStreaming}
         />
       )}
       {parsed.toolSteps.length > 0 && (

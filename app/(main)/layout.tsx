@@ -9,8 +9,16 @@ import { LayoutGroup, AnimatePresence } from 'framer-motion';
 import { CommandPalette } from '@/components/chat/CommandPalette';
 import { SettingsModal } from '@/components/chat/settings/SettingsModal';
 import type { AnswerSource } from '@/components/chat/SourceList';
-import { DesktopSourcesPanel } from '@/components/chat/DesktopSourcesPanel';
-import { SourcesPanelContext } from '@/components/chat/SourcesPanelContext';
+import { DesktopRightWorkspace } from '@/components/workspace/DesktopRightWorkspace';
+import { MobileArtifactWorkspace } from '@/components/workspace/MobileArtifactWorkspace';
+import { MobileArtifactLibrary } from '@/components/artifacts/MobileArtifactLibrary';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  getRightWorkspaceWidth,
+  RightWorkspaceActionsProvider,
+  RightWorkspaceProvider,
+  type RightWorkspaceState,
+} from '@/components/workspace/RightWorkspaceContext';
 
 export default function MainLayout({
   children,
@@ -20,6 +28,7 @@ export default function MainLayout({
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
+  const isMobile = useIsMobile();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -27,8 +36,7 @@ export default function MainLayout({
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isSettingsActive, setIsSettingsActive] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
-  const [sourcesPanelSources, setSourcesPanelSources] = useState<AnswerSource[]>([]);
-  const [isSourcesPanelOpen, setIsSourcesPanelOpen] = useState(false);
+  const [rightWorkspace, setRightWorkspace] = useState<RightWorkspaceState>({ type: 'closed' });
 
   useEffect(() => {
     const saved = localStorage.getItem('sidebar-collapsed');
@@ -125,28 +133,72 @@ export default function MainLayout({
     router.push('/chat');
   };
 
-  const closeSources = useCallback(() => {
-    setIsSourcesPanelOpen(false);
+  const closeWorkspace = useCallback(() => {
+    setRightWorkspace({ type: 'closed' });
+  }, []);
+
+  const openArtifactLibrary = useCallback((chatId: string) => {
+    setRightWorkspace({ type: 'artifact-library', chatId });
+  }, []);
+
+  const toggleArtifactLibrary = useCallback((chatId: string) => {
+    setRightWorkspace(current => (
+      current.type === 'artifact-library' && current.chatId === chatId
+        ? { type: 'closed' }
+        : { type: 'artifact-library', chatId }
+    ));
+  }, []);
+
+  const openArtifact = useCallback((
+    artifactId: string,
+    options?: { returnLibraryChatId?: string },
+  ) => {
+    setRightWorkspace({
+      type: 'artifact',
+      artifactId,
+      returnLibraryChatId: options?.returnLibraryChatId,
+    });
+  }, []);
+
+  const openSources = useCallback((
+    sources: AnswerSource[],
+    options?: {
+      returnArtifactId?: string;
+      returnArtifactLibraryChatId?: string;
+    },
+  ) => {
+    setRightWorkspace({
+      type: 'sources',
+      sources,
+      returnArtifactId: options?.returnArtifactId,
+      returnArtifactLibraryChatId: options?.returnArtifactLibraryChatId,
+    });
   }, []);
 
   const toggleSources = useCallback((sources: AnswerSource[]) => {
-    const currentUrls = sourcesPanelSources.map((source) => source.url);
-    const nextUrls = sources.map((source) => source.url);
-    const isSameAnswer =
-      currentUrls.length === nextUrls.length &&
-      currentUrls.every((url, index) => url === nextUrls[index]);
+    setRightWorkspace(current => {
+      const isSameAnswer = current.type === 'sources'
+        && current.sources.length === sources.length
+        && current.sources.every((source, index) => source.url === sources[index]?.url);
+      return isSameAnswer ? { type: 'closed' } : { type: 'sources', sources };
+    });
+  }, []);
 
-    if (isSourcesPanelOpen && isSameAnswer) {
-      setIsSourcesPanelOpen(false);
-      return;
-    }
-
-    setSourcesPanelSources(sources);
-    setIsSourcesPanelOpen(true);
-  }, [isSourcesPanelOpen, sourcesPanelSources]);
+  const closeSources = useCallback(() => {
+    setRightWorkspace(current => {
+      if (current.type === 'sources' && current.returnArtifactId) {
+        return {
+          type: 'artifact',
+          artifactId: current.returnArtifactId,
+          returnLibraryChatId: current.returnArtifactLibraryChatId,
+        };
+      }
+      return { type: 'closed' };
+    });
+  }, []);
 
   useEffect(() => {
-    setIsSourcesPanelOpen(false);
+    setRightWorkspace({ type: 'closed' });
   }, [pathname]);
 
   const handleOpenSettingsFromCommandPalette = useCallback(() => {
@@ -182,16 +234,48 @@ export default function MainLayout({
   ]);
 
   const isLibraryActive = pathname === '/library';
-  const sourcesPanelContextValue = useMemo(() => ({
-    sources: sourcesPanelSources,
-    isOpen: isSourcesPanelOpen,
+  const rightWorkspaceContextValue = useMemo(() => ({
+    state: rightWorkspace,
+    openArtifactLibrary,
+    toggleArtifactLibrary,
+    openArtifact,
+    openSources,
     toggleSources,
+    closeWorkspace,
     closeSources,
-  }), [sourcesPanelSources, isSourcesPanelOpen, toggleSources, closeSources]);
+  }), [
+    rightWorkspace,
+    openArtifactLibrary,
+    toggleArtifactLibrary,
+    openArtifact,
+    openSources,
+    toggleSources,
+    closeWorkspace,
+    closeSources,
+  ]);
+  const rightWorkspaceActionsValue = useMemo(() => ({
+    openArtifactLibrary,
+    toggleArtifactLibrary,
+    openArtifact,
+    openSources,
+    toggleSources,
+    closeWorkspace,
+    closeSources,
+  }), [
+    openArtifactLibrary,
+    toggleArtifactLibrary,
+    openArtifact,
+    openSources,
+    toggleSources,
+    closeWorkspace,
+    closeSources,
+  ]);
+  const rightWorkspaceWidth = isMobile ? '0px' : getRightWorkspaceWidth(rightWorkspace);
 
   return (
     <SidebarContext.Provider value={sidebarContextValue}>
-      <SourcesPanelContext.Provider value={sourcesPanelContextValue}>
+      <RightWorkspaceProvider value={rightWorkspaceContextValue}>
+      <RightWorkspaceActionsProvider value={rightWorkspaceActionsValue}>
       <div className="flex h-dvh w-screen overflow-hidden bg-background">
         <Sidebar
           activeChatId={activeChatId}
@@ -252,7 +336,7 @@ export default function MainLayout({
             isSidebarCollapsed ? "md:pl-0" : "md:pl-[270px]"
           )}
           style={{
-            "--sources-panel-width": isSourcesPanelOpen ? "390px" : "0px",
+            "--sources-panel-width": rightWorkspaceWidth,
           } as React.CSSProperties}
           data-chat-viewport
         >
@@ -262,7 +346,7 @@ export default function MainLayout({
             </LayoutGroup>
           </main>
         </div>
-        <DesktopSourcesPanel />
+        <DesktopRightWorkspace />
       </div>
       <CommandPalette
         isOpen={isCommandPaletteOpen}
@@ -276,7 +360,10 @@ export default function MainLayout({
           onClose={() => setIsSettingsActive(false)}
         />
       )}
-      </SourcesPanelContext.Provider>
+      <MobileArtifactWorkspace />
+      <MobileArtifactLibrary activeChatId={activeChatId} />
+      </RightWorkspaceActionsProvider>
+      </RightWorkspaceProvider>
     </SidebarContext.Provider>
   );
 }

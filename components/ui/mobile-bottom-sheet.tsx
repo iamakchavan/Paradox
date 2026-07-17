@@ -11,6 +11,7 @@ import { usePreparedEntrance } from "@/hooks/use-prepared-entrance";
 interface MobileBottomSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onExitComplete?: () => void;
   title: string;
   description?: string;
   children: ReactNode;
@@ -20,6 +21,7 @@ interface MobileBottomSheetProps {
 export function MobileBottomSheet({
   open,
   onOpenChange,
+  onExitComplete,
   title,
   description,
   children,
@@ -28,7 +30,7 @@ export function MobileBottomSheet({
   const entranceReady = usePreparedEntrance(open);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={onExitComplete}>
       {open && (
         <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
           <DialogPrimitive.Portal forceMount>
@@ -38,7 +40,7 @@ export function MobileBottomSheet({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={motionTransitions.overlay}
-                className="fixed inset-0 z-50 bg-black/45"
+                className="fixed inset-0 z-[70] bg-black/45"
               />
             </DialogPrimitive.Overlay>
 
@@ -57,7 +59,7 @@ export function MobileBottomSheet({
                 exit={{ y: "100%" }}
                 transition={motionTransitions.drawer}
                 className={cn(
-                  "fixed bottom-0 left-0 right-0 z-50 mx-auto flex max-w-[520px] flex-col overflow-hidden rounded-t-[24px] border border-b-0 border-border/60 bg-background shadow-[0_-18px_70px_rgba(0,0,0,0.24)] outline-none [backface-visibility:hidden] will-change-transform dark:border-white/[0.08] dark:shadow-[0_-18px_70px_rgba(0,0,0,0.55)]",
+                  "fixed bottom-0 left-0 right-0 z-[70] mx-auto flex max-w-[520px] flex-col overflow-hidden rounded-t-[24px] border border-b-0 border-border/60 bg-background shadow-[0_-18px_70px_rgba(0,0,0,0.24)] outline-none [backface-visibility:hidden] will-change-transform dark:border-white/[0.08] dark:shadow-[0_-18px_70px_rgba(0,0,0,0.55)]",
                   className
                 )}
                 style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}

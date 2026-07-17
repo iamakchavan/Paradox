@@ -87,6 +87,7 @@ export function ChatPageContent(props: Props) {
                 expandedThinking={props.expandedThinking}
                 setExpandedThinking={props.setExpandedThinking}
                 modelMode={props.selectedModelId}
+                chatId={props.chatId}
                 onBranchOff={message.role === 'assistant' && props.chatId && !streaming
                   ? props.onBranchOff
                   : undefined}

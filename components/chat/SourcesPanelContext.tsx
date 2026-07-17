@@ -1,21 +1,14 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { useMemo } from 'react';
+import { useRightWorkspace } from '@/components/workspace/RightWorkspaceContext';
 
-import type { AnswerSource } from "./SourceList";
-
-interface SourcesPanelContextValue {
-  sources: AnswerSource[];
-  isOpen: boolean;
-  toggleSources: (sources: AnswerSource[]) => void;
-  closeSources: () => void;
+export function useSourcesPanel() {
+  const workspace = useRightWorkspace();
+  return useMemo(() => ({
+    sources: workspace.state.type === 'sources' ? workspace.state.sources : [],
+    isOpen: workspace.state.type === 'sources',
+    toggleSources: workspace.toggleSources,
+    closeSources: workspace.closeSources,
+  }), [workspace]);
 }
-
-export const SourcesPanelContext = createContext<SourcesPanelContextValue>({
-  sources: [],
-  isOpen: false,
-  toggleSources: () => {},
-  closeSources: () => {},
-});
-
-export const useSourcesPanel = () => useContext(SourcesPanelContext);

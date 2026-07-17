@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ChatSession } from '@/lib/db';
@@ -23,6 +24,8 @@ export function SidebarHistory({
   onDeleteChat,
 }: SidebarHistoryProps) {
   const [historyCollapsed, setHistoryCollapsed] = useState(false);
+  const [highlightedChatId, setHighlightedChatId] = useState<string | null>(null);
+  const reduceMotion = Boolean(useReducedMotion());
   const {
     chats,
     groupedChats,
@@ -37,14 +40,21 @@ export function SidebarHistory({
       key={chat.id}
       chat={chat}
       isActive={chat.id === activeChatId}
-      onSelect={() => onSelectChat(chat.id)}
-      onRename={() => onRenameChat(chat.id, chat.title)}
-      onDelete={() => onDeleteChat(chat.id)}
+      highlighted={chat.id === highlightedChatId}
+      reduceMotion={reduceMotion}
+      onHighlight={setHighlightedChatId}
+      onSelectChat={onSelectChat}
+      onRenameChat={onRenameChat}
+      onDeleteChat={onDeleteChat}
     />
   );
 
   return (
-    <div className="sidebar-scroll flex-1 select-none overflow-y-auto px-3 pb-24 pt-1">
+    <div
+      className="sidebar-scroll flex-1 select-none overflow-y-auto px-3 pb-24 pt-1"
+      onMouseLeave={() => setHighlightedChatId(null)}
+      onScroll={() => setHighlightedChatId(null)}
+    >
       {chats === undefined ? (
         <div className="flex items-center justify-center py-16">
           <div className="h-3 w-3 animate-spin rounded-full border border-foreground/25 border-t-transparent" />

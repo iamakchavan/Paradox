@@ -9,6 +9,9 @@ import { ApiKeys } from '@/hooks/use-api-keys';
 import { useSidebarContext } from '@/components/chat/SidebarContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
+import { ArtifactNavigatorTrigger } from '@/components/artifacts/ArtifactNavigatorTrigger';
+import { useChatArtifacts } from '@/hooks/artifacts/use-chat-artifacts';
+import { useRightWorkspace } from '@/components/workspace/RightWorkspaceContext';
 
 interface ChatHeaderProps {
   isSidebarCollapsed: boolean;
@@ -49,10 +52,14 @@ export function ChatHeader({
   hideModelSelector = false,
 }: ChatHeaderProps) {
   const { isSearchActive, setIsSearchActive, isSettingsActive, setIsSettingsActive } = useSidebarContext();
+  const { artifacts } = useChatArtifacts(activeChatId);
+  const { state: rightWorkspace, toggleArtifactLibrary } = useRightWorkspace();
   const router = useRouter();
   const pathname = usePathname();
   const isEmptyNewChatPage = !activeChatId && (pathname === '/' || pathname === '/chat');
   const shouldShowNewChatButton = !isEmptyNewChatPage;
+  const isArtifactLibraryActive = rightWorkspace.type === 'artifact-library'
+    && rightWorkspace.chatId === activeChatId;
 
   return (
     <>
@@ -206,28 +213,47 @@ export function ChatHeader({
           </AnimatePresence>
         </motion.div>
 
-        {/* Center Pill: Model Selector — hidden on non-chat pages */}
+        {/* Model selector and mobile artifact navigator */}
         {!hideModelSelector && !isSearchActive && !isSettingsActive && !isLibraryPageActive && (
-          <div className="absolute right-0 left-auto translate-x-0 md:left-1/2 md:-translate-x-1/2 md:right-auto pointer-events-auto flex items-center justify-center rounded-full liquid-glass-dock p-1 h-11 md:h-12">
-            <ModelSelector
-              selectedModelId={selectedModelId}
-              onSelectModel={setSelectedModelId}
-              isLoading={isLoading}
-              geminiApiKey={apiKeys.geminiApiKey}
-              mistralApiKey={apiKeys.mistralApiKey}
-              perplexityApiKey={apiKeys.perplexityApiKey}
-              zenmuxApiKey={apiKeys.zenmuxApiKey}
-              nvidiaApiKey={apiKeys.nvidiaApiKey}
-              inceptionApiKey={apiKeys.inceptionApiKey}
-              minimal={true}
-              align="top"
-            />
+          <div className="absolute right-0 left-auto translate-x-0 md:left-1/2 md:-translate-x-1/2 md:right-auto pointer-events-auto flex items-center justify-center gap-2">
+            {activeChatId && artifacts.length > 0 && (
+              <div className="flex h-11 w-11 items-center justify-center rounded-full p-1 liquid-glass-dock md:hidden">
+                <ArtifactNavigatorTrigger
+                  count={artifacts.length}
+                  isActive={isArtifactLibraryActive}
+                  onClick={() => toggleArtifactLibrary(activeChatId)}
+                  compact
+                />
+              </div>
+            )}
+            <div className="flex h-11 items-center justify-center rounded-full p-1 liquid-glass-dock md:h-12">
+              <ModelSelector
+                selectedModelId={selectedModelId}
+                onSelectModel={setSelectedModelId}
+                isLoading={isLoading}
+                geminiApiKey={apiKeys.geminiApiKey}
+                mistralApiKey={apiKeys.mistralApiKey}
+                perplexityApiKey={apiKeys.perplexityApiKey}
+                zenmuxApiKey={apiKeys.zenmuxApiKey}
+                nvidiaApiKey={apiKeys.nvidiaApiKey}
+                inceptionApiKey={apiKeys.inceptionApiKey}
+                minimal={true}
+                align="top"
+              />
+            </div>
           </div>
         )}
 
         {/* Right Pill: Settings Dialog Trigger */}
         {!isSearchActive && !isLibraryPageActive && (
           <div className="hidden md:flex pointer-events-auto flex items-center gap-1.5 p-1 rounded-full liquid-glass-dock h-11 md:h-12">
+            {!isSettingsActive && activeChatId && (
+              <ArtifactNavigatorTrigger
+                count={artifacts.length}
+                isActive={isArtifactLibraryActive}
+                onClick={() => toggleArtifactLibrary(activeChatId)}
+              />
+            )}
             <Button
               variant="ghost"
               size="icon"

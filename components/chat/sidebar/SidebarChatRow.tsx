@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from 'react';
+import { motion } from 'framer-motion';
 import { Edit3, MoreVertical, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -8,36 +10,52 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { MOTION_EASE_OUT } from '@/lib/motion';
 import type { ChatSession } from '@/lib/db';
 
 interface SidebarChatRowProps {
   chat: ChatSession;
   isActive: boolean;
-  onSelect: () => void;
-  onRename: () => void;
-  onDelete: () => void;
+  highlighted: boolean;
+  reduceMotion: boolean;
+  onHighlight: (chatId: string) => void;
+  onSelectChat: (chatId: string) => void;
+  onRenameChat: (id: string, title: string) => void;
+  onDeleteChat: (id: string) => void;
 }
 
-export function SidebarChatRow({
+export const SidebarChatRow = memo(function SidebarChatRow({
   chat,
   isActive,
-  onSelect,
-  onRename,
-  onDelete,
+  highlighted,
+  reduceMotion,
+  onHighlight,
+  onSelectChat,
+  onRenameChat,
+  onDeleteChat,
 }: SidebarChatRowProps) {
   return (
     <div
-      onClick={onSelect}
+      onClick={() => onSelectChat(chat.id)}
+      onMouseEnter={() => onHighlight(chat.id)}
       className={cn(
-        "group relative flex h-[34px] w-full cursor-pointer select-none items-center justify-between rounded-lg px-2.5 text-[12.5px] transition-[background-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
+        "group relative flex h-[34px] w-full cursor-pointer select-none items-center justify-between overflow-hidden rounded-lg px-2.5 text-[12.5px] transition-[background-color,color] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)]",
         isActive
           ? "bg-foreground/[0.065] font-medium text-foreground"
-          : "text-foreground/60 hover:bg-foreground/[0.035] hover:text-foreground/86"
+          : "text-foreground/60 hover:text-foreground/86"
       )}
     >
-      <span className="min-w-0 flex-1 truncate pr-1">{chat.title}</span>
+      {highlighted && (
+        <motion.span
+          layoutId="sidebar-history-highlight"
+          className="pointer-events-none absolute inset-0 rounded-lg bg-foreground/[0.035]"
+          transition={reduceMotion ? { duration: 0 } : { duration: 0.16, ease: MOTION_EASE_OUT }}
+        />
+      )}
 
-      <div className="flex items-center flex-shrink-0">
+      <span className="relative z-10 min-w-0 flex-1 truncate pr-1">{chat.title}</span>
+
+      <div className="relative z-10 flex flex-shrink-0 items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -60,7 +78,7 @@ export function SidebarChatRow({
             <DropdownMenuItem
               onClick={(event) => {
                 event.stopPropagation();
-                onRename();
+                onRenameChat(chat.id, chat.title);
               }}
               className="flex h-9 cursor-pointer items-center gap-3 rounded-lg px-2.5 text-[13px] font-medium text-foreground/78 transition-colors hover:bg-foreground/[0.05] focus:bg-foreground/[0.05]"
             >
@@ -70,7 +88,7 @@ export function SidebarChatRow({
             <DropdownMenuItem
               onClick={(event) => {
                 event.stopPropagation();
-                onDelete();
+                onDeleteChat(chat.id);
               }}
               className="flex h-9 cursor-pointer items-center gap-3 rounded-lg px-2.5 text-[13px] font-medium text-red-500 transition-colors hover:bg-red-500/[0.08] focus:bg-red-500/[0.08] focus:text-red-500"
             >
@@ -82,4 +100,6 @@ export function SidebarChatRow({
       </div>
     </div>
   );
-}
+});
+
+SidebarChatRow.displayName = 'SidebarChatRow';

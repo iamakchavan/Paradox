@@ -55,6 +55,10 @@ export function useMobileBackDismiss({
     const handlePopState = (event: PopStateEvent) => {
       if (historyEntryRef.current !== entryId) return;
 
+      // A nested modal removes only its own history entry. If this layer's
+      // entry is still present in the destination state, it remains open.
+      if (event.state?.[stateKey] === entryId) return;
+
       if (onBeforeDismissRef.current?.(event)) {
         return;
       }

@@ -1,7 +1,9 @@
 "use client";
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Folder, Puzzle, Search } from 'lucide-react';
+import { MOTION_EASE_OUT } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 import type { SidebarProps } from './types';
 
@@ -36,31 +38,47 @@ function NewChatIcon() {
 }
 
 function SidebarNavItem({
+  itemId,
   icon,
   label,
   onClick,
   active = false,
+  highlighted,
+  reduceMotion,
+  onHighlight,
 }: {
+  itemId: string;
   icon: ReactNode;
   label: string;
   onClick?: () => void;
   active?: boolean;
+  highlighted: boolean;
+  reduceMotion: boolean;
+  onHighlight: (itemId: string) => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      onMouseEnter={() => onHighlight(itemId)}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'group flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-lg border px-3 text-left text-[13px] font-medium outline-none transition-[background-color,color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] focus-visible:ring-2 focus-visible:ring-foreground/15',
+        'group relative flex h-9 w-full cursor-pointer items-center gap-2.5 overflow-hidden rounded-lg border px-3 text-left text-[13px] font-medium outline-none transition-[background-color,color,border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] focus-visible:ring-2 focus-visible:ring-foreground/15',
         active
           ? 'border-black/[0.065] bg-white text-foreground shadow-[0_1px_2px_rgba(0,0,0,0.035)] dark:border-white/[0.065] dark:bg-white/[0.075] dark:shadow-none'
-          : 'border-transparent text-foreground/62 hover:bg-foreground/[0.04] hover:text-foreground/88',
+          : 'border-transparent text-foreground/62 hover:text-foreground/88',
       )}
     >
+      {highlighted && (
+        <motion.span
+          layoutId="sidebar-navigation-highlight"
+          className="pointer-events-none absolute inset-0 rounded-lg bg-foreground/[0.04]"
+          transition={reduceMotion ? { duration: 0 } : { duration: 0.16, ease: MOTION_EASE_OUT }}
+        />
+      )}
       <span
         className={cn(
-          'flex h-4 w-4 shrink-0 items-center justify-center transition-colors duration-[var(--motion-duration-fast)]',
+          'relative z-10 flex h-4 w-4 shrink-0 items-center justify-center transition-colors duration-[var(--motion-duration-fast)]',
           active
             ? 'text-foreground/78'
             : 'text-foreground/45 group-hover:text-foreground/68',
@@ -68,7 +86,7 @@ function SidebarNavItem({
       >
         {icon}
       </span>
-      <span className="min-w-0 truncate">{label}</span>
+      <span className="relative z-10 min-w-0 truncate">{label}</span>
     </button>
   );
 }
@@ -84,36 +102,59 @@ export function SidebarNavigation({
   isNewChatActive,
   hasChats,
 }: SidebarNavigationProps) {
+  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
+  const reduceMotion = Boolean(useReducedMotion());
+
   return (
-    <nav className="flex flex-shrink-0 select-none flex-col gap-0.5 px-3 pb-2 pt-0.5" aria-label="Primary navigation">
+    <nav
+      className="flex flex-shrink-0 select-none flex-col gap-0.5 px-3 pb-2 pt-0.5"
+      aria-label="Primary navigation"
+      onMouseLeave={() => setHighlightedItemId(null)}
+    >
       <SidebarNavItem
+        itemId="search"
         icon={<Search className="h-4 w-4" strokeWidth={2} />}
         label="Search"
         onClick={onSearchClick}
         active={isSearchActive}
+        highlighted={highlightedItemId === 'search'}
+        reduceMotion={reduceMotion}
+        onHighlight={setHighlightedItemId}
       />
 
       <SidebarNavItem
+        itemId="new-chat"
         icon={<NewChatIcon />}
         label="New Chat"
         onClick={onNewChat}
         active={isNewChatActive}
+        highlighted={highlightedItemId === 'new-chat'}
+        reduceMotion={reduceMotion}
+        onHighlight={setHighlightedItemId}
       />
 
       {hasChats && (
         <SidebarNavItem
+          itemId="library"
           icon={<Folder className="h-4 w-4" strokeWidth={2} />}
           label="Library"
           onClick={onLibraryClick}
           active={isLibraryActive}
+          highlighted={highlightedItemId === 'library'}
+          reduceMotion={reduceMotion}
+          onHighlight={setHighlightedItemId}
         />
       )}
 
       <SidebarNavItem
+        itemId="apps-tools"
         icon={<Puzzle className="h-4 w-4" strokeWidth={2} />}
         label="Apps & Tools"
         onClick={onIntegrationsClick}
         active={isIntegrationsActive}
+        highlighted={highlightedItemId === 'apps-tools'}
+        reduceMotion={reduceMotion}
+        onHighlight={setHighlightedItemId}
       />
     </nav>
   );

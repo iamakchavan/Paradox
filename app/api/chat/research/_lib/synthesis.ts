@@ -1,4 +1,5 @@
 import { streamText } from 'ai';
+import { serializeReportArtifactEvent } from '@/lib/artifacts/deep-research';
 import { serializeResearchEvent } from '@/lib/research/events';
 import {
   buildConversationalSystemPrompt,
@@ -62,6 +63,7 @@ function createCompletion({
       id: 'research-synthesis',
       order: Number.MAX_SAFE_INTEGER,
     }));
+    emit(serializeReportArtifactEvent('started'));
     const synthesisMessages = [
       ...formattedMessages,
       {
@@ -162,6 +164,7 @@ export async function synthesizeResearch(options: SynthesizeResearchOptions): Pr
   } finally {
     if (!options.signal?.aborted && hasThinkingStarted) emit('</think>');
     if (!options.signal?.aborted && planResult.researchNeeded) {
+      emit(serializeReportArtifactEvent(synthesisFailed ? 'failed' : 'completed'));
       emit(serializeResearchEvent({
         type: 'synthesis',
         status: synthesisFailed ? 'failed' : 'completed',

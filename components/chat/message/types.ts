@@ -1,4 +1,5 @@
 import type { ResearchStep } from '@/lib/research/parser';
+import type { ParsedDeepResearchArtifact } from '@/lib/artifacts/deep-research';
 
 export interface ChatMessageData {
   id?: number;
@@ -16,6 +17,7 @@ export interface MessageProps {
   setExpandedThinking: (value: (previous: number[]) => number[]) => void;
   modelMode?: string;
   onBranchOff?: (index: number) => void;
+  chatId?: string | null;
 }
 
 export interface SearchResult {
@@ -41,4 +43,5 @@ export interface ParsedMessageContent {
   allSearchResults: SearchResult[];
   searchMap: Map<string, { title: string; content: string }> | null;
   processedContent: string;
+  artifact: ParsedDeepResearchArtifact | null;
 }

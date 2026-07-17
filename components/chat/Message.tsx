@@ -30,6 +30,7 @@ const MessageComponent = ({
   isStreaming,
   modelMode,
   onBranchOff,
+  chatId,
 }: MessageProps) => {
   const parsed = useMessageContent(message.content);
   if (message.role === 'user') return <UserMessage message={message} />;
@@ -48,6 +49,8 @@ const MessageComponent = ({
       isStreaming={isStreaming}
       isThinkingActive={isThinkingActive}
       onBranchOff={onBranchOff}
+      chatId={chatId}
+      messageId={message.id}
     />
   );
 };
@@ -58,5 +61,6 @@ export const Message = memo(MessageComponent, (previous, next) => (
   && previous.isStreaming === next.isStreaming
   && previous.expandedThinking.includes(previous.index) === next.expandedThinking.includes(next.index)
   && previous.onBranchOff === next.onBranchOff
+  && previous.chatId === next.chatId
   && (next.isStreaming ? previous.modelMode === next.modelMode : true)
 ));

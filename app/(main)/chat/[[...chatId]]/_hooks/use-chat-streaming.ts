@@ -9,6 +9,11 @@ import { updateMessageContentById } from '@/hooks/use-chat-history';
 import type { ApiKeys } from '@/hooks/use-api-keys';
 import { MODELS_REGISTRY } from '@/lib/models';
 import { pruneChatHistory } from '@/utils/chat-context';
+import { createDeepResearchArtifactProjector } from '@/lib/artifacts/deep-research-stream';
+import { ensureReportArtifactTerminalStatus } from '@/lib/artifacts/deep-research';
+import { artifactRepository } from '@/lib/artifacts/repository';
+import { publishArtifactSnapshot } from '@/lib/artifacts/runtime-store';
+import type { ArtifactBundle, UpsertArtifactDraftInput } from '@/lib/artifacts/types';
 import type { ChatMessage } from '../_lib/types';
 
 interface UseChatStreamingOptions {
@@ -151,6 +156,47 @@ export function useChatStreaming({
     let accumulatedContent = '';
     let visibilityChangeHandler: (() => void) | null = null;
     let isInternalAbort = false;
+    const artifactProjector = isResearch
+      ? createDeepResearchArtifactProjector({
+          chatId,
+          messageId: assistantMessageId,
+          fallbackTitle: userMsg.content,
+        })
+      : null;
+    let artifactPersistenceQueue = Promise.resolve();
+
+    const persistArtifact = (bundle: ArtifactBundle): Promise<void> => {
+      const input: UpsertArtifactDraftInput = {
+        id: bundle.artifact.id,
+        chatId: bundle.artifact.chatId,
+        messageId: bundle.artifact.messageId,
+        title: bundle.artifact.title,
+        status: bundle.artifact.status,
+        markdown: bundle.version.markdown,
+        sources: bundle.version.sources,
+        now: bundle.artifact.updatedAt,
+      };
+
+      artifactPersistenceQueue = artifactPersistenceQueue
+        .catch(() => undefined)
+        .then(async () => {
+          const persisted = await artifactRepository.upsertDraft(input);
+          publishArtifactSnapshot(persisted);
+        })
+        .catch(error => {
+          console.warn('[Artifact Save] Failed to checkpoint report:', error);
+        });
+      return artifactPersistenceQueue;
+    };
+
+    const projectArtifact = (
+      content: string,
+      options?: { force?: boolean; status?: 'streaming' | 'complete' | 'failed' },
+    ) => {
+      const bundle = artifactProjector?.project(content, options);
+      if (bundle) publishArtifactSnapshot(bundle);
+      return bundle ?? null;
+    };
 
     try {
       const historyPruned = pruneChatHistory(history, 500, 4);
@@ -178,6 +224,7 @@ export function useChatStreaming({
           if (previous.content === content) return previous;
           return { ...previous, content };
         });
+        projectArtifact(content);
       };
 
       const scheduleFlush = () => {
@@ -275,6 +322,8 @@ export function useChatStreaming({
               updateMessageContentById(assistantMessageId, cleanContent).catch(error => {
                 console.warn('[IndexedDB Save] Failed to update intermediate content:', error);
               });
+              const artifact = projectArtifact(cleanContent, { force: true });
+              if (artifact) void persistArtifact(artifact);
             }
           },
           activeMcpServers,
@@ -365,6 +414,8 @@ export function useChatStreaming({
         researchDuration = (Date.now() - researchStartTime) / 1000;
         finalContent += `<researchTime>${researchDuration.toFixed(1)}</researchTime>`;
       }
+      const finalArtifact = projectArtifact(finalContent, { force: true });
+      if (finalArtifact) await persistArtifact(finalArtifact);
       await updateMessageContentById(assistantMessageId, finalContent);
       await db.chats.update(chatId, { updatedAt: Date.now() });
       setMessages(previous => [...previous, {
@@ -382,6 +433,21 @@ export function useChatStreaming({
         || String(error?.message || '').toLowerCase().includes('abort');
       if (isAbort) {
         if (isInternalAbort) return;
+        const stoppedContent = ensureReportArtifactTerminalStatus(accumulatedContent, 'failed');
+        const stoppedArtifact = projectArtifact(stoppedContent, {
+          force: true,
+          status: 'failed',
+        });
+        if (stoppedArtifact) {
+          await persistArtifact(stoppedArtifact);
+          await updateMessageContentById(assistantMessageId, stoppedContent);
+          setMessages(previous => [...previous, {
+            id: assistantMessageId,
+            role: 'assistant',
+            content: stoppedContent,
+          }]);
+          setStreamingMessage(null);
+        }
         console.log('Stream stopped by user');
         return;
       }
@@ -390,6 +456,12 @@ export function useChatStreaming({
         ? error.message
         : 'Failed to generate response. Please try again.';
       setError(errorMessage);
+      accumulatedContent = ensureReportArtifactTerminalStatus(accumulatedContent, 'failed');
+      const failedArtifact = projectArtifact(accumulatedContent, {
+        force: true,
+        status: 'failed',
+      });
+      if (failedArtifact) await persistArtifact(failedArtifact);
       if (accumulatedContent.trim()) {
         accumulatedContent += `\n\n⚠️ Connection Error: ${errorMessage}`;
         setMessages(previous => [...previous, {

@@ -5,6 +5,8 @@ export interface ChatMessagePayload {
   pdfs?: { name: string; data: string }[];
 }
 
+const ARTIFACT_CONTROL_MARKER = /<artifact-report\s+status="(?:started|completed|failed)"\s*\/>/g;
+
 /**
  * Optimizes conversational history payload for Next.js API delivery.
  * 
@@ -31,6 +33,12 @@ export function pruneChatHistory(
   return sliced.map((msg, idx) => {
     const isRecent = idx >= recentThreshold;
     let content = msg.content;
+
+    // Artifact markers are client transport metadata. Keep the report Markdown
+    // in conversational context without exposing control tags to the model.
+    if (msg.role === 'assistant') {
+      content = content.replace(ARTIFACT_CONTROL_MARKER, '');
+    }
 
     // Prune assistant internal thoughts from older history to optimize token consumption
     if (!isRecent && msg.role === 'assistant' && content.includes('</think>')) {

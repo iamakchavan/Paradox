@@ -1,4 +1,5 @@
 import { db, type ChatSession, type ChatMessage } from '@/lib/db';
+import { artifactRepository } from '@/lib/artifacts/repository';
 
 export const createChatSession = async (modelMode: string, title: string = 'New Chat'): Promise<string> => {
   const id = crypto.randomUUID();
@@ -17,6 +18,7 @@ export const createChatSession = async (modelMode: string, title: string = 'New 
 export const deleteChatSession = async (chatId: string): Promise<void> => {
   await db.chats.delete(chatId);
   await db.messages.where('chatId').equals(chatId).delete();
+  await artifactRepository.deleteForChat(chatId);
   
   // Clean up library files and their payloads
   const files = await db.library.where('chatId').equals(chatId).toArray();
@@ -161,6 +163,7 @@ export const branchOffChat = async (
   // 3. Deep-copy messages 0..lastIndex with fresh timestamps to preserve ordering
   const baseTime = Date.now();
   const oldMessageIds: number[] = [];
+  const messageIdMap = new Map<number, number>();
 
   for (let i = 0; i <= lastIndex; i++) {
     const src = sourceMessages[i];
@@ -174,7 +177,8 @@ export const branchOffChat = async (
       pdfs: src.pdfs ? src.pdfs.map(p => ({ ...p })) : undefined,
       createdAt: baseTime + i, // incremental to preserve sort order
     };
-    await db.messages.add(newMsg);
+    const newMessageId = await db.messages.add(newMsg) as number;
+    messageIdMap.set(src.id!, newMessageId);
   }
 
   // 4. Copy associated library files and their payloads
@@ -208,6 +212,8 @@ export const branchOffChat = async (
       }
     }
   }
+
+  await artifactRepository.cloneForBranch(sourceChatId, newChatId, messageIdMap);
 
   return newChatId;
 };
