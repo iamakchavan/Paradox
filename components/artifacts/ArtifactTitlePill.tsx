@@ -28,7 +28,7 @@ export function ArtifactTitlePill({ title, status, isMobile }: ArtifactTitlePill
   }, [runAfterHistoryDismiss]);
 
   const titlePillClass =
-    'liquid-glass-dock relative h-10 w-full min-w-0 overflow-hidden rounded-full px-4';
+    'liquid-glass-dock relative inline-flex h-10 w-fit max-w-full min-w-0 overflow-hidden rounded-full px-4';
 
   if (isMobile) {
     return (
@@ -73,6 +73,12 @@ export function ArtifactTitlePill({ title, status, isMobile }: ArtifactTitlePill
 
   return (
     <div className={`${titlePillClass} group`}>
+      <span
+        className="invisible block max-w-full whitespace-nowrap text-[13px] font-medium leading-[18px]"
+        aria-hidden="true"
+      >
+        {title}
+      </span>
       <div className="absolute inset-0 flex items-center px-4 transition-[transform,opacity] duration-200 ease-out group-hover:-translate-y-2 group-hover:opacity-0 motion-reduce:transition-none">
         <p className="-translate-y-px truncate text-[13px] font-medium leading-[18px] text-foreground/90">
           {title}

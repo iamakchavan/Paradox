@@ -4,6 +4,7 @@ import { memo, useState } from 'react';
 import { ChevronDown, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ChatMessageData } from './types';
+import { CopyMessageButton } from './CopyMessageButton';
 
 export const UserMessage = memo(({ message }: { message: ChatMessageData }) => {
   const [expanded, setExpanded] = useState(false);
@@ -16,7 +17,10 @@ export const UserMessage = memo(({ message }: { message: ChatMessageData }) => {
       : `${message.content.slice(0, 280)}...`;
   }
   return (
-    <div className="flex justify-end mb-12">
+    <div className="group mb-12 flex items-center justify-end gap-1.5">
+      <div className="shrink-0 opacity-100 transition-opacity duration-150 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
+        <CopyMessageButton content={message.content} />
+      </div>
       <div className="bg-white dark:bg-[hsl(var(--surface-raised))] text-zinc-800 dark:text-zinc-200/90 border border-zinc-200/80 dark:border-white/[0.06] rounded-[28px] rounded-br-[6px] px-5 py-3 sm:px-6 sm:py-3.5 max-w-[85%] sm:max-w-[70%] text-[15px] sm:text-base leading-relaxed space-y-3">
         {message.images && message.images.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2.5">
