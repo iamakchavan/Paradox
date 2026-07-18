@@ -6,7 +6,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { CustomToastProvider } from '@/components/ui/custom-toast';
 import { MotionPreferencesProvider } from '@/components/motion-preferences-provider';
-import { JetBrains_Mono, Space_Mono } from 'next/font/google';
+import { AnswerFontProvider } from '@/components/answer-font-provider';
+import { JetBrains_Mono, Source_Serif_4, Space_Mono } from 'next/font/google';
 
 const spaceMono = Space_Mono({
   weight: ['400', '700'],
@@ -18,6 +19,14 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500', '600'],
   subsets: ['latin'],
   variable: '--font-jetbrains-mono',
+});
+
+const sourceSerif = Source_Serif_4({
+  weight: 'variable',
+  subsets: ['latin'],
+  variable: '--font-source-serif',
+  display: 'swap',
+  preload: false,
 });
 
 export const viewport: Viewport = {
@@ -68,7 +77,7 @@ export default function RootLayout({
           href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap"
         />
       </head>
-      <body className={`${spaceMono.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+      <body className={`${spaceMono.variable} ${jetbrainsMono.variable} ${sourceSerif.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -76,11 +85,13 @@ export default function RootLayout({
         >
           <TooltipProvider>
             <MotionPreferencesProvider>
-              <CustomToastProvider>
-                {children}
-                <Analytics />
-                <SpeedInsights />
-              </CustomToastProvider>
+              <AnswerFontProvider>
+                <CustomToastProvider>
+                  {children}
+                  <Analytics />
+                  <SpeedInsights />
+                </CustomToastProvider>
+              </AnswerFontProvider>
             </MotionPreferencesProvider>
           </TooltipProvider>
         </ThemeProvider>

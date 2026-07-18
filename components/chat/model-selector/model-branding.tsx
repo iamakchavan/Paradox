@@ -81,7 +81,7 @@ export function getBrandLabel(brand: string) {
   return brand;
 }
 
-function getProviderLogoUrl(provider: string, modelId: string | undefined, isDark: boolean) {
+export function getProviderLogoUrl(provider: string, modelId: string | undefined, isDark: boolean) {
   const normalizedProvider = provider.toLowerCase();
   const model = modelId?.toLowerCase() || '';
 

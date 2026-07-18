@@ -6,6 +6,7 @@
 @tailwind utilities;
 
 :root {
+  --font-answer: 'Switzer', sans-serif;
   --motion-duration-press: 140ms;
   --motion-duration-fast: 150ms;
   --motion-duration-popover: 180ms;
@@ -20,6 +21,10 @@
   --motion-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --motion-ease-layout: cubic-bezier(0.25, 0.1, 0.25, 1);
   --motion-ease-drawer: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+html[data-answer-font='serif'] body {
+  --font-answer: var(--font-source-serif), Georgia, serif;
 }
 
 .motion-layout-transition {
@@ -271,8 +276,8 @@
 
 /* Markdown Styles */
 .typeset-chat {
-  --typeset-font-body: inherit;
-  --typeset-font-heading: 'Switzer', sans-serif;
+  --typeset-font-body: var(--font-answer);
+  --typeset-font-heading: var(--font-answer);
   --typeset-font-mono: var(--font-jetbrains-mono), monospace;
   --typeset-size: 13.7778px;
   --typeset-leading: 1.75;
@@ -286,6 +291,22 @@
   font-weight: 400;
   letter-spacing: 0.015em;
   word-break: break-word;
+}
+
+.typeset-chat :where(
+  .not-typeset,
+  [data-not-typeset]
+) {
+  font-family: 'Switzer', sans-serif;
+  letter-spacing: 0;
+}
+
+.typeset-chat .answer-table-content {
+  font-family: var(--font-answer);
+}
+
+html[data-answer-font='serif'] .typeset-chat {
+  letter-spacing: 0;
 }
 
 .dark .typeset-chat {

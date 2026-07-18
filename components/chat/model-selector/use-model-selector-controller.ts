@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { MODELS_REGISTRY } from '@/lib/models';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { DISPLAY_BRANDS, getLogicalBrand } from './model-branding';
+import { warmModelSelectorLogoCache } from './model-logo-cache';
 import type { GroupedModels, ModelDropdownPosition, ModelSelectorAlign } from './types';
 
 export function useModelSelectorController({
@@ -24,9 +26,16 @@ export function useModelSelectorController({
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const { showToast } = useCustomToast();
+  const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
 
+  const warmLogos = useCallback(() => {
+    if (!resolvedTheme) return;
+    void warmModelSelectorLogoCache(MODELS_REGISTRY, resolvedTheme === 'dark');
+  }, [resolvedTheme]);
+
   const openDropdown = () => {
+    warmLogos();
     setShouldRender(true);
     setIsOpen(true);
   };
@@ -48,6 +57,36 @@ export function useModelSelectorController({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!mounted || !resolvedTheme) return;
+
+    let cancelled = false;
+    const warm = () => {
+      if (!cancelled) warmLogos();
+    };
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (
+        callback: IdleRequestCallback,
+        options?: IdleRequestOptions,
+      ) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    if (idleWindow.requestIdleCallback) {
+      const idleId = idleWindow.requestIdleCallback(warm, { timeout: 1000 });
+      return () => {
+        cancelled = true;
+        idleWindow.cancelIdleCallback?.(idleId);
+      };
+    }
+
+    const timeoutId = window.setTimeout(warm, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [mounted, resolvedTheme, warmLogos]);
 
   useLayoutEffect(() => {
     if (!shouldRender || isMobile || !triggerRef.current) {

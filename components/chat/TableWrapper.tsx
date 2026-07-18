@@ -118,7 +118,7 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
         <div className="overflow-x-auto custom-scrollbar">
           <table
             ref={tableRef}
-            className="w-max min-w-full table-auto border-separate border-spacing-0 text-left text-[13px]"
+            className="answer-table-content w-max min-w-full table-auto border-separate border-spacing-0 text-left text-[13px]"
           >
             {children}
           </table>
