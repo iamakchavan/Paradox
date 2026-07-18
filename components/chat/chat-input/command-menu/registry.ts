@@ -1,15 +1,28 @@
-export type ComposerMode = 'search' | 'research';
+import type { MCPIntegration } from '@/lib/db';
+import { getProviderPresentation } from '@/components/chat/integrations/provider-catalog';
 
-export type ComposerCommandAction = {
-  type: 'set-mode';
-  mode: ComposerMode;
-};
+export type ComposerMode = 'search' | 'research';
+export type ComposerCommandGroup = 'modes' | 'apps';
+
+export type ComposerCommandAction =
+  | {
+      type: 'set-mode';
+      mode: ComposerMode;
+    }
+  | {
+      type: 'toggle-app';
+      appId: string;
+    }
+  | {
+      type: 'manage-apps';
+    };
 
 export interface ComposerCommandDefinition {
   id: string;
   label: string;
   description: string;
   keywords: readonly string[];
+  group: ComposerCommandGroup;
   action: ComposerCommandAction;
 }
 
@@ -26,6 +39,7 @@ export const COMPOSER_COMMANDS = [
     label: 'Web search',
     description: 'Search the web for current information',
     keywords: ['web', 'search', 'lookup', 'browse', 'internet'],
+    group: 'modes',
     action: { type: 'set-mode', mode: 'search' },
   },
   {
@@ -33,9 +47,51 @@ export const COMPOSER_COMMANDS = [
     label: 'Deep research',
     description: 'Research multiple sources and build a detailed report',
     keywords: ['deep', 'research', 'report', 'investigate'],
+    group: 'modes',
     action: { type: 'set-mode', mode: 'research' },
   },
 ] as const satisfies readonly ComposerCommandDefinition[];
+
+export function buildComposerCommands(
+  activeApps: readonly MCPIntegration[],
+): ComposerCommandDefinition[] {
+  const appCommands = activeApps.map((app): ComposerCommandDefinition => {
+    const presentation = getProviderPresentation(app);
+    return {
+      id: `app:${app.id}`,
+      label: presentation.name,
+      description: presentation.description,
+      keywords: [
+        app.id,
+        app.name,
+        presentation.name,
+        presentation.description,
+        'app',
+        'apps',
+        'connector',
+        'tool',
+        'tools',
+      ],
+      group: 'apps',
+      action: { type: 'toggle-app', appId: app.id },
+    };
+  });
+
+  return [
+    ...COMPOSER_COMMANDS,
+    ...appCommands,
+    {
+      id: 'manage-apps',
+      label: 'Manage apps & tools',
+      description: activeApps.length > 0
+        ? 'Add or manage connected apps'
+        : 'Connect apps to use them in chat',
+      keywords: ['app', 'apps', 'connector', 'connectors', 'tool', 'tools', 'manage'],
+      group: 'apps',
+      action: { type: 'manage-apps' },
+    },
+  ];
+}
 
 function normalizeSearchText(value: string): string {
   return value.toLocaleLowerCase().replace(/[_-]+/g, ' ').trim();

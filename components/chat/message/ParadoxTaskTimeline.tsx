@@ -4,6 +4,7 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { Check, ChevronDown, Globe, Network, Search, Terminal } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { getProviderPresentation } from '@/components/chat/integrations/provider-catalog';
 import { db } from '@/lib/db';
 import { cn } from '@/lib/utils';
 import { getIntegrationFromToolName } from '@/utils/mcp-helpers';
@@ -61,7 +62,7 @@ export const ParadoxTaskTimeline = memo(({ steps, isStreaming }: Props) => {
             key: `integration-${integration.id}-${grouped.length}`,
             integrationId: integration.id,
             logo: integration.logo,
-            label: `Using ${integration.name}`,
+            label: `Using ${getProviderPresentation(integration).name}`,
             subActions: [integration.action],
             isItemLoading,
           });

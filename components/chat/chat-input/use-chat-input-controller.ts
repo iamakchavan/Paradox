@@ -4,7 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { MODELS_REGISTRY } from '@/lib/models';
-import type { ComposerCommandDefinition } from './command-menu/registry';
+import {
+  buildComposerCommands,
+  type ComposerCommandDefinition,
+} from './command-menu/registry';
 import { useComposerCommandMenu } from './command-menu/use-composer-command-menu';
 import { isMobileOrTablet } from './icons';
 import type { ChatInputProps } from './types';
@@ -14,6 +17,8 @@ export function useChatInputController(props: ChatInputProps) {
     handleFileUpload,
     handleSubmit,
     onExpandedChange,
+    onOpenSettingsTab,
+    onToggleMcpId,
     onToggleResearch,
     onToggleSearch,
     selectedImages,
@@ -33,8 +38,15 @@ export function useChatInputController(props: ChatInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [isSearchCapsuleHovered, setIsSearchCapsuleHovered] = useState(false);
   const [isResearchCapsuleHovered, setIsResearchCapsuleHovered] = useState(false);
-  const mcpServers = useLiveQuery(() => db.mcpIntegrations.toArray()) || [];
-  const activeApps = mcpServers.filter(server => server.isEnabled && server.status === 'connected');
+  const mcpServers = useLiveQuery(() => db.mcpIntegrations.toArray());
+  const activeApps = useMemo(
+    () => (mcpServers ?? []).filter(server => server.isEnabled && server.status === 'connected'),
+    [mcpServers],
+  );
+  const composerCommands = useMemo(
+    () => buildComposerCommands(activeApps),
+    [activeApps],
+  );
 
   useEffect(() => {
     const nextMessage = props.message || '';
@@ -195,8 +207,14 @@ export function useChatInputController(props: ChatInputProps) {
         if (command.action.mode === 'search') onToggleSearch?.(true);
         if (command.action.mode === 'research') onToggleResearch?.(true);
         break;
+      case 'toggle-app':
+        onToggleMcpId?.(command.action.appId);
+        break;
+      case 'manage-apps':
+        onOpenSettingsTab?.('integrations');
+        break;
     }
-  }, [onToggleResearch, onToggleSearch]);
+  }, [onOpenSettingsTab, onToggleMcpId, onToggleResearch, onToggleSearch]);
 
   const commandMenu = useComposerCommandMenu({
     value: localMessage,
@@ -207,6 +225,7 @@ export function useChatInputController(props: ChatInputProps) {
       || showAttachDropdown
       || showMobileAttachSheet
       || isInputDisabled,
+    availableCommands: composerCommands,
     textareaRef,
     onValueChange: updateMessage,
     onExecute: executeComposerCommand,

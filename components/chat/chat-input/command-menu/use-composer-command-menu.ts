@@ -19,6 +19,7 @@ interface UseComposerCommandMenuOptions {
   value: string;
   caretPosition: number;
   disabled: boolean;
+  availableCommands: readonly ComposerCommandDefinition[];
   textareaRef: RefObject<HTMLTextAreaElement | null>;
   onValueChange: (value: string, caretPosition: number) => void;
   onExecute: (command: ComposerCommandDefinition) => void;
@@ -28,12 +29,16 @@ export function useComposerCommandMenu({
   value,
   caretPosition,
   disabled,
+  availableCommands,
   textareaRef,
   onValueChange,
   onExecute,
 }: UseComposerCommandMenuOptions) {
   const listboxId = useId();
   const [activeCommandId, setActiveCommandId] = useState<string | null>(null);
+  const [activeChangeSource, setActiveChangeSource] = useState<
+    'keyboard' | 'pointer' | null
+  >(null);
   const [dismissedTriggerKey, setDismissedTriggerKey] = useState<string | null>(null);
 
   const trigger = useMemo(
@@ -41,8 +46,8 @@ export function useComposerCommandMenu({
     [caretPosition, value],
   );
   const commands = useMemo(
-    () => trigger ? filterComposerCommands(trigger.query) : [],
-    [trigger],
+    () => trigger ? filterComposerCommands(trigger.query, availableCommands) : [],
+    [availableCommands, trigger],
   );
   const isOpen = Boolean(
     trigger
@@ -55,12 +60,38 @@ export function useComposerCommandMenu({
     if (trigger) return;
     setDismissedTriggerKey(null);
     setActiveCommandId(null);
+    setActiveChangeSource(null);
   }, [trigger]);
 
   const dismiss = useCallback(() => {
     if (trigger) setDismissedTriggerKey(trigger.key);
     setActiveCommandId(null);
+    setActiveChangeSource(null);
   }, [trigger]);
+
+  const setActiveCommandFromPointer = useCallback((commandId: string) => {
+    setActiveChangeSource('pointer');
+    setActiveCommandId(commandId);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleOutsidePointerDown = (event: PointerEvent) => {
+      const eventPath = event.composedPath();
+      const textarea = textareaRef.current;
+      const listbox = document.getElementById(listboxId);
+
+      if (textarea && eventPath.includes(textarea)) return;
+      if (listbox && eventPath.includes(listbox)) return;
+      dismiss();
+    };
+
+    document.addEventListener('pointerdown', handleOutsidePointerDown, true);
+    return () => {
+      document.removeEventListener('pointerdown', handleOutsidePointerDown, true);
+    };
+  }, [dismiss, isOpen, listboxId, textareaRef]);
 
   const selectCommand = useCallback((command: ComposerCommandDefinition) => {
     if (!trigger) return;
@@ -103,6 +134,7 @@ export function useComposerCommandMenu({
       event.preventDefault();
       const direction = event.key === 'ArrowDown' ? 1 : -1;
       const nextIndex = (activeIndex + direction + commands.length) % commands.length;
+      setActiveChangeSource('keyboard');
       setActiveCommandId(commands[nextIndex].id);
       return;
     }
@@ -117,8 +149,9 @@ export function useComposerCommandMenu({
     listboxId,
     commands,
     activeCommandId: activeCommand?.id ?? null,
+    activeChangeSource,
     activeOptionId: activeCommand ? `${listboxId}-${activeCommand.id}` : undefined,
-    setActiveCommandId,
+    setActiveCommandFromPointer,
     selectCommand,
     handleKeyDown,
     dismiss,

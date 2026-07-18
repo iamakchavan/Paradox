@@ -2,7 +2,10 @@
 
 import { Puzzle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PROVIDER_LOGOS } from '@/components/chat/integrations/provider-catalog';
+import {
+  getProviderPresentation,
+  PROVIDER_LOGOS,
+} from '@/components/chat/integrations/provider-catalog';
 import type { MCPIntegration } from '@/lib/db';
 
 export function SwitchPill({ checked }: { checked: boolean }) {
@@ -80,6 +83,7 @@ export function AppToggleRow({
 }) {
   const AppIcon = PROVIDER_LOGOS[app.id] || Puzzle;
   const isCustom = !PROVIDER_LOGOS[app.id];
+  const presentation = getProviderPresentation(app);
   return (
     <button
       type="button"
@@ -94,7 +98,9 @@ export function AppToggleRow({
             <AppIcon className="h-4 w-4" />
           )}
         </span>
-        <span className="truncate text-[15px] font-medium text-foreground">{app.name}</span>
+        <span className="truncate text-[15px] font-medium text-foreground">
+          {presentation.name}
+        </span>
       </span>
       <SwitchPill checked={selected} />
     </button>

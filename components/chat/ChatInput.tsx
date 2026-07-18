@@ -48,8 +48,10 @@ export const ChatInput = ({
           listboxId={controller.commandMenu.listboxId}
           commands={controller.commandMenu.commands}
           activeCommandId={controller.commandMenu.activeCommandId}
+          activeChangeSource={controller.commandMenu.activeChangeSource}
           activeMode={searchEnabled ? 'search' : researchEnabled ? 'research' : null}
-          onActiveCommandChange={controller.commandMenu.setActiveCommandId}
+          selectedMcpIds={selectedMcpIds}
+          onActiveCommandChange={controller.commandMenu.setActiveCommandFromPointer}
           onSelectCommand={controller.commandMenu.selectCommand}
         />
         <div className={cn(

@@ -6,7 +6,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { PROVIDER_LOGOS } from '@/components/chat/integrations/provider-catalog';
+import {
+  getProviderPresentation,
+  PROVIDER_LOGOS,
+} from '@/components/chat/integrations/provider-catalog';
 import { MobileAttachSheet } from '@/components/chat/MobileAttachSheet';
 import { DeepResearchIcon, isMobileOrTablet, WebSearchIcon } from './icons';
 import type { ConnectedApp } from './types';
@@ -246,6 +249,7 @@ function AppsMenu(props: Props) {
                   const AppIcon = PROVIDER_LOGOS[app.id] || Puzzle;
                   const selected = props.selectedMcpIds.includes(app.id);
                   const custom = !PROVIDER_LOGOS[app.id];
+                  const presentation = getProviderPresentation(app);
                   return (
                     <button
                       key={app.id}
@@ -262,7 +266,7 @@ function AppsMenu(props: Props) {
                         {custom
                           ? <AppIcon className="w-3.5 h-3.5 shrink-0 text-foreground/55 group-hover:text-foreground/75 transition-colors duration-150" strokeWidth={1.5} />
                           : <AppIcon className="w-3.5 h-3.5 shrink-0" />}
-                        <span className="truncate">{app.name}</span>
+                        <span className="truncate">{presentation.name}</span>
                       </div>
                       <span aria-hidden="true" className={cn('relative h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ease-out', selected ? 'bg-foreground' : 'bg-zinc-300 dark:bg-zinc-700')}>
                         <span className={cn('absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-background shadow-sm transition-transform duration-200 ease-out', selected && 'translate-x-4')} />

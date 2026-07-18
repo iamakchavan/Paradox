@@ -269,6 +269,25 @@ export const PROVIDER_TEMPLATES: ProviderTemplate[] = [
   { id: 'swiggy_instamart', name: 'Swiggy Instamart', desc: 'Order groceries, fresh food, and household essentials for quick delivery.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/im', category: 'commerce' }
 ];
 
+const PROVIDER_TEMPLATE_BY_ID = new Map(
+  PROVIDER_TEMPLATES.map(template => [template.id, template] as const),
+);
+
+export interface ProviderPresentation {
+  name: string;
+  description: string;
+}
+
+export function getProviderPresentation(
+  integration: Pick<{ id: string; name: string }, 'id' | 'name'>,
+): ProviderPresentation {
+  const template = PROVIDER_TEMPLATE_BY_ID.get(integration.id);
+  return {
+    name: template?.name ?? integration.name,
+    description: template?.desc ?? 'Use this connected app in the current chat.',
+  };
+}
+
 export const PROVIDER_LOGOS: Record<string, ComponentType<any>> = {
   github: GitHubLogo,
   notion: NotionLogo,
