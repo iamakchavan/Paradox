@@ -18,7 +18,7 @@ export function ProviderLogo({
       className={cn(
         'inline-flex shrink-0 items-center justify-center overflow-hidden [&>img]:block [&>img]:object-contain [&>svg]:block',
         variant === 'dialog'
-          ? 'h-9 w-9 rounded-xl bg-zinc-100/80 text-zinc-700 [&>img]:h-[18px] [&>img]:w-[18px] [&>svg]:h-[18px] [&>svg]:w-[18px] dark:bg-zinc-900 dark:text-zinc-300'
+          ? 'h-11 w-11 rounded-[14px] border border-zinc-200/70 bg-zinc-50 text-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.04)] [&>img]:h-6 [&>img]:w-6 [&>svg]:h-6 [&>svg]:w-6 dark:border-white/[0.08] dark:bg-white/[0.045] dark:text-zinc-200 dark:shadow-none'
           : 'h-9 w-9 [&>img]:h-7 [&>img]:w-7 [&>svg]:h-7 [&>svg]:w-7',
         className,
       )}

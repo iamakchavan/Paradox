@@ -17,9 +17,9 @@ export function SkillsGrid({
 
   if (tools.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-9 bg-zinc-50/5 dark:bg-zinc-950/10 border border-dashed border-zinc-200/20 dark:border-zinc-850 rounded-2xl">
-        <Puzzle className="w-9 h-9 text-muted-foreground/45 mb-3" strokeWidth={1.5} />
-        <p className="text-xs text-muted-foreground text-center font-medium">
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200/20 bg-zinc-50/5 p-9 dark:border-zinc-800 dark:bg-zinc-950/10">
+        <Puzzle className="mb-3 h-9 w-9 text-muted-foreground/45" strokeWidth={1.5} />
+        <p className="text-center text-xs font-medium text-muted-foreground">
           No active skills or tools found matching your search query.
         </p>
       </div>
@@ -50,9 +50,9 @@ export function SkillsGrid({
                 integrationId={integrationId}
                 className="h-4 w-4 rounded-none bg-transparent dark:bg-transparent"
               />
-              <h4 className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+              <h2 className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
                 {integrationName}
-              </h4>
+              </h2>
               <span className="text-[11px] text-muted-foreground/55">
                 {integrationTools.length} {integrationTools.length === 1 ? 'tool' : 'tools'}
               </span>
@@ -63,7 +63,7 @@ export function SkillsGrid({
                   type="button"
                   key={`${tool.integrationId}-${tool.name}`}
                   onClick={() => onSelect(tool)}
-                  className="flex min-h-[108px] w-full flex-col rounded-lg border border-zinc-200/75 bg-white/75 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/25 dark:border-zinc-900 dark:bg-zinc-950/65 cursor-pointer select-none"
+                  className="flex min-h-[108px] w-full cursor-pointer select-none flex-col rounded-lg border border-zinc-200/75 bg-white/75 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/25 dark:border-zinc-900 dark:bg-zinc-950/65"
                 >
                   <span className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
                     {formatToolName(tool.name)}

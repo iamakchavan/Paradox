@@ -4,7 +4,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Puzzle } from 'lucide-react';
 import { db } from '@/lib/db';
-import { PROVIDER_TEMPLATES, type ProviderTemplate } from './provider-catalog';
+import {
+  PROVIDER_CATEGORIES,
+  PROVIDER_TEMPLATES,
+  type ProviderTemplate,
+} from './provider-catalog';
 
 export interface IntegrationToolView {
   name: string;
@@ -47,9 +51,14 @@ export function useIntegrationsViewModel() {
     const filteredCustomConnectors = customConnectors.filter(connector => (
       connector.name.toLowerCase().includes(query) || connector.url.toLowerCase().includes(query)
     ));
-    const filteredTemplates = PROVIDER_TEMPLATES.filter(template => (
-      template.name.toLowerCase().includes(query) || template.desc.toLowerCase().includes(query)
-    ));
+    const filteredTemplates = PROVIDER_TEMPLATES.filter(template => {
+      const categoryLabel = PROVIDER_CATEGORIES.find(category => category.id === template.category)?.label ?? '';
+      return (
+        template.name.toLowerCase().includes(query)
+        || template.desc.toLowerCase().includes(query)
+        || categoryLabel.toLowerCase().includes(query)
+      );
+    });
     const allConnectedTools: IntegrationToolView[] = integrations.flatMap(integration => (
       (integration.cachedTools || []).map(tool => ({
         ...tool,
@@ -76,7 +85,7 @@ export function useIntegrationsViewModel() {
     icon: Puzzle,
     type: 'custom',
     url: integration.url,
-    category: 'Custom Connectors',
+    category: 'custom',
   });
 
   return {

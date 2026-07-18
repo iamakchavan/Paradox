@@ -34,7 +34,7 @@ export function IntegrationsTab() {
     : undefined;
 
   return (
-    <div className="h-full flex flex-col min-h-0 text-foreground font-sans space-y-5">
+    <div className="flex h-full min-h-0 flex-col space-y-5 font-sans text-foreground">
       <IntegrationsToolbar
         activeTab={view.activeSubTab}
         setActiveTab={view.setActiveSubTab}
@@ -42,7 +42,7 @@ export function IntegrationsTab() {
         setSearchQuery={view.setSearchQuery}
         onNewConnector={() => view.setIsRegisteringCustom(true)}
       />
-      <div className="flex-1 overflow-y-auto no-scrollbar pr-0.5 pb-4">
+      <div className="no-scrollbar flex-1 overflow-y-auto pb-4 pr-0.5">
         {view.activeSubTab === 'skills' ? (
           <SkillsGrid tools={view.filteredTools} onSelect={view.setSelectedSkill} />
         ) : (

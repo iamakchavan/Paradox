@@ -1,5 +1,16 @@
 import type { ComponentType } from 'react';
 
+export const PROVIDER_CATEGORIES = [
+  { id: 'work', label: 'Work & Knowledge' },
+  { id: 'developer', label: 'Developer & Cloud' },
+  { id: 'search', label: 'Search & Data' },
+  { id: 'finance', label: 'Finance' },
+  { id: 'scheduling', label: 'Scheduling' },
+  { id: 'commerce', label: 'Food & Commerce' },
+] as const;
+
+export type ProviderCategory = (typeof PROVIDER_CATEGORIES)[number]['id'];
+
 export interface ProviderTemplate {
   id: string;
   name: string;
@@ -7,7 +18,7 @@ export interface ProviderTemplate {
   icon: ComponentType<any>;
   type: string;
   url: string;
-  category: string;
+  category: ProviderCategory | 'custom';
 }
 
 export const PROVIDER_SCOPES: Record<string, string> = {
@@ -235,27 +246,27 @@ const NetlifyLogo = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export const PROVIDER_TEMPLATES: ProviderTemplate[] = [
-  { id: 'github', name: 'GitHub', desc: 'Read code, search files, manage repos, and commit work.', icon: GitHubLogo, type: 'oauth', url: 'https://mcp.github.com/mcp', category: 'Featured' },
-  { id: 'notion', name: 'Notion', desc: 'Search and sync workspace pages, databases, and lists.', icon: NotionLogo, type: 'oauth', url: 'https://mcp.notion.com/mcp', category: 'Featured' },
-  { id: 'cal', name: 'Cal.com', desc: 'Read calendars, check availability, and schedule meetings.', icon: CalLogo, type: 'oauth', url: 'https://mcp.cal.com/mcp', category: 'Featured' },
-  { id: 'vercel', name: 'Vercel', desc: 'Deploy projects, manage domains, list deployments, and trigger builds.', icon: VercelLogo, type: 'oauth', url: 'https://mcp.vercel.com', category: 'Featured' },
-  { id: 'canva', name: 'Canva', desc: 'Search designs, manage folders, upload assets, and export work.', icon: CanvaLogo, type: 'oauth', url: 'https://mcp.canva.com/mcp', category: 'Featured' },
-  { id: 'linear', name: 'Linear', desc: 'Search issues, list teams, create tickets, and manage project workflows.', icon: LinearLogo, type: 'oauth', url: 'https://mcp.linear.app/mcp', category: 'Featured' },
-  { id: 'jira', name: 'Jira', desc: 'Search Jira tickets, manage projects, link issues, and track sprints.', icon: JiraLogo, type: 'oauth', url: 'https://mcp.atlassian.com/v1/mcp/authv2', category: 'Featured' },
-  { id: 'asana', name: 'Asana', desc: 'Manage tasks, create projects, assign work, and track milestones.', icon: AsanaLogo, type: 'oauth', url: 'https://mcp.asana.com/sse', category: 'Featured' },
-  { id: 'airtable', name: 'Airtable', desc: 'Read and write base records, search tables, and inspect schemas.', icon: AirtableLogo, type: 'oauth', url: 'https://mcp.airtable.com/mcp', category: 'Featured' },
-  { id: 'cryptocom', name: 'Crypto.com', desc: 'Retrieve real-time market data, check coin rates, and track digital assets.', icon: CryptoLogo, type: 'oauth', url: 'https://mcp.crypto.com/market-data/mcp', category: 'Featured' },
-  { id: 'godaddy', name: 'GoDaddy', desc: 'Search domain availability, register domains, and manage DNS settings.', icon: GoDaddyLogo, type: 'oauth', url: 'https://api.godaddy.com/v1/domains/mcp', category: 'Featured' },
-  { id: 'parallel', name: 'Parallel Search', desc: 'Execute high-performance web searches and aggregate web results.', icon: ParallelSearchLogo, type: 'oauth', url: 'https://search.parallel.ai/mcp', category: 'Featured' },
-  { id: 'supabase', name: 'Supabase', desc: 'Manage Supabase projects, databases, storage buckets, and edge functions.', icon: SupabaseLogo, type: 'oauth', url: 'https://mcp.supabase.com/mcp', category: 'Featured' },
-  { id: 'swiggy_food', name: 'Swiggy Food', desc: 'Order food online from restaurants near you, search menus, and manage your cart.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/food', category: 'Featured' },
-  { id: 'swiggy_dineout', name: 'Swiggy Dineout', desc: 'Find nearby restaurants, reserve tables, and book dining experiences.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/dineout', category: 'Featured' },
-  { id: 'swiggy_instamart', name: 'Swiggy Instamart', desc: 'Order groceries, fresh food, and household essentials for quick delivery.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/im', category: 'Featured' },
-  { id: 'monday', name: 'Monday.com', desc: 'Manage boards, track tasks, update items, and automate collaborative workflows.', icon: MondayLogo, type: 'oauth', url: 'https://mcp.monday.com/mcp', category: 'Featured' },
-  { id: 'cloudflare', name: 'Cloudflare', desc: 'Inspect zones, manage DNS records, check traffic data, and purge cache.', icon: CloudflareLogo, type: 'oauth', url: 'https://mcp.cloudflare.com/mcp', category: 'Featured' },
-  { id: 'yahoofinance', name: 'Yahoo Finance', desc: 'Query stock quotes, search ticker details, retrieve historical prices, and fetch financial news.', icon: YahooFinanceLogo, type: 'oauth', url: 'https://gateway.mcpservers.org/yahoo-finance/mcp', category: 'Featured' },
-  { id: 'neon', name: 'Neon', desc: 'Manage Neon serverless Postgres projects, branches, endpoints, and databases.', icon: NeonLogo, type: 'oauth', url: 'https://mcp.neon.tech/mcp', category: 'Featured' },
-  { id: 'netlify', name: 'Netlify', desc: 'Manage Netlify sites, deployments, configure environment variables, and sync web projects.', icon: NetlifyLogo, type: 'oauth', url: 'https://netlify-mcp.netlify.app/mcp', category: 'Featured' }
+  { id: 'notion', name: 'Notion', desc: 'Search and sync workspace pages, databases, and lists.', icon: NotionLogo, type: 'oauth', url: 'https://mcp.notion.com/mcp', category: 'work' },
+  { id: 'canva', name: 'Canva', desc: 'Search designs, manage folders, upload assets, and export work.', icon: CanvaLogo, type: 'oauth', url: 'https://mcp.canva.com/mcp', category: 'work' },
+  { id: 'linear', name: 'Linear', desc: 'Search issues, list teams, create tickets, and manage project workflows.', icon: LinearLogo, type: 'oauth', url: 'https://mcp.linear.app/mcp', category: 'work' },
+  { id: 'jira', name: 'Jira', desc: 'Search Jira tickets, manage projects, link issues, and track sprints.', icon: JiraLogo, type: 'oauth', url: 'https://mcp.atlassian.com/v1/mcp/authv2', category: 'work' },
+  { id: 'asana', name: 'Asana', desc: 'Manage tasks, create projects, assign work, and track milestones.', icon: AsanaLogo, type: 'oauth', url: 'https://mcp.asana.com/sse', category: 'work' },
+  { id: 'airtable', name: 'Airtable', desc: 'Read and write base records, search tables, and inspect schemas.', icon: AirtableLogo, type: 'oauth', url: 'https://mcp.airtable.com/mcp', category: 'work' },
+  { id: 'monday', name: 'Monday.com', desc: 'Manage boards, track tasks, update items, and automate collaborative workflows.', icon: MondayLogo, type: 'oauth', url: 'https://mcp.monday.com/mcp', category: 'work' },
+  { id: 'github', name: 'GitHub', desc: 'Read code, search files, manage repos, and commit work.', icon: GitHubLogo, type: 'oauth', url: 'https://mcp.github.com/mcp', category: 'developer' },
+  { id: 'vercel', name: 'Vercel', desc: 'Deploy projects, manage domains, list deployments, and trigger builds.', icon: VercelLogo, type: 'oauth', url: 'https://mcp.vercel.com', category: 'developer' },
+  { id: 'godaddy', name: 'GoDaddy', desc: 'Search domain availability, register domains, and manage DNS settings.', icon: GoDaddyLogo, type: 'oauth', url: 'https://api.godaddy.com/v1/domains/mcp', category: 'developer' },
+  { id: 'supabase', name: 'Supabase', desc: 'Manage Supabase projects, databases, storage buckets, and edge functions.', icon: SupabaseLogo, type: 'oauth', url: 'https://mcp.supabase.com/mcp', category: 'developer' },
+  { id: 'cloudflare', name: 'Cloudflare', desc: 'Inspect zones, manage DNS records, check traffic data, and purge cache.', icon: CloudflareLogo, type: 'oauth', url: 'https://mcp.cloudflare.com/mcp', category: 'developer' },
+  { id: 'neon', name: 'Neon', desc: 'Manage Neon serverless Postgres projects, branches, endpoints, and databases.', icon: NeonLogo, type: 'oauth', url: 'https://mcp.neon.tech/mcp', category: 'developer' },
+  { id: 'netlify', name: 'Netlify', desc: 'Manage Netlify sites, deployments, configure environment variables, and sync web projects.', icon: NetlifyLogo, type: 'oauth', url: 'https://netlify-mcp.netlify.app/mcp', category: 'developer' },
+  { id: 'parallel', name: 'Parallel Search', desc: 'Execute high-performance web searches and aggregate web results.', icon: ParallelSearchLogo, type: 'oauth', url: 'https://search.parallel.ai/mcp', category: 'search' },
+  { id: 'cryptocom', name: 'Crypto.com', desc: 'Retrieve real-time market data, check coin rates, and track digital assets.', icon: CryptoLogo, type: 'oauth', url: 'https://mcp.crypto.com/market-data/mcp', category: 'finance' },
+  { id: 'yahoofinance', name: 'Yahoo Finance', desc: 'Query stock quotes, search ticker details, retrieve historical prices, and fetch financial news.', icon: YahooFinanceLogo, type: 'oauth', url: 'https://gateway.mcpservers.org/yahoo-finance/mcp', category: 'finance' },
+  { id: 'cal', name: 'Cal.com', desc: 'Read calendars, check availability, and schedule meetings.', icon: CalLogo, type: 'oauth', url: 'https://mcp.cal.com/mcp', category: 'scheduling' },
+  { id: 'swiggy_food', name: 'Swiggy Food', desc: 'Order food online from restaurants near you, search menus, and manage your cart.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/food', category: 'commerce' },
+  { id: 'swiggy_dineout', name: 'Swiggy Dineout', desc: 'Find nearby restaurants, reserve tables, and book dining experiences.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/dineout', category: 'commerce' },
+  { id: 'swiggy_instamart', name: 'Swiggy Instamart', desc: 'Order groceries, fresh food, and household essentials for quick delivery.', icon: SwiggyLogo, type: 'oauth', url: 'https://mcp.swiggy.com/im', category: 'commerce' }
 ];
 
 export const PROVIDER_LOGOS: Record<string, ComponentType<any>> = {

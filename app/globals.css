@@ -85,17 +85,15 @@ html[data-answer-font='serif'] body {
 }
 
 .integration-dialog-content {
-  transform: translate3d(-50%, -50%, 0);
   transform-origin: center;
-  will-change: transform, opacity;
 }
 
 .integration-dialog-content[data-state="open"] {
-  animation: integration-dialog-enter 220ms var(--motion-ease-out) both;
+  animation: integration-dialog-enter 220ms var(--motion-ease-out);
 }
 
 .integration-dialog-content[data-state="closed"] {
-  animation: integration-dialog-exit 200ms var(--motion-ease-out) both;
+  animation: integration-dialog-exit 200ms var(--motion-ease-out);
 }
 
 @keyframes motion-sheet-enter {
@@ -139,22 +137,22 @@ html[data-answer-font='serif'] body {
 @keyframes integration-dialog-enter {
   from {
     opacity: 0;
-    transform: translate3d(-50%, -50%, 0) translate3d(0, 8px, 0) scale(0.97);
+    transform: translateY(8px) scale(0.97);
   }
   to {
     opacity: 1;
-    transform: translate3d(-50%, -50%, 0) translate3d(0, 0, 0) scale(1);
+    transform: none;
   }
 }
 
 @keyframes integration-dialog-exit {
   from {
     opacity: 1;
-    transform: translate3d(-50%, -50%, 0) translate3d(0, 0, 0) scale(1);
+    transform: none;
   }
   to {
     opacity: 0;
-    transform: translate3d(-50%, -50%, 0) translate3d(0, 4px, 0) scale(0.985);
+    transform: translateY(4px) scale(0.985);
   }
 }
 
