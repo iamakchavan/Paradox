@@ -13,6 +13,7 @@ import { SourceList } from '@/components/chat/SourceList';
 import { SourcesSheetHeader } from '@/components/chat/SourcesSheetHeader';
 import { useRightWorkspaceActions } from '@/components/workspace/RightWorkspaceContext';
 import { ArtifactLoadingState } from './ArtifactLoadingState';
+import { ArtifactTitlePill } from './ArtifactTitlePill';
 
 interface Props {
   artifactId: string;
@@ -80,24 +81,25 @@ export function ArtifactWorkspace({
   return (
     <div className="relative flex h-full min-w-0 flex-col bg-background">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-28 progressive-blur-top" aria-hidden="true" />
-      <header className="absolute inset-x-0 top-0 z-30 flex h-[68px] items-center gap-3 px-4 sm:px-5">
+      <header className="absolute inset-x-0 top-0 z-30 flex h-[68px] items-center gap-2 px-4 sm:px-5">
         {onBack && (
-          <FloatingIconButton onClick={onBack} aria-label="Back to artifacts" className="h-8 w-8">
+          <FloatingIconButton onClick={onBack} aria-label="Back to artifacts" className="h-10 w-10">
             <ArrowLeft className="h-4 w-4" />
           </FloatingIconButton>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-medium text-foreground/90">{bundle.artifact.title}</p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            {bundle.artifact.status === 'streaming' ? 'Writing report...' : 'Deep research report'}
-          </p>
+          <ArtifactTitlePill
+            title={bundle.artifact.title}
+            status={bundle.artifact.status}
+            isMobile={isMobile}
+          />
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-2">
           {bundle.version.sources.length > 0 && (
             <button
               type="button"
               onClick={showSources}
-              className="liquid-glass-dock inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full px-2.5 text-xs font-medium tabular-nums text-foreground/60 transition-[background-color,color,transform] duration-150 hover:bg-foreground/[0.055] hover:text-foreground active:scale-[0.96] motion-reduce:transform-none"
+              className="liquid-glass-dock inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-full px-3.5 text-xs font-medium tabular-nums text-foreground/60 transition-[background-color,color,transform] duration-150 hover:bg-foreground/[0.055] hover:text-foreground active:scale-[0.96] motion-reduce:transform-none"
               aria-label={`View ${sourceDescription}`}
               title="View report sources"
             >
@@ -105,13 +107,13 @@ export function ArtifactWorkspace({
               <span className="min-w-3 text-center leading-none">{bundle.version.sources.length}</span>
             </button>
           )}
-          <div className="liquid-glass-dock inline-flex h-8 shrink-0 items-center overflow-hidden rounded-full">
+          <div className="liquid-glass-dock inline-flex h-10 shrink-0 items-center overflow-hidden rounded-full">
             <button
               type="button"
               onClick={copyReport}
               aria-label="Copy report"
               title="Copy report"
-              className="inline-flex h-8 w-8 items-center justify-center text-foreground/60 transition-[background-color,color,transform] duration-150 hover:bg-foreground/[0.055] hover:text-foreground active:scale-[0.92] motion-reduce:transform-none"
+              className="inline-flex h-10 w-10 items-center justify-center text-foreground/60 transition-[background-color,color,transform] duration-150 hover:bg-foreground/[0.055] hover:text-foreground active:scale-[0.92] motion-reduce:transform-none"
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </button>
@@ -121,12 +123,12 @@ export function ArtifactWorkspace({
               onClick={() => downloadMarkdown(bundle.artifact.title, bundle.version.markdown)}
               aria-label="Download report as Markdown"
               title="Download Markdown"
-              className="inline-flex h-8 w-8 items-center justify-center text-foreground/60 transition-[background-color,color,transform] duration-150 hover:bg-foreground/[0.055] hover:text-foreground active:scale-[0.92] motion-reduce:transform-none"
+              className="inline-flex h-10 w-10 items-center justify-center text-foreground/60 transition-[background-color,color,transform] duration-150 hover:bg-foreground/[0.055] hover:text-foreground active:scale-[0.92] motion-reduce:transform-none"
             >
               <Download className="h-4 w-4" />
             </button>
           </div>
-          <FloatingIconButton onClick={onClose} aria-label="Close report" className="h-8 w-8">
+          <FloatingIconButton onClick={onClose} aria-label="Close report" className="h-10 w-10">
             <X className="h-4 w-4" />
           </FloatingIconButton>
         </div>

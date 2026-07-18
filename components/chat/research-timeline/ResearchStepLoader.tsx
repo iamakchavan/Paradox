@@ -4,7 +4,6 @@ import { memo, type ComponentType } from "react";
 import { DotmHex2 } from "@/components/ui/dotm-hex-2";
 import { DotmHex3 } from "@/components/ui/dotm-hex-3";
 import { DotmHex5 } from "@/components/ui/dotm-hex-5";
-import { DotmHex9 } from "@/components/ui/dotm-hex-9";
 import type { DotMatrixCommonProps } from "@/components/ui/dotmatrix-core";
 import type { ResearchEventType } from "@/lib/research/events";
 
@@ -18,7 +17,7 @@ const LOADER_BY_STEP_TYPE: Record<
   x: DotmHex5,
   browse: DotmHex3,
   scrape: DotmHex3,
-  synthesis: DotmHex9,
+  synthesis: DotmHex3,
 };
 
 export const ResearchStepLoader = memo(function ResearchStepLoader({

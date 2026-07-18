@@ -13,8 +13,11 @@ export function getResearchStepKey(step: ResearchStep, fallbackIndex: number) {
 }
 
 export function organizeResearchSteps(steps: ResearchStep[]): ResearchStep[] {
+  // The artifact card owns synthesis progress while the report streams. Keep
+  // the event in the parsed stream for lifecycle state, but avoid duplicate UI.
   const visibleSteps = steps.filter(step => !(
-    step.status === 'failed' && (step.type === 'browse' || step.type === 'scrape')
+    step.type === 'synthesis'
+    || (step.status === 'failed' && (step.type === 'browse' || step.type === 'scrape'))
   ));
   if (!visibleSteps.some(step => step.id || step.parentId)) return visibleSteps;
 
