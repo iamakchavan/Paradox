@@ -111,7 +111,7 @@ export const TableWrapper = ({ children, isStreaming, messageContent }: TableWra
         <div className="flex h-11 items-center justify-between border-b border-zinc-200/75 px-3 dark:border-white/[0.06]">
           <div className="flex min-w-0 select-none items-center gap-2">
             <Table2 className="h-3.5 w-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" strokeWidth={1.8} />
-            <span className="text-[12px] font-medium text-zinc-700 dark:text-zinc-300">Table</span>
+            <span className="text-[12px] font-medium text-zinc-700 dark:text-zinc-300">Sheets</span>
           </div>
           {TableActions}
         </div>

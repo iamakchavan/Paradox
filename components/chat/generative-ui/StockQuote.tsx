@@ -86,7 +86,7 @@ export default function StockQuote({
 
           {hasChange && (
             <span className={cn(
-              "text-[10px] font-semibold mt-2 leading-none",
+              "mt-2 font-mono text-[10px] font-semibold leading-none",
               isUp ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
             )}>
               {isUp ? '+' : '-'}{absoluteText} Today

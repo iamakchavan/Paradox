@@ -7,13 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { CustomToastProvider } from '@/components/ui/custom-toast';
 import { MotionPreferencesProvider } from '@/components/motion-preferences-provider';
 import { AnswerFontProvider } from '@/components/answer-font-provider';
-import { JetBrains_Mono, Source_Serif_4, Space_Mono } from 'next/font/google';
-
-const spaceMono = Space_Mono({
-  weight: ['400', '700'],
-  subsets: ['latin'],
-  variable: '--font-space-mono',
-});
+import { JetBrains_Mono, Source_Serif_4 } from 'next/font/google';
 
 const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500', '600'],
@@ -77,7 +71,7 @@ export default function RootLayout({
           href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap"
         />
       </head>
-      <body className={`${spaceMono.variable} ${jetbrainsMono.variable} ${sourceSerif.variable} font-sans antialiased`}>
+      <body className={`${jetbrainsMono.variable} ${sourceSerif.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

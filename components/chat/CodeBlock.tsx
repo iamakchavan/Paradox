@@ -240,7 +240,7 @@ export const CodeBlock = ({ language, codeString, isStreaming = false }: CodeBlo
               'custom-scrollbar m-0 p-4 font-mono text-[13px] leading-[1.65] text-zinc-800 sm:px-[18px] dark:text-zinc-200',
               codeLayoutClass
             )}
-            style={{ fontFamily: 'var(--font-space-mono), monospace' }}
+            style={{ fontFamily: 'var(--font-jetbrains-mono), monospace' }}
             tabIndex={0}
             aria-label={`${languageLabel} code`}
           >
@@ -259,7 +259,7 @@ export const CodeBlock = ({ language, codeString, isStreaming = false }: CodeBlo
                   ...style,
                   margin: 0,
                   backgroundColor: 'transparent',
-                  fontFamily: 'var(--font-space-mono), monospace',
+                  fontFamily: 'var(--font-jetbrains-mono), monospace',
                 }}
                 tabIndex={0}
                 aria-label={`${languageLabel} code`}
