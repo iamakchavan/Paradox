@@ -102,9 +102,9 @@ export function ChatHeader({
               }}
               title="Open sidebar"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" style={{ color: 'currentColor' }}>
-                <rect x="0.5" y="4.5" width="15" height="2" rx="1" fill="currentColor" />
-                <rect x="0.5" y="9.5" width="10.5" height="2" rx="1" fill="currentColor" />
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 overflow-visible" aria-hidden="true">
+                <rect y="4.5" width="16" height="2" rx="1" fill="currentColor" />
+                <rect y="9.5" width="11" height="2" rx="1" fill="currentColor" />
               </svg>
             </Button>
           )}
@@ -129,9 +129,9 @@ export function ChatHeader({
                   size="icon"
                   className={cn(leftHeaderIconButtonClass, 'md:hidden')}
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" style={{ color: 'currentColor' }}>
-                    <rect x="0.5" y="4.5" width="15" height="2" rx="1" fill="currentColor" />
-                    <rect x="0.5" y="9.5" width="10.5" height="2" rx="1" fill="currentColor" />
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 overflow-visible" aria-hidden="true">
+                    <rect y="4.5" width="16" height="2" rx="1" fill="currentColor" />
+                    <rect y="9.5" width="11" height="2" rx="1" fill="currentColor" />
                   </svg>
                 </Button>
               </SheetTrigger>
@@ -214,12 +214,13 @@ export function ChatHeader({
                   title="New chat"
                 >
                   <svg
-                    width="16"
-                    height="16"
-                    viewBox="-0.5 -0.5 13 13"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 shrink-0"
+                    className="h-3.5 w-3.5 shrink-0 overflow-visible"
+                    aria-hidden="true"
                   >
                     <path d="M11.4875 0.512563C10.804 -0.170854 9.696 -0.170854 9.01258 0.512563L4.75098 4.77417C4.49563 5.02951 4.29308 5.33265 4.15488 5.66628L3.30712 7.71282C3.19103 7.99307 3.25519 8.31566 3.46968 8.53017C3.68417 8.74467 4.00676 8.80885 4.28702 8.69277L6.33382 7.84501C6.66748 7.70681 6.97066 7.50423 7.22604 7.24886L11.4875 2.98744C12.1709 2.30402 12.1709 1.19598 11.4875 0.512563Z" fill="currentColor" />
                     <path d="M2.75 1.5C2.05964 1.5 1.5 2.05964 1.5 2.75V9.25C1.5 9.94036 2.05964 10.5 2.75 10.5H9.25C9.94036 10.5 10.5 9.94036 10.5 9.25V7C10.5 6.58579 10.8358 6.25 11.25 6.25C11.6642 6.25 12 6.58579 12 7V9.25C12 10.7688 10.7688 12 9.25 12H2.75C1.23122 12 0 10.7688 0 9.25V2.75C0 1.23122 1.23122 4.84288e-08 2.75 4.84288e-08H5C5.41421 4.84288e-08 5.75 0.335786 5.75 0.75C5.75 1.16421 5.41421 1.5 5 1.5H2.75Z" fill="currentColor" />
