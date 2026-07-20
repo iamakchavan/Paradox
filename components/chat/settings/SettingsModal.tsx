@@ -67,10 +67,9 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     animate={{ y: mobileEntranceReady ? 0 : '100%' }}
                     exit={{ y: '100%', transition: motionTransitions.mobileSheetExit }}
                     transition={motionTransitions.mobileSheetEnter}
-                    className="fixed bottom-0 left-0 right-0"
+                    className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[hsl(var(--surface-panel))]"
                     style={{
                       zIndex: 51,
-                      background: 'light-dark(#ffffff, hsl(var(--surface-panel)))',
                       borderRadius: '16px 16px 0 0',
                       boxShadow: '0 -12px 48px rgba(0,0,0,0.12)',
                       maxWidth: 520,

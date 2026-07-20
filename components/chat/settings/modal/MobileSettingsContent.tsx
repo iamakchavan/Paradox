@@ -93,10 +93,7 @@ export function MobileSettingsContent({ controller }: { controller: SettingsModa
                   />
                 </div>
                 <div
-                  className="sticky bottom-0 px-4 py-4 pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(to top, light-dark(#ffffff, hsl(var(--surface-panel))) 60%, transparent)',
-                  }}
+                  className="pointer-events-none sticky bottom-0 bg-[linear-gradient(to_top,#ffffff_60%,transparent)] px-4 py-4 dark:bg-[linear-gradient(to_top,hsl(var(--surface-panel))_60%,transparent)]"
                 >
                   <button
                     onClick={controller.save}
