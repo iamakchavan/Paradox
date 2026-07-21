@@ -104,20 +104,6 @@ export const updateMessageContentById = async (messageId: number, content: strin
   await db.messages.update(messageId, { content });
 };
 
-export const updateLastMessageContent = async (chatId: string, content: string): Promise<void> => {
-  // Find the last assistant message in this session and update its content
-  const lastMsg = await db.messages
-    .where('chatId')
-    .equals(chatId)
-    .and(msg => msg.role === 'assistant')
-    .sortBy('createdAt')
-    .then(messages => messages[messages.length - 1]);
-
-  if (lastMsg && lastMsg.id !== undefined) {
-    await db.messages.update(lastMsg.id, { content });
-  }
-};
-
 /**
  * Branch off a new chat from an existing conversation at a specific message index.
  * Deep-copies messages from index 0 through branchAtIndex (inclusive) plus their
