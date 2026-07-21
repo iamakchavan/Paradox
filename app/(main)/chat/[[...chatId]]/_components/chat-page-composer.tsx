@@ -132,7 +132,7 @@ export function ActiveChatComposer({
           bottom: keyboardOffset > 0 ? `${keyboardOffset + 8}px` : undefined,
         }}
       >
-        <div className="absolute left-1/2 -translate-x-1/2 -top-11 z-20">
+        <div className="absolute left-1/2 -translate-x-1/2 -top-11 z-0">
           <button
             onClick={event => { scrollToBottom(); event.currentTarget.blur(); }}
             onMouseDown={event => event.preventDefault()}
@@ -147,7 +147,9 @@ export function ActiveChatComposer({
             <ArrowUp className="h-4 w-4 rotate-180" />
           </button>
         </div>
-        <ComposerInput controls={controls} initial={false} />
+        <div className="relative z-10">
+          <ComposerInput controls={controls} initial={false} />
+        </div>
       </motion.div>
     </>
   );

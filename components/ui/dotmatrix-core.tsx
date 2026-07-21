@@ -743,6 +743,12 @@ export function DotMatrixBase({
       : { minWidth: minSize, minHeight: minSize })
   } as unknown as CSSProperties;
 
+  const gridStyle = {
+    gap,
+    width: matrixSpan,
+    height: matrixSpan
+  };
+
   const dots = Array.from({ length: MATRIX_SIZE * MATRIX_SIZE }).map((_, index) => {
     const { row, col } = indexToCoord(index);
     const isActive = patternIndexes.has(index);
@@ -842,7 +848,7 @@ export function DotMatrixBase({
       )}
       style={dmxVarStyle}
     >
-      <div className="dmx-grid" style={{ gap }}>{dots}</div>
+      <div className="dmx-grid" style={gridStyle}>{dots}</div>
     </div>
   );
 
@@ -888,7 +894,7 @@ export function DotMatrixBase({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className="dmx-grid" style={{ gap }}>{dots}</div>
+      <div className="dmx-grid" style={gridStyle}>{dots}</div>
     </div>
   );
 }

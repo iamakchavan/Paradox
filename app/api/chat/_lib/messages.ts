@@ -59,7 +59,12 @@ export function formatMessagesForModel(messages: ChatRequestMessage[]): any[] {
       });
 
       message.pdfs?.forEach((pdf) => {
-        parts.push({ type: 'file', data: pdf.data, mimeType: 'application/pdf' });
+        parts.push({
+          type: 'file',
+          data: pdf.data,
+          mediaType: 'application/pdf',
+          filename: pdf.name,
+        });
       });
 
       return {
