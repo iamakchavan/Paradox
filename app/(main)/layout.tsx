@@ -13,6 +13,7 @@ import { DesktopRightWorkspace } from '@/components/workspace/DesktopRightWorksp
 import { MobileArtifactWorkspace } from '@/components/workspace/MobileArtifactWorkspace';
 import { MobileArtifactLibrary } from '@/components/artifacts/MobileArtifactLibrary';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ChatModesProvider } from '@/components/chat/ChatModesContext';
 import {
   getRightWorkspaceWidth,
   RightWorkspaceActionsProvider,
@@ -273,6 +274,7 @@ export default function MainLayout({
   const rightWorkspaceWidth = isMobile ? '0px' : getRightWorkspaceWidth(rightWorkspace);
 
   return (
+    <ChatModesProvider>
     <SidebarContext.Provider value={sidebarContextValue}>
       <RightWorkspaceProvider value={rightWorkspaceContextValue}>
       <RightWorkspaceActionsProvider value={rightWorkspaceActionsValue}>
@@ -365,5 +367,6 @@ export default function MainLayout({
       </RightWorkspaceActionsProvider>
       </RightWorkspaceProvider>
     </SidebarContext.Provider>
+    </ChatModesProvider>
   );
 }

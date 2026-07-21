@@ -205,6 +205,11 @@ export default function ChatPage() {
     selectedMcpIds,
     onToggleMcpId: handleToggleMcpId,
   };
+  const isComposerExpanded = isInputExpanded
+    || searchEnabled
+    || researchEnabled
+    || selectedImages.length > 0
+    || selectedPDFs.length > 0;
 
   return (
     <>
@@ -249,7 +254,7 @@ export default function ChatPage() {
             isSettingsActive={isSettingsActive}
             onSelectChat={selectChat}
             composerControls={composerControls}
-            isInputExpanded={isInputExpanded}
+            isInputExpanded={isComposerExpanded}
             keyboardOffset={keyboardOffset}
             contentRef={contentRef}
             sentinelRef={sentinelRef}
@@ -269,7 +274,7 @@ export default function ChatPage() {
       {!isInitialView && !isSearchActive && !isSettingsActive && (
         <ActiveChatComposer
           controls={composerControls}
-          expanded={isInputExpanded}
+          expanded={isComposerExpanded}
           keyboardOffset={keyboardOffset}
           sidebarCollapsed={isSidebarCollapsed}
           mounted={mounted}
