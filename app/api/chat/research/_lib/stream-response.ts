@@ -1,5 +1,10 @@
 import type { SearchKeys } from '@/lib/research/client';
 import { isAbortError } from '@/lib/research/request-policy';
+import {
+  CHAT_STREAM_PROTOCOL,
+  encodeChatStreamComment,
+  encodeChatStreamContent,
+} from '@/lib/streaming/chat-stream-protocol';
 import { executeResearchPlan } from './executor';
 import { planResearch } from './planner';
 import { synthesizeResearch } from './synthesis';
@@ -36,24 +41,26 @@ export function createResearchStreamResponse({
       };
       signal?.addEventListener('abort', closeForAbort, { once: true });
 
-      const safeEnqueue = (data: Uint8Array) => {
+      const safeEnqueue = (data: string) => {
         if (!isControllerClosed) {
           try {
-            controller.enqueue(data);
+            controller.enqueue(encoder.encode(data));
           } catch (error) {
             console.warn('[Research Stream] Failed to enqueue (controller likely closed):', error);
             isControllerClosed = true;
           }
         }
       };
-      const emit = (content: string) => safeEnqueue(encoder.encode(content));
+      const emit = (content: string) => safeEnqueue(encodeChatStreamContent(content));
+      const emitComment = (label: string, paddingLength = 0) =>
+        safeEnqueue(encodeChatStreamComment(label, paddingLength));
 
       // Force immediate header flush to prevent serverless and proxy buffering.
-      emit(' '.repeat(2048));
+      emitComment('padding', 2048);
 
       const heartbeatInterval = setInterval(() => {
         try {
-          emit(': heartbeat\n\n');
+          emitComment('heartbeat');
         } catch {
           clearInterval(heartbeatInterval);
         }
@@ -91,7 +98,7 @@ export function createResearchStreamResponse({
         console.error('[Deep Research Stream Exception]:', error);
         try {
           const errorMessage = error instanceof Error ? error.message : 'Unknown streaming error';
-          controller.enqueue(encoder.encode(`\n\n⚠️ Error: ${errorMessage}`));
+          emit(`\n\n⚠️ Error: ${errorMessage}`);
         } catch {}
       } finally {
         clearInterval(heartbeatInterval);
@@ -111,6 +118,7 @@ export function createResearchStreamResponse({
       Connection: 'keep-alive',
       'X-Accel-Buffering': 'no',
       'Content-Encoding': 'none',
+      'X-Paradox-Stream-Protocol': CHAT_STREAM_PROTOCOL,
     },
   });
 }

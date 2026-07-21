@@ -227,3 +227,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Internal diagnostics & specs
+.diagnostics/
+
+
+

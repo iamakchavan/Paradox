@@ -1,3 +1,8 @@
+import {
+  CHAT_STREAM_PROTOCOL,
+  ChatStreamDecoder,
+} from '@/lib/streaming/chat-stream-protocol';
+
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -75,10 +80,16 @@ export const streamChatContent = async (
     throw new Error(errorData.error || `API error: ${response.statusText}`);
   }
 
+  const protocol = response.headers.get('X-Paradox-Stream-Protocol');
+  if (protocol !== CHAT_STREAM_PROTOCOL) {
+    throw new Error('Unsupported chat stream protocol');
+  }
+
   const reader = response.body?.getReader();
   if (!reader) throw new Error('Response body is null');
 
-  const decoder = new TextDecoder();
+  const textDecoder = new TextDecoder();
+  const streamDecoder = new ChatStreamDecoder();
 
   // Wraps reader.read() with a timeout so that if the mobile browser silently
   // drops the connection (no error, no done=true, just hangs), we throw a
@@ -97,70 +108,22 @@ export const streamChatContent = async (
     });
   };
 
-  let streamBuffer = '';
-  const prefixTarget = ': heartbeat';
-
-  const getMatchingPrefixLength = (str: string, target: string): number => {
-    for (let len = Math.min(str.length, target.length); len > 0; len--) {
-      if (target.startsWith(str.slice(-len))) {
-        return len;
-      }
-    }
-    return 0;
-  };
-
   try {
     while (true) {
       if (signal?.aborted) throw new Error('Aborted');
 
       const { done, value } = await readWithTimeout();
-      if (done) break;
-
-      const chunkText = decoder.decode(value, { stream: true });
-      streamBuffer += chunkText;
-
-      // Remove any complete heartbeats (handle both Unix and Windows newlines)
-      const heartbeatPatterns = [
-        ': heartbeat\n\n',
-        ': heartbeat\r\n\r\n',
-        ': heartbeat\n',
-        ': heartbeat\r\n',
-        ': heartbeat'
-      ];
-      
-      let replaced = true;
-      while (replaced) {
-        replaced = false;
-        for (const pattern of heartbeatPatterns) {
-          if (streamBuffer.includes(pattern)) {
-            streamBuffer = streamBuffer.replace(pattern, '');
-            replaced = true;
-            break;
-          }
+      if (done) {
+        const finalText = textDecoder.decode();
+        if (finalText.length > 0) {
+          for (const content of streamDecoder.push(finalText)) onToken(content);
         }
+        for (const content of streamDecoder.finish()) onToken(content);
+        break;
       }
 
-      // Check if the end of the buffer matches a partial heartbeat
-      const prefixLen = getMatchingPrefixLength(streamBuffer, prefixTarget);
-      
-      let flushText = streamBuffer;
-      if (prefixLen > 0) {
-        flushText = streamBuffer.slice(0, -prefixLen);
-        streamBuffer = streamBuffer.slice(-prefixLen);
-      } else {
-        streamBuffer = '';
-      }
-
-      if (flushText.length > 0) {
-        // Filter out heartbeat-only chunks (like the initial 2048 spaces)
-        const isMeaningful = flushText.trim().length > 0 ||
-          flushText.includes('<') ||
-          flushText.includes('{');
-          
-        if (isMeaningful) {
-          onToken(flushText);
-        }
-      }
+      const chunkText = textDecoder.decode(value, { stream: true });
+      for (const content of streamDecoder.push(chunkText)) onToken(content);
     }
   } catch (err: any) {
     // Re-throw AbortError so the caller can distinguish user-stop from errors

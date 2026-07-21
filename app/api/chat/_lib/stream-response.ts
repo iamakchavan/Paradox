@@ -1,6 +1,11 @@
 import { streamText } from 'ai';
 import type { MCPIntegration } from '@/lib/db';
 import {
+  CHAT_STREAM_PROTOCOL,
+  encodeChatStreamComment,
+  encodeChatStreamContent,
+} from '@/lib/streaming/chat-stream-protocol';
+import {
   normalizeExternalSourceUrl,
   normalizeSourceCollection,
 } from '@/lib/research/source-normalization';
@@ -43,22 +48,25 @@ export function createChatStreamResponse({
   const stream = new ReadableStream({
     async start(controller) {
       let isControllerClosed = false;
-      const safeEnqueue = (data: Uint8Array) => {
+      const safeEnqueue = (data: string) => {
         if (!isControllerClosed) {
           try {
-            controller.enqueue(data);
+            controller.enqueue(encoder.encode(data));
           } catch {
             isControllerClosed = true;
           }
         }
       };
+      const emit = (content: string) => safeEnqueue(encodeChatStreamContent(content));
+      const emitComment = (label: string, paddingLength = 0) =>
+        safeEnqueue(encodeChatStreamComment(label, paddingLength));
 
       // Force immediate header flush to prevent proxy and middleware buffering.
-      safeEnqueue(encoder.encode(' '.repeat(4096)));
+      emitComment('padding', 4096);
 
       // Keep the connection alive during long-running search and MCP calls.
       const heartbeatInterval = setInterval(() => {
-        safeEnqueue(encoder.encode(': heartbeat\n\n'));
+        emitComment('heartbeat');
       }, 2000);
 
       let hasThinkingStarted = false;
@@ -76,15 +84,15 @@ export function createChatStreamResponse({
           if (part.type === 'reasoning-delta') {
             console.log(`[CHAT reasoning-delta] text: "${part.text}"`);
             if (!hasThinkingStarted) {
-              safeEnqueue(encoder.encode('<think>'));
+              emit('<think>');
               hasThinkingStarted = true;
               isReasoningDeltaActive = true;
             }
-            safeEnqueue(encoder.encode(part.text));
+            emit(part.text);
           } else if (part.type === 'text-delta') {
             console.log(`[CHAT text-delta] text: "${part.text}"`);
             if (hasThinkingStarted && isReasoningDeltaActive) {
-              safeEnqueue(encoder.encode('</think>'));
+              emit('</think>');
               hasThinkingStarted = false;
               isReasoningDeltaActive = false;
             }
@@ -109,7 +117,7 @@ export function createChatStreamResponse({
               repetitionCount = 0;
             }
 
-            safeEnqueue(encoder.encode(text));
+            emit(text);
             if (gotSearchResults && text.trim().length > 0) {
               gotTextAfterSearch = true;
             }
@@ -125,7 +133,7 @@ export function createChatStreamResponse({
               JSON.stringify((part as any).input),
             );
             if (hasThinkingStarted) {
-              safeEnqueue(encoder.encode('</think>'));
+              emit('</think>');
               hasThinkingStarted = false;
               isReasoningDeltaActive = false;
             }
@@ -139,10 +147,8 @@ export function createChatStreamResponse({
             if (isDirectTool) {
               const escapedArgs = JSON.stringify((part as any).input || {}).replace(/"/g, '&quot;');
               console.log(`[CHAT] Enqueuing direct mcp tool call: name="${part.toolName}"`);
-              safeEnqueue(
-                encoder.encode(
-                  `<mcp-tool-call id="${(part as any).toolCallId}" name="${part.toolName}" args="${escapedArgs}" />`,
-                ),
+              emit(
+                `<mcp-tool-call id="${(part as any).toolCallId}" name="${part.toolName}" args="${escapedArgs}" />`,
               );
             } else if (part.toolName === 'webSearch') {
               const toolInput = (part as any).input || {};
@@ -150,7 +156,7 @@ export function createChatStreamResponse({
               if (query) {
                 const escapedQuery = query.replace(/"/g, '&quot;');
                 console.log(`[CHAT] Enqueuing search-loading for query: "${query}"`);
-                safeEnqueue(encoder.encode(`<search-loading query="${escapedQuery}" />`));
+                emit(`<search-loading query="${escapedQuery}" />`);
               } else {
                 console.warn('[CHAT] Tool call query is empty!', JSON.stringify(toolInput));
               }
@@ -160,7 +166,7 @@ export function createChatStreamResponse({
               if (url) {
                 const escapedUrl = url.replace(/"/g, '&quot;');
                 console.log(`[CHAT] Enqueuing search-loading for browsePage: "${url}"`);
-                safeEnqueue(encoder.encode(`<search-loading query="Reading ${escapedUrl}" />`));
+                emit(`<search-loading query="Reading ${escapedUrl}" />`);
               }
             } else if (part.toolName === 'mapWebsite') {
               const toolInput = (part as any).input || {};
@@ -168,18 +174,18 @@ export function createChatStreamResponse({
               if (url) {
                 const escapedUrl = url.replace(/"/g, '&quot;');
                 console.log(`[CHAT] Enqueuing search-loading for mapWebsite: "${url}"`);
-                safeEnqueue(encoder.encode(`<search-loading query="Mapping ${escapedUrl}" />`));
+                emit(`<search-loading query="Mapping ${escapedUrl}" />`);
               }
             } else {
               const toolName = part.toolName;
               console.log(`[CHAT] Enqueuing search-loading for proxy tool: "${toolName}"`);
-              safeEnqueue(encoder.encode(`<search-loading query="Executing ${toolName}..." />`));
+              emit(`<search-loading query="Executing ${toolName}..." />`);
             }
           } else if (part.type === 'tool-result') {
             console.log('[CHAT] Tool result part object JSON:', JSON.stringify(part));
             console.log(`[CHAT] Tool result: name=${part.toolName}`);
             if (hasThinkingStarted) {
-              safeEnqueue(encoder.encode('</think>'));
+              emit('</think>');
               hasThinkingStarted = false;
               isReasoningDeltaActive = false;
             }
@@ -195,9 +201,7 @@ export function createChatStreamResponse({
               );
               if (normalizedResults.length > 0) {
                 const normalizedToolResult = { ...toolResult, results: normalizedResults };
-                safeEnqueue(
-                  encoder.encode(`<search-results>${JSON.stringify(normalizedToolResult)}</search-results>`),
-                );
+                emit(`<search-results>${JSON.stringify(normalizedToolResult)}</search-results>`);
                 gotSearchResults = true;
                 lastSearchResultData = normalizedToolResult;
               }
@@ -219,9 +223,7 @@ export function createChatStreamResponse({
                     },
                   ],
                 };
-                safeEnqueue(
-                  encoder.encode(`<search-results>${JSON.stringify(searchResult)}</search-results>`),
-                );
+                emit(`<search-results>${JSON.stringify(searchResult)}</search-results>`);
                 gotSearchResults = true;
                 lastSearchResultData = searchResult;
               }
@@ -252,9 +254,7 @@ export function createChatStreamResponse({
                   query: toolResult.url,
                   results: mockResultsList.slice(0, 10),
                 };
-                safeEnqueue(
-                  encoder.encode(`<search-results>${JSON.stringify(searchResult)}</search-results>`),
-                );
+                emit(`<search-results>${JSON.stringify(searchResult)}</search-results>`);
                 gotSearchResults = true;
                 lastSearchResultData = searchResult;
               }
@@ -275,7 +275,7 @@ export function createChatStreamResponse({
             }
           } else if (part.type === 'error') {
             if (hasThinkingStarted) {
-              safeEnqueue(encoder.encode('</think>'));
+              emit('</think>');
               hasThinkingStarted = false;
               isReasoningDeltaActive = false;
             }
@@ -283,12 +283,12 @@ export function createChatStreamResponse({
             const errorMessage = `\n\n⚠️ An error occurred: ${
               part.error instanceof Error ? part.error.message : String(part.error)
             }`;
-            safeEnqueue(encoder.encode(errorMessage));
+            emit(errorMessage);
           }
         }
 
         if (hasThinkingStarted) {
-          safeEnqueue(encoder.encode('</think>'));
+          emit('</think>');
         }
 
         if (accumulatedCitations.size > 0) {
@@ -305,13 +305,11 @@ export function createChatStreamResponse({
               content: 'Grounded search source cited by Perplexity.',
             };
           });
-          safeEnqueue(
-            encoder.encode(
-              `<search-results>${JSON.stringify({
-                query: 'Perplexity Search',
-                results: mockResults,
-              })}</search-results>`,
-            ),
+          emit(
+            `<search-results>${JSON.stringify({
+              query: 'Perplexity Search',
+              results: mockResults,
+            })}</search-results>`,
           );
         }
 
@@ -345,7 +343,7 @@ export function createChatStreamResponse({
               maxRetries: 1,
             });
             for await (const part of followUp.fullStream) {
-              if (part.type === 'text-delta') safeEnqueue(encoder.encode(part.text));
+              if (part.type === 'text-delta') emit(part.text);
             }
           } catch (followUpError) {
             console.error('[Safety Net] Follow-up call failed:', followUpError);
@@ -356,13 +354,9 @@ export function createChatStreamResponse({
                     `- **${searchResult.title}**: ${searchResult.content.substring(0, 200)}... [${new URL(searchResult.url).hostname.replace('www.', '')}](${searchResult.url})`,
                 )
                 .join('\n')}`;
-              safeEnqueue(encoder.encode(fallbackText));
+              emit(fallbackText);
             } catch {
-              safeEnqueue(
-                encoder.encode(
-                  '\n\nSearch completed but I encountered an error generating a summary.',
-                ),
-              );
+              emit('\n\nSearch completed but I encountered an error generating a summary.');
             }
           }
         }
@@ -374,7 +368,7 @@ export function createChatStreamResponse({
         console.error('[Stream Exception]:', error);
         try {
           const errorMessage = error instanceof Error ? error.message : 'Unknown streaming error';
-          safeEnqueue(encoder.encode(`\n\n⚠️ Error: ${errorMessage}`));
+          emit(`\n\n⚠️ Error: ${errorMessage}`);
         } catch {}
       } finally {
         clearInterval(heartbeatInterval);
@@ -394,6 +388,7 @@ export function createChatStreamResponse({
       Connection: 'keep-alive',
       'X-Accel-Buffering': 'no',
       'Content-Encoding': 'none',
+      'X-Paradox-Stream-Protocol': CHAT_STREAM_PROTOCOL,
     },
   });
 }
