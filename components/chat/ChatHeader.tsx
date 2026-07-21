@@ -73,7 +73,7 @@ export function ChatHeader({
           isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]"
         )}
       />
-      <header className="fixed top-[calc(1.25rem+env(safe-area-inset-top,0px))] left-0 right-0 md:right-[var(--sources-panel-width,0px)] z-40 transition-[left,right] motion-layout-transition motion-reduce:transition-none pointer-events-none px-4">
+      <header className="fixed top-[calc(0.75rem+env(safe-area-inset-top,0px))] md:top-[calc(1rem+env(safe-area-inset-top,0px))] left-0 right-0 md:right-[var(--sources-panel-width,0px)] z-40 transition-[left,right] motion-layout-transition motion-reduce:transition-none pointer-events-none px-4">
       <div className="w-full flex items-center justify-between gap-4 relative">
         {/* Left Pill: Sidebar trigger + New Chat */}
         <motion.div

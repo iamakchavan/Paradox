@@ -10,13 +10,14 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { MobileBottomSheet } from '@/components/ui/mobile-bottom-sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
 import { normalizeExternalSourceUrl } from '@/lib/research/source-normalization';
 import { FaviconImage } from '../FaviconImage';
+import { SourceList, type AnswerSource } from '../SourceList';
 import { SourcesSheetHeader } from '../SourcesSheetHeader';
 import { useMessageMarkdownContext } from './markdown-context';
 import { extractSiteName, getCleanUrl } from './url-utils';
@@ -99,6 +100,14 @@ const GroupedCitationPill = memo(({ items, searchMap }: { items: CitationItem[];
   const first = items[0];
   const currentResult = findSearchResult(current, searchMap);
   const firstResult = findSearchResult(first, searchMap);
+  const drawerSources = useMemo<AnswerSource[]>(() => items.map(item => {
+    const result = findSearchResult(item, searchMap);
+    return {
+      title: result?.title || (/^\d+$/.test(item.label.trim()) ? item.domain : (item.label || item.domain)),
+      url: item.href,
+      content: result?.content || '',
+    };
+  }), [items, searchMap]);
   const { runAfterHistoryDismiss } = useMobileBackDismiss({
     isOpen: isDrawerOpen,
     isMobile,
@@ -186,39 +195,11 @@ const GroupedCitationPill = memo(({ items, searchMap }: { items: CitationItem[];
         onOpenChange={open => { if (!open) dismissDrawer(); }}
         title="Sources"
         description={description}
-        className="h-[80dvh] min-h-[300px] select-none"
+        className="h-[82dvh] min-h-[320px] select-none md:hidden"
       >
         <SourcesSheetHeader description={description} onClose={dismissDrawer} />
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pt-[72px] divide-y divide-border/30">
-          {items.map((item, index) => {
-            const result = findSearchResult(item, searchMap);
-            return (
-              <a
-                key={index}
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col gap-1.5 py-4 no-underline active:opacity-70 transition-opacity duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] [content-visibility:auto] [contain-intrinsic-size:0_104px] select-none"
-                onClick={dismissDrawer}
-              >
-                <div className="flex items-center justify-between w-full min-w-0">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <FaviconImage domain={item.domain} className="w-3.5 h-3.5 rounded-sm shrink-0" />
-                    <span className="text-[10px] font-bold tracking-wider uppercase text-zinc-500 truncate">{item.domain}</span>
-                  </div>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
-                </div>
-                {result ? (
-                  <div className="flex flex-col gap-1">
-                    <h4 className="font-serif font-normal text-foreground text-[13px] leading-snug line-clamp-2">{result.title}</h4>
-                    <p className="text-muted-foreground/90 leading-normal line-clamp-3 text-[11px] font-normal">{result.content}</p>
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-muted-foreground/75 break-all leading-normal">{item.href}</p>
-                )}
-              </a>
-            );
-          })}
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-[72px] sidebar-scroll">
+          <SourceList sources={drawerSources} onSourceClick={dismissDrawer} />
         </div>
       </MobileBottomSheet>
     </>

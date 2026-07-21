@@ -23,7 +23,12 @@ export function dedupeSources(sources: AnswerSource[]): AnswerSource[] {
   return normalizeSourceCollection(sources);
 }
 
-export function SourceList({ sources }: { sources: AnswerSource[] }) {
+interface SourceListProps {
+  sources: AnswerSource[];
+  onSourceClick?: () => void;
+}
+
+export function SourceList({ sources, onSourceClick }: SourceListProps) {
   return (
     <div className="min-w-0 w-full overflow-hidden divide-y divide-zinc-200/60 dark:divide-white/[0.07]">
       {sources.map((source, index) => {
@@ -35,6 +40,7 @@ export function SourceList({ sources }: { sources: AnswerSource[] }) {
             href={source.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={onSourceClick}
             className="group flex min-w-0 w-full gap-3 overflow-hidden py-4 no-underline transition-opacity [content-visibility:auto] [contain-intrinsic-size:0_104px] active:opacity-70"
           >
             <div className="mt-0.5 flex h-6 w-6 shrink-0 items-start justify-center">
