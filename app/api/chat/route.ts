@@ -12,10 +12,11 @@ import { createChatStreamResponse } from './_lib/stream-response';
 import { buildChatSystemPrompt } from './_lib/system-prompt';
 import { buildChatTools } from './_lib/tools';
 import type { ChatRequestBody } from './_lib/types';
+import { injectArtifactRequestContext } from './_lib/artifact-context';
 
 export async function POST(req: Request) {
   try {
-    const { messages, model, systemPrompt, mcpServers } =
+    const { messages, model, systemPrompt, mcpServers, artifactContext } =
       (await req.json()) as ChatRequestBody;
     const requestHeaders = readChatRequestHeaders(req);
 
@@ -41,7 +42,10 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: error.message }), { status: 400 });
     }
 
-    const formattedMessages = formatMessagesForModel(messages || []);
+    const formattedMessages = injectArtifactRequestContext(
+      formatMessagesForModel(messages || []),
+      artifactContext,
+    );
     console.log(
       '[CHAT formattedMessages]',
       JSON.stringify(

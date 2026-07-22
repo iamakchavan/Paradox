@@ -1,4 +1,5 @@
 import type { MCPIntegration } from '@/lib/db';
+import type { ArtifactRequestDocument } from '@/lib/artifacts/request-context';
 
 export interface ChatRequestMessage {
   role: string;
@@ -14,6 +15,7 @@ export interface ChatRequestBody {
   model: string;
   systemPrompt?: string;
   mcpServers?: MCPIntegration[];
+  artifactContext?: ArtifactRequestDocument[];
 }
 
 export interface ProviderKeys {

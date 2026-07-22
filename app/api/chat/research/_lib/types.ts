@@ -1,10 +1,12 @@
 import type { SearchResult } from '@/lib/research/client';
 import type { ChatRequestMessage } from '../../_lib/types';
+import type { ArtifactRequestDocument } from '@/lib/artifacts/request-context';
 
 export interface ResearchRequestBody {
   messages: ChatRequestMessage[];
   model: string;
   systemPrompt?: string;
+  artifactContext?: ArtifactRequestDocument[];
 }
 
 export type ResearchStepType = 'search' | 'x' | 'scrape' | 'map';

@@ -4,6 +4,7 @@ import {
   type ChatStreamEvent,
 } from '@/lib/streaming/chat-stream-protocol';
 import type { ArtifactStreamEvent } from '@/lib/artifacts/stream';
+import type { ArtifactRequestDocument } from '@/lib/artifacts/request-context';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -39,6 +40,7 @@ export const streamChatContent = async (
   mcpServers?: any[],
   signal?: AbortSignal,
   onArtifactEvent?: (event: ArtifactStreamEvent) => void,
+  artifactContext?: readonly ArtifactRequestDocument[],
 ) => {
   const endpoint = researchEnabled ? '/api/chat/research' : '/api/chat';
 
@@ -68,7 +70,8 @@ export const streamChatContent = async (
         toolCalls: msg.toolCalls
       })),
       model,
-      mcpServers
+      mcpServers,
+      ...(artifactContext?.length ? { artifactContext } : {}),
     }),
     // keepalive: true allows the request to outlive page navigation on some
     // browsers, but more importantly it signals to the browser not to treat

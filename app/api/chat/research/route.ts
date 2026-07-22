@@ -12,10 +12,11 @@ import {
 } from './_lib/providers';
 import { createResearchStreamResponse } from './_lib/stream-response';
 import type { ResearchRequestBody } from './_lib/types';
+import { injectArtifactRequestContext } from '../_lib/artifact-context';
 
 export async function POST(req: Request) {
   try {
-    const { messages, model, systemPrompt } = (await req.json()) as ResearchRequestBody;
+    const { messages, model, systemPrompt, artifactContext } = (await req.json()) as ResearchRequestBody;
     console.log(`[DEEP RESEARCH API] Request: model=${model}, messages=${messages?.length}`);
 
     const modelConfig = MODELS_REGISTRY.find((candidate) => candidate.id === model);
@@ -40,7 +41,10 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: error.message }), { status: 400 });
     }
 
-    const formattedMessages = formatResearchMessages(messages);
+    const formattedMessages = injectArtifactRequestContext(
+      formatResearchMessages(messages),
+      artifactContext,
+    );
     console.log(`[DEEP RESEARCH] Prepared ${formattedMessages.length} messages.`);
 
     return createResearchStreamResponse({

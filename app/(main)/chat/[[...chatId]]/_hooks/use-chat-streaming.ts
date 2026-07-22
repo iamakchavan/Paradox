@@ -16,6 +16,7 @@ import { ensureReportArtifactTerminalStatus } from '@/lib/artifacts/deep-researc
 import { artifactRepository } from '@/lib/artifacts/repository';
 import { publishArtifactSnapshot } from '@/lib/artifacts/runtime-store';
 import type { ArtifactBundle, UpsertArtifactDraftInput } from '@/lib/artifacts/types';
+import { buildArtifactRequestContext } from '@/lib/artifacts/request-context';
 import type { ChatMessage } from '../_lib/types';
 
 interface UseChatStreamingOptions {
@@ -212,6 +213,7 @@ export function useChatStreaming({
         ...historyPruned,
         { role: userMsg.role, content: userMsg.content, images: userMsg.images, pdfs: userMsg.pdfs },
       ];
+      const artifactContext = await buildArtifactRequestContext(payload, userMsg.content);
       const thinkingStartTime = Date.now();
       let thinkingDuration = 0;
       const researchStartTime = Date.now();
@@ -352,6 +354,7 @@ export function useChatStreaming({
             pendingFlush = true;
             scheduleFlush();
           },
+          artifactContext,
         ).catch(error => {
           if (hasDirectToolCall) return;
           throw error;
