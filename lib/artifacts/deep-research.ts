@@ -1,4 +1,5 @@
 import type { ArtifactStatus } from './types';
+import { getArtifactVersionId } from './identity';
 
 export type ReportArtifactEventStatus = 'started' | 'completed' | 'failed';
 
@@ -20,7 +21,7 @@ export function getDeepResearchArtifactId(chatId: string, messageId: number): st
 }
 
 export function getDeepResearchVersionId(artifactId: string, version = 1): string {
-  return `${artifactId}:v${version}`;
+  return getArtifactVersionId(artifactId, version);
 }
 
 export function getReportTitle(markdown: string, fallback?: string): string {

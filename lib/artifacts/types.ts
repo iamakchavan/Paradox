@@ -1,4 +1,4 @@
-export type ArtifactKind = 'deep-research-report';
+export type ArtifactKind = 'deep-research-report' | 'markdown-document';
 
 export type ArtifactStatus = 'streaming' | 'complete' | 'failed';
 
@@ -44,6 +44,7 @@ export interface UpsertArtifactDraftInput {
   id: string;
   chatId: string;
   messageId: number;
+  kind: ArtifactKind;
   title: string;
   status: ArtifactStatus;
   markdown: string;
@@ -60,5 +61,5 @@ export interface ArtifactRepository {
     sourceChatId: string,
     targetChatId: string,
     messageIdMap: ReadonlyMap<number, number>,
-  ): Promise<void>;
+  ): Promise<Map<string, string>>;
 }

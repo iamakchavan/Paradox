@@ -44,4 +44,5 @@ export interface ParsedMessageContent {
   searchMap: Map<string, { title: string; content: string }> | null;
   processedContent: string;
   artifact: ParsedDeepResearchArtifact | null;
+  artifactIds: string[];
 }

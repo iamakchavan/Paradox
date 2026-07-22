@@ -16,6 +16,17 @@ IMPORTANT RULES:
 - If the user asks to "scrape all pages" or "read all pages" from the mapped list, you can execute 'browsePage' on multiple mapped links sequentially (this system supports multi-step execution).
 `;
 
+const ARTIFACT_INSTRUCTION = `
+ARTIFACT WORKSPACE:
+- You have a 'createArtifactDocument' tool for substantial standalone Markdown documents.
+- Use it only when the user explicitly asks to put the response in an artifact, canvas, workspace document, or another separate document surface.
+- A request for a report, draft, plan, specification, or long answer is not sufficient by itself; keep it in chat unless the user explicitly requests the separate artifact surface.
+- Keep ordinary answers in chat. Do not create an artifact merely because an answer is long.
+- Give the tool a concise title and complete writing instructions. The document is written separately in the workspace, so do not duplicate its full contents in chat.
+- Invoke 'createArtifactDocument' at most once in a response. Put all requested sections in that single document and never retry the tool call.
+- After invoking the tool, briefly tell the user that the artifact is being created.
+`;
+
 const GENERATIVE_UI_INSTRUCTION = `
 GENERATIVE UI INSTRUCTIONS:
 You are equipped with a live Generative UI rendering system. 
@@ -94,13 +105,15 @@ Assistant: "Here is the latest market data for Bitcoin:
 interface BuildSystemPromptOptions {
   systemPrompt?: string;
   modelConfig: ModelConfig;
-  canUseTools: boolean;
+  canUseSearchTools: boolean;
+  canCreateArtifacts: boolean;
 }
 
 export function buildChatSystemPrompt({
   systemPrompt,
   modelConfig,
-  canUseTools,
+  canUseSearchTools,
+  canCreateArtifacts,
 }: BuildSystemPromptOptions): string {
   const dateInstruction = `Today's date is ${new Date().toLocaleDateString('en-US', {
     year: 'numeric',
@@ -117,8 +130,12 @@ export function buildChatSystemPrompt({
     finalSystemPrompt = `${mediaSystemPrompt}\n${finalSystemPrompt}`.trim();
   }
 
-  if (canUseTools) {
+  if (canUseSearchTools) {
     finalSystemPrompt = `${finalSystemPrompt}\n${SEARCH_INSTRUCTION}`.trim();
+  }
+
+  if (canCreateArtifacts) {
+    finalSystemPrompt = `${finalSystemPrompt}\n${ARTIFACT_INSTRUCTION}`.trim();
   }
 
   return `${finalSystemPrompt}\n${GENERATIVE_UI_INSTRUCTION}`.trim();

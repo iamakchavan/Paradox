@@ -1,5 +1,6 @@
 import { db, type ChatSession, type ChatMessage } from '@/lib/db';
 import { artifactRepository } from '@/lib/artifacts/repository';
+import { remapArtifactReferences } from '@/lib/artifacts/reference';
 
 export const createChatSession = async (modelMode: string, title: string = 'New Chat'): Promise<string> => {
   const id = crypto.randomUUID();
@@ -178,9 +179,12 @@ export const branchOffChat = async (
   );
 
   for (const file of relevantFiles) {
+    const targetMessageId = file.messageId === undefined
+      ? undefined
+      : messageIdMap.get(file.messageId);
     const newFileId = await db.library.add({
       chatId: newChatId,
-      messageId: file.messageId,
+      messageId: targetMessageId,
       name: file.name,
       type: file.type,
       mimeType: file.mimeType,
@@ -199,7 +203,22 @@ export const branchOffChat = async (
     }
   }
 
-  await artifactRepository.cloneForBranch(sourceChatId, newChatId, messageIdMap);
+  const artifactIdMap = await artifactRepository.cloneForBranch(
+    sourceChatId,
+    newChatId,
+    messageIdMap,
+  );
+  if (artifactIdMap.size > 0) {
+    for (let i = 0; i <= lastIndex; i++) {
+      const sourceMessage = sourceMessages[i];
+      const targetMessageId = messageIdMap.get(sourceMessage.id!);
+      if (targetMessageId === undefined) continue;
+      const remappedContent = remapArtifactReferences(sourceMessage.content, artifactIdMap);
+      if (remappedContent !== sourceMessage.content) {
+        await db.messages.update(targetMessageId, { content: remappedContent });
+      }
+    }
+  }
 
   return newChatId;
 };

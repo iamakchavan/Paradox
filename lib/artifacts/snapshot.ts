@@ -1,6 +1,7 @@
-import { getDeepResearchVersionId } from './deep-research';
+import { getArtifactVersionId } from './identity';
 import type {
   ArtifactBundle,
+  ArtifactKind,
   ArtifactSource,
   ArtifactStatus,
 } from './types';
@@ -9,6 +10,7 @@ interface CreateArtifactBundleInput {
   id: string;
   chatId: string;
   messageId: number;
+  kind?: ArtifactKind;
   title: string;
   status: ArtifactStatus;
   markdown: string;
@@ -21,14 +23,14 @@ interface CreateArtifactBundleInput {
 export function createArtifactBundle(input: CreateArtifactBundleInput): ArtifactBundle {
   const now = input.updatedAt ?? Date.now();
   const createdAt = input.createdAt ?? now;
-  const versionId = getDeepResearchVersionId(input.id);
+  const versionId = getArtifactVersionId(input.id);
 
   return {
     artifact: {
       id: input.id,
       chatId: input.chatId,
       messageId: input.messageId,
-      kind: 'deep-research-report',
+      kind: input.kind ?? 'deep-research-report',
       title: input.title,
       status: input.status,
       currentVersionId: versionId,

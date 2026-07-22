@@ -1,7 +1,9 @@
 import {
   CHAT_STREAM_PROTOCOL,
   ChatStreamDecoder,
+  type ChatStreamEvent,
 } from '@/lib/streaming/chat-stream-protocol';
+import type { ArtifactStreamEvent } from '@/lib/artifacts/stream';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -35,7 +37,8 @@ export const streamChatContent = async (
   researchEnabled: boolean,
   onToken: (token: string) => void,
   mcpServers?: any[],
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  onArtifactEvent?: (event: ArtifactStreamEvent) => void,
 ) => {
   const endpoint = researchEnabled ? '/api/chat/research' : '/api/chat';
 
@@ -90,6 +93,13 @@ export const streamChatContent = async (
 
   const textDecoder = new TextDecoder();
   const streamDecoder = new ChatStreamDecoder();
+  const dispatchEvent = (event: ChatStreamEvent) => {
+    if (event.type === 'content') {
+      onToken(event.content);
+    } else {
+      onArtifactEvent?.(event.artifact);
+    }
+  };
 
   // Wraps reader.read() with a timeout so that if the mobile browser silently
   // drops the connection (no error, no done=true, just hangs), we throw a
@@ -116,14 +126,14 @@ export const streamChatContent = async (
       if (done) {
         const finalText = textDecoder.decode();
         if (finalText.length > 0) {
-          for (const content of streamDecoder.push(finalText)) onToken(content);
+          for (const event of streamDecoder.push(finalText)) dispatchEvent(event);
         }
-        for (const content of streamDecoder.finish()) onToken(content);
+        for (const event of streamDecoder.finish()) dispatchEvent(event);
         break;
       }
 
       const chunkText = textDecoder.decode(value, { stream: true });
-      for (const content of streamDecoder.push(chunkText)) onToken(content);
+      for (const event of streamDecoder.push(chunkText)) dispatchEvent(event);
     }
   } catch (err: any) {
     // Re-throw AbortError so the caller can distinguish user-stop from errors

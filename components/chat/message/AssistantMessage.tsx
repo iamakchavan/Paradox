@@ -9,6 +9,7 @@ import { MessageActions } from './MessageActions';
 import { ParadoxTaskTimeline } from './ParadoxTaskTimeline';
 import { SearchStatus } from './SearchStatus';
 import { DeepResearchReportCard } from '@/components/artifacts/DeepResearchReportCard';
+import { ArtifactDocumentCard } from '@/components/artifacts/ArtifactDocumentCard';
 import type { ParsedMessageContent } from './types';
 
 interface Props {
@@ -71,6 +72,9 @@ export const AssistantMessage = memo(({
           isMessageStreaming={isStreaming}
         />
       )}
+      {parsed.artifactIds.map(artifactId => (
+        <ArtifactDocumentCard key={artifactId} artifactId={artifactId} />
+      ))}
       {parsed.toolSteps.length > 0 && (
         <ParadoxTaskTimeline steps={parsed.toolSteps} isStreaming={isStreaming} />
       )}

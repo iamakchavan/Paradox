@@ -48,7 +48,7 @@ export function ArtifactWorkspace({
     runAfterHistoryDismiss(() => setIsMobileSourcesOpen(false));
   }, [runAfterHistoryDismiss]);
 
-  const copyReport = useCallback(async () => {
+  const copyDocument = useCallback(async () => {
     if (!bundle?.version.markdown) return;
     await navigator.clipboard.writeText(bundle.version.markdown);
     setCopied(true);
@@ -65,7 +65,9 @@ export function ArtifactWorkspace({
   }
 
   const Renderer = artifactRendererRegistry[bundle.artifact.kind];
-  const sourceDescription = `${bundle.version.sources.length} ${bundle.version.sources.length === 1 ? 'source' : 'sources'} checked for this report`;
+  const isResearchReport = bundle.artifact.kind === 'deep-research-report';
+  const documentLabel = isResearchReport ? 'report' : 'document';
+  const sourceDescription = `${bundle.version.sources.length} ${bundle.version.sources.length === 1 ? 'source' : 'sources'} checked for this ${documentLabel}`;
 
   const showSources = () => {
     if (isMobile) {
@@ -101,7 +103,7 @@ export function ArtifactWorkspace({
               onClick={showSources}
               className="liquid-glass-dock inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-full px-3.5 text-xs font-medium tabular-nums text-foreground/60 transition-[background-color,color,transform] duration-150 hover:bg-foreground/[0.055] hover:text-foreground active:scale-[0.96] motion-reduce:transform-none"
               aria-label={`View ${sourceDescription}`}
-              title="View report sources"
+              title={`View ${documentLabel} sources`}
             >
               <FileSearch className="h-4 w-4" />
               <span className="min-w-3 text-center leading-none">{bundle.version.sources.length}</span>
@@ -110,9 +112,9 @@ export function ArtifactWorkspace({
           <div className="liquid-glass-dock inline-flex h-10 shrink-0 items-center overflow-hidden rounded-full">
             <button
               type="button"
-              onClick={copyReport}
-              aria-label="Copy report"
-              title="Copy report"
+              onClick={copyDocument}
+              aria-label={`Copy ${documentLabel}`}
+              title={`Copy ${documentLabel}`}
               className="inline-flex h-10 w-10 items-center justify-center text-foreground/60 transition-[background-color,color,transform] duration-150 hover:bg-foreground/[0.055] hover:text-foreground active:scale-[0.92] motion-reduce:transform-none"
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
@@ -121,14 +123,14 @@ export function ArtifactWorkspace({
             <button
               type="button"
               onClick={() => downloadMarkdown(bundle.artifact.title, bundle.version.markdown)}
-              aria-label="Download report as Markdown"
+              aria-label={`Download ${documentLabel} as Markdown`}
               title="Download Markdown"
               className="inline-flex h-10 w-10 items-center justify-center text-foreground/60 transition-[background-color,color,transform] duration-150 hover:bg-foreground/[0.055] hover:text-foreground active:scale-[0.92] motion-reduce:transform-none"
             >
               <Download className="h-4 w-4" />
             </button>
           </div>
-          <FloatingIconButton onClick={onClose} aria-label="Close report" className="h-10 w-10">
+          <FloatingIconButton onClick={onClose} aria-label={`Close ${documentLabel}`} className="h-10 w-10">
             <X className="h-4 w-4" />
           </FloatingIconButton>
         </div>
@@ -146,7 +148,10 @@ export function ArtifactWorkspace({
             </ArtifactErrorBoundary>
           </div>
         ) : (
-          <ArtifactLoadingState className="h-full min-h-[240px]" label="Preparing report" />
+          <ArtifactLoadingState
+            className="h-full min-h-[240px]"
+            label={isResearchReport ? 'Preparing report' : 'Preparing document'}
+          />
         )}
       </div>
 

@@ -51,6 +51,7 @@ export const DeepResearchReportCard = memo(function DeepResearchReportCard({
       id: artifactId,
       chatId,
       messageId,
+      kind: 'deep-research-report',
       title: artifact.title,
       status: effectiveStatus,
       markdown: artifact.markdown,

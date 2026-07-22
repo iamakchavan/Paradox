@@ -21,4 +21,5 @@ const DeepResearchReport = dynamic(
 
 export const artifactRendererRegistry: Record<ArtifactKind, ComponentType<ArtifactRendererProps>> = {
   'deep-research-report': DeepResearchReport,
+  'markdown-document': DeepResearchReport,
 };

@@ -10,6 +10,8 @@ import type { ApiKeys } from '@/hooks/use-api-keys';
 import { MODELS_REGISTRY } from '@/lib/models';
 import { pruneChatHistory } from '@/utils/chat-context';
 import { createDeepResearchArtifactProjector } from '@/lib/artifacts/deep-research-stream';
+import { createArtifactStreamProjector } from '@/lib/artifacts/stream-projector';
+import { ensureArtifactReferences } from '@/lib/artifacts/reference';
 import { ensureReportArtifactTerminalStatus } from '@/lib/artifacts/deep-research';
 import { artifactRepository } from '@/lib/artifacts/repository';
 import { publishArtifactSnapshot } from '@/lib/artifacts/runtime-store';
@@ -163,6 +165,11 @@ export function useChatStreaming({
           fallbackTitle: userMsg.content,
         })
       : null;
+    const documentProjector = createArtifactStreamProjector({
+      chatId,
+      messageId: assistantMessageId,
+    });
+    const streamedArtifactIds = new Set<string>();
     let artifactPersistenceQueue = Promise.resolve();
 
     const persistArtifact = (bundle: ArtifactBundle): Promise<void> => {
@@ -170,6 +177,7 @@ export function useChatStreaming({
         id: bundle.artifact.id,
         chatId: bundle.artifact.chatId,
         messageId: bundle.artifact.messageId,
+        kind: bundle.artifact.kind,
         title: bundle.artifact.title,
         status: bundle.artifact.status,
         markdown: bundle.version.markdown,
@@ -299,6 +307,10 @@ export function useChatStreaming({
           isResearch,
           token => {
             accumulatedContent += token;
+            accumulatedContent = ensureArtifactReferences(
+              accumulatedContent,
+              streamedArtifactIds,
+            );
             const match = accumulatedContent.match(/<mcp-tool-call id="([^"]+)" name="([^"]+)" args="([^"]+)"\s*\/>/);
             if (match) {
               hasDirectToolCall = true;
@@ -328,6 +340,18 @@ export function useChatStreaming({
           },
           activeMcpServers,
           controller.signal,
+          event => {
+            documentProjector.handle(event);
+            if (event.type !== 'start') return;
+
+            streamedArtifactIds.add(event.artifactId);
+            accumulatedContent = ensureArtifactReferences(
+              accumulatedContent,
+              streamedArtifactIds,
+            );
+            pendingFlush = true;
+            scheduleFlush();
+          },
         ).catch(error => {
           if (hasDirectToolCall) return;
           throw error;
@@ -396,6 +420,7 @@ export function useChatStreaming({
       };
 
       await executeStreamLoop(payload);
+      await documentProjector.settle();
       if (visibilityChangeHandler) {
         document.removeEventListener('visibilitychange', visibilityChangeHandler);
         visibilityChangeHandler = null;
@@ -403,9 +428,9 @@ export function useChatStreaming({
       if (flushRafId !== null) cancelAnimationFrame(flushRafId);
       if (flushTimerId !== null) clearTimeout(flushTimerId);
 
-      let finalContent = accumulatedContent;
-      if (thinkingDuration > 0 && accumulatedContent.includes('</think>')) {
-        finalContent = accumulatedContent.replace(
+      let finalContent = ensureArtifactReferences(accumulatedContent, streamedArtifactIds);
+      if (thinkingDuration > 0 && finalContent.includes('</think>')) {
+        finalContent = finalContent.replace(
           '</think>',
           `</think><thinkingTime>${thinkingDuration.toFixed(1)}</thinkingTime>`,
         );
@@ -433,7 +458,11 @@ export function useChatStreaming({
         || String(error?.message || '').toLowerCase().includes('abort');
       if (isAbort) {
         if (isInternalAbort) return;
-        const stoppedContent = ensureReportArtifactTerminalStatus(accumulatedContent, 'failed');
+        await documentProjector.settle('failed');
+        const stoppedContent = ensureArtifactReferences(
+          ensureReportArtifactTerminalStatus(accumulatedContent, 'failed'),
+          streamedArtifactIds,
+        );
         const stoppedArtifact = projectArtifact(stoppedContent, {
           force: true,
           status: 'failed',
@@ -452,11 +481,15 @@ export function useChatStreaming({
         return;
       }
       console.error('Error generating response:', error);
+      await documentProjector.settle('failed');
       const errorMessage = error instanceof Error
         ? error.message
         : 'Failed to generate response. Please try again.';
       setError(errorMessage);
-      accumulatedContent = ensureReportArtifactTerminalStatus(accumulatedContent, 'failed');
+      accumulatedContent = ensureArtifactReferences(
+        ensureReportArtifactTerminalStatus(accumulatedContent, 'failed'),
+        streamedArtifactIds,
+      );
       const failedArtifact = projectArtifact(accumulatedContent, {
         force: true,
         status: 'failed',

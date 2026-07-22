@@ -1,9 +1,18 @@
 import { streamText } from 'ai';
 import type { MCPIntegration } from '@/lib/db';
+import { createArtifactId } from '@/lib/artifacts/identity';
+import { serializeArtifactReference } from '@/lib/artifacts/reference';
+import type { ArtifactStreamEvent } from '@/lib/artifacts/stream';
+import {
+  ARTIFACT_TOOL_NAME,
+  artifactRequestSchema,
+  type ArtifactRequest,
+} from '@/lib/artifacts/tool';
 import {
   CHAT_STREAM_PROTOCOL,
   encodeChatStreamComment,
   encodeChatStreamContent,
+  encodeChatStreamArtifact,
 } from '@/lib/streaming/chat-stream-protocol';
 import {
   normalizeExternalSourceUrl,
@@ -11,6 +20,7 @@ import {
 } from '@/lib/research/source-normalization';
 import { extractTitleFromMarkdown, getFriendlyTitleFromUrl } from './source-utils';
 import type { SearchResultData } from './types';
+import { streamArtifactDocument } from './artifact-writer';
 
 interface CreateChatStreamResponseOptions {
   result: any;
@@ -18,6 +28,12 @@ interface CreateChatStreamResponseOptions {
   formattedMessages: any[];
   finalSystemPrompt: string;
   mcpServers?: MCPIntegration[];
+  providerOptions?: any;
+}
+
+interface QueuedArtifact {
+  artifactId: string;
+  request: ArtifactRequest;
 }
 
 function findCitations(value: any): string[] | null {
@@ -43,6 +59,7 @@ export function createChatStreamResponse({
   formattedMessages,
   finalSystemPrompt,
   mcpServers,
+  providerOptions,
 }: CreateChatStreamResponseOptions): Response {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -58,6 +75,8 @@ export function createChatStreamResponse({
         }
       };
       const emit = (content: string) => safeEnqueue(encodeChatStreamContent(content));
+      const emitArtifact = (artifact: ArtifactStreamEvent) =>
+        safeEnqueue(encodeChatStreamArtifact(artifact));
       const emitComment = (label: string, paddingLength = 0) =>
         safeEnqueue(encodeChatStreamComment(label, paddingLength));
 
@@ -77,6 +96,7 @@ export function createChatStreamResponse({
       let repetitionBuffer = '';
       let repetitionCount = 0;
       const accumulatedCitations = new Set<string>();
+      const queuedArtifacts: QueuedArtifact[] = [];
 
       try {
         for await (const part of result.fullStream) {
@@ -136,6 +156,26 @@ export function createChatStreamResponse({
               emit('</think>');
               hasThinkingStarted = false;
               isReasoningDeltaActive = false;
+            }
+
+            if (part.toolName === ARTIFACT_TOOL_NAME) {
+              const parsedRequest = artifactRequestSchema.safeParse((part as any).input);
+              if (parsedRequest.success && queuedArtifacts.length === 0) {
+                const artifactId = createArtifactId();
+                queuedArtifacts.push({ artifactId, request: parsedRequest.data });
+                emitArtifact({
+                  type: 'start',
+                  artifactId,
+                  kind: 'markdown-document',
+                  title: parsedRequest.data.title,
+                });
+                emit(serializeArtifactReference(artifactId));
+              } else if (parsedRequest.success) {
+                console.warn(
+                  '[Artifact] Ignoring an additional createArtifactDocument call in the same assistant turn.',
+                );
+              }
+              continue;
             }
 
             const isDirectTool = mcpServers?.some(
@@ -358,6 +398,35 @@ export function createChatStreamResponse({
             } catch {
               emit('\n\nSearch completed but I encountered an error generating a summary.');
             }
+          }
+        }
+
+        for (const queuedArtifact of queuedArtifacts) {
+          try {
+            await streamArtifactDocument({
+              model: aiModel,
+              messages: formattedMessages,
+              request: queuedArtifact.request,
+              providerOptions,
+              onDelta: (delta) => emitArtifact({
+                type: 'delta',
+                artifactId: queuedArtifact.artifactId,
+                delta,
+              }),
+            });
+            emitArtifact({
+              type: 'complete',
+              artifactId: queuedArtifact.artifactId,
+            });
+          } catch (artifactError) {
+            console.error('[Artifact Writer Error]:', artifactError);
+            emitArtifact({
+              type: 'error',
+              artifactId: queuedArtifact.artifactId,
+              message: artifactError instanceof Error
+                ? artifactError.message
+                : 'The artifact could not be completed.',
+            });
           }
         }
 

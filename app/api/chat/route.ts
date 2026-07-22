@@ -58,7 +58,12 @@ export async function POST(req: Request) {
       ),
     );
 
-    const { tools, canUseTools } = await buildChatTools({
+    const {
+      tools,
+      canUseTools,
+      canUseSearchTools,
+      canCreateArtifacts,
+    } = await buildChatTools({
       modelConfig,
       mcpServers,
       searchEnabled: requestHeaders.searchEnabled,
@@ -67,7 +72,8 @@ export async function POST(req: Request) {
     const finalSystemPrompt = buildChatSystemPrompt({
       systemPrompt,
       modelConfig,
-      canUseTools,
+      canUseSearchTools,
+      canCreateArtifacts,
     });
 
     const toolsConfig =
@@ -89,6 +95,7 @@ export async function POST(req: Request) {
       `[CHAT] Starting streamText with tools: ${Object.keys(toolsConfig).join(', ') || 'none'}`,
     );
 
+    const providerOptions = buildProviderOptions(modelConfig, model, canUseTools);
     const result = streamText({
       model: aiModel,
       messages: formattedMessages,
@@ -96,7 +103,7 @@ export async function POST(req: Request) {
       maxRetries: 2,
       includeRawChunks: true,
       ...toolsConfig,
-      providerOptions: buildProviderOptions(modelConfig, model, canUseTools),
+      providerOptions,
     });
 
     return createChatStreamResponse({
@@ -105,6 +112,7 @@ export async function POST(req: Request) {
       formattedMessages,
       finalSystemPrompt,
       mcpServers,
+      providerOptions,
     });
   } catch (error: any) {
     console.error('[CHAT] Top-level error:', error);

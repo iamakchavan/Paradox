@@ -1,5 +1,9 @@
 import { createMCPClient } from '@ai-sdk/mcp';
 import { jsonSchema } from 'ai';
+import {
+  ARTIFACT_TOOL_NAME,
+  createArtifactDocumentTool,
+} from '@/lib/artifacts/tool';
 import type { MCPIntegration } from '@/lib/db';
 import type { ModelConfig } from '@/lib/models';
 import {
@@ -19,6 +23,8 @@ interface BuildChatToolsOptions {
 interface ChatToolsResult {
   tools: Record<string, any>;
   canUseTools: boolean;
+  canUseSearchTools: boolean;
+  canCreateArtifacts: boolean;
 }
 
 function cleanMcpToolOutput(value: any): any {
@@ -53,6 +59,10 @@ function hasAnySearchKey(searchKeys: SearchKeys): boolean {
   return Boolean(searchKeys.tavilyKey || searchKeys.exaKey || searchKeys.firecrawlKey);
 }
 
+export function modelSupportsCustomTools(modelConfig: ModelConfig): boolean {
+  return modelConfig.provider !== 'perplexity' || modelConfig.id.includes('/');
+}
+
 function getCachedToolSchema(inputSchema: unknown): Record<string, any> {
   const schema =
     inputSchema && typeof inputSchema === 'object' && !Array.isArray(inputSchema)
@@ -71,8 +81,7 @@ async function bindMcpTools(
   mcpServers: MCPIntegration[] | undefined,
   modelConfig: ModelConfig,
 ): Promise<void> {
-  const isPerplexityAgent = modelConfig.provider === 'perplexity' && modelConfig.id.includes('/');
-  const canUseMcp = modelConfig.provider !== 'perplexity' || isPerplexityAgent;
+  const canUseMcp = modelSupportsCustomTools(modelConfig);
   if (!canUseMcp || !mcpServers?.length) return;
 
   for (const server of mcpServers) {
@@ -164,23 +173,33 @@ export async function buildChatTools({
   searchKeys,
 }: BuildChatToolsOptions): Promise<ChatToolsResult> {
   const resolvedSearchKeys = resolveSearchKeys(searchKeys);
-  const canUseTools =
+  const canUseSearchTools =
     modelConfig.provider !== 'perplexity' &&
     hasAnySearchKey(resolvedSearchKeys) &&
     searchEnabled;
+  const canCreateArtifacts = modelSupportsCustomTools(modelConfig);
 
   console.log(
-    `[CHAT] canUseTools=${canUseTools}, hasSearchKeys=${hasAnySearchKey(resolvedSearchKeys)}, searchEnabled=${searchEnabled}, provider=${modelConfig.provider}`,
+    `[CHAT] canUseSearchTools=${canUseSearchTools}, canCreateArtifacts=${canCreateArtifacts}, hasSearchKeys=${hasAnySearchKey(resolvedSearchKeys)}, searchEnabled=${searchEnabled}, provider=${modelConfig.provider}`,
   );
 
   const tools: Record<string, any> = {};
-  if (canUseTools) {
+  if (canUseSearchTools) {
     tools.webSearch = createWebSearchTool(resolvedSearchKeys);
     tools.browsePage = createBrowsePageTool(resolvedSearchKeys);
     tools.mapWebsite = createMapWebsiteTool(resolvedSearchKeys);
   }
 
+  if (canCreateArtifacts) {
+    tools[ARTIFACT_TOOL_NAME] = createArtifactDocumentTool();
+  }
+
   await bindMcpTools(tools, mcpServers, modelConfig);
-  return { tools, canUseTools };
+  return {
+    tools,
+    canUseTools: Object.keys(tools).length > 0,
+    canUseSearchTools,
+    canCreateArtifacts,
+  };
 }
 

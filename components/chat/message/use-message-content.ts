@@ -2,6 +2,7 @@
 
 import { useMemo, useRef } from 'react';
 import { parseDeepResearchArtifact } from '@/lib/artifacts/deep-research';
+import { parseArtifactReferences } from '@/lib/artifacts/reference';
 import { parseResearchStream, type ResearchStep } from '@/lib/research/parser';
 import { normalizeSourceCollection } from '@/lib/research/source-normalization';
 import { preprocessLaTeX } from '@/utils/latex';
@@ -53,6 +54,8 @@ export function useMessageContent(content: string): ParsedMessageContent {
 
     const artifactEnvelope = parseDeepResearchArtifact(mainContent);
     mainContent = artifactEnvelope.cleanContent;
+    const artifactReferences = parseArtifactReferences(mainContent);
+    mainContent = artifactReferences.cleanContent;
 
     let stepsChanged = parsedSteps.length !== previousStepsRef.current.length;
     const stabilizedSteps = parsedSteps.map((step, index) => {
@@ -76,6 +79,7 @@ export function useMessageContent(content: string): ParsedMessageContent {
       mainContent,
       researchTime,
       artifact: artifactEnvelope.artifact,
+      artifactIds: artifactReferences.artifactIds,
     };
   }, [content, rawMainContent]);
 

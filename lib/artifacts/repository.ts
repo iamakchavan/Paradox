@@ -1,8 +1,6 @@
 import { db } from '@/lib/db';
-import {
-  getDeepResearchArtifactId,
-  getDeepResearchVersionId,
-} from './deep-research';
+import { getDeepResearchArtifactId } from './deep-research';
+import { createArtifactId, getArtifactVersionId } from './identity';
 import type {
   ArtifactBundle,
   ArtifactRecord,
@@ -35,7 +33,7 @@ class IndexedDbArtifactRepository implements ArtifactRepository {
     return db.transaction('rw', db.artifacts, db.artifactVersions, async () => {
       const now = input.now ?? Date.now();
       const existing = await db.artifacts.get(input.id);
-      const versionId = existing?.currentVersionId ?? getDeepResearchVersionId(input.id);
+      const versionId = existing?.currentVersionId ?? getArtifactVersionId(input.id);
       const preventsRegression = Boolean(
         existing && STATUS_RANK[existing.status] > STATUS_RANK[input.status],
       );
@@ -50,10 +48,10 @@ class IndexedDbArtifactRepository implements ArtifactRepository {
         id: input.id,
         chatId: input.chatId,
         messageId: input.messageId,
-        kind: 'deep-research-report',
+        kind: existing?.kind ?? input.kind,
         title: preventsRegression
           ? existing?.title ?? input.title
-          : input.title || existing?.title || 'Deep Research Report',
+          : input.title || existing?.title || 'Untitled artifact',
         status,
         currentVersionId: versionId,
         revision: (existing?.revision ?? 0) + 1,
@@ -96,10 +94,11 @@ class IndexedDbArtifactRepository implements ArtifactRepository {
     sourceChatId: string,
     targetChatId: string,
     messageIdMap: ReadonlyMap<number, number>,
-  ): Promise<void> {
+  ): Promise<Map<string, string>> {
+    const artifactIdMap = new Map<string, string>();
     const sourceArtifacts = await db.artifacts.where('chatId').equals(sourceChatId).toArray();
     const relevantArtifacts = sourceArtifacts.filter(artifact => messageIdMap.has(artifact.messageId));
-    if (relevantArtifacts.length === 0) return;
+    if (relevantArtifacts.length === 0) return artifactIdMap;
 
     await db.transaction('rw', db.artifacts, db.artifactVersions, async () => {
       for (const sourceArtifact of relevantArtifacts) {
@@ -108,8 +107,10 @@ class IndexedDbArtifactRepository implements ArtifactRepository {
         const sourceVersion = await db.artifactVersions.get(sourceArtifact.currentVersionId);
         if (!sourceVersion) continue;
 
-        const artifactId = getDeepResearchArtifactId(targetChatId, targetMessageId);
-        const versionId = getDeepResearchVersionId(artifactId, sourceVersion.version);
+        const artifactId = sourceArtifact.kind === 'deep-research-report'
+          ? getDeepResearchArtifactId(targetChatId, targetMessageId)
+          : createArtifactId();
+        const versionId = getArtifactVersionId(artifactId, sourceVersion.version);
         const now = Date.now();
         await db.artifacts.put({
           ...sourceArtifact,
@@ -129,8 +130,10 @@ class IndexedDbArtifactRepository implements ArtifactRepository {
           createdAt: now,
           updatedAt: now,
         });
+        artifactIdMap.set(sourceArtifact.id, artifactId);
       }
     });
+    return artifactIdMap;
   }
 }
 

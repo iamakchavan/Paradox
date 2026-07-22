@@ -35,7 +35,7 @@ export function ArtifactList({ artifacts, activeArtifactId, isLoading = false, o
         <FileText className="h-5 w-5 text-foreground/35" aria-hidden="true" />
         <p className="mt-3 text-[13px] font-medium text-foreground/75">No artifacts yet</p>
         <p className="mt-1 max-w-52 text-[11px] leading-4 text-muted-foreground">
-          Completed deep research reports will appear here.
+          Documents and research reports created in this chat will appear here.
         </p>
       </div>
     );
@@ -46,6 +46,8 @@ export function ArtifactList({ artifacts, activeArtifactId, isLoading = false, o
       {artifacts.map(artifact => {
         const isStreaming = artifact.status === 'streaming';
         const isPartial = artifact.status === 'failed';
+        const isResearchReport = artifact.kind === 'deep-research-report';
+        const artifactLabel = isResearchReport ? 'Research report' : 'Document';
 
         return (
           <button
@@ -75,7 +77,9 @@ export function ArtifactList({ artifacts, activeArtifactId, isLoading = false, o
                 {artifact.title}
               </p>
               <div className="mt-1.5 flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground">
-                <span>{isStreaming ? 'Writing' : isPartial ? 'Partial report' : 'Research report'}</span>
+                <span>
+                  {isStreaming ? 'Writing' : isPartial ? `Partial ${artifactLabel.toLowerCase()}` : artifactLabel}
+                </span>
                 <span className="h-0.5 w-0.5 shrink-0 rounded-full bg-current opacity-55" aria-hidden="true" />
                 <time className="truncate" dateTime={new Date(artifact.createdAt).toISOString()}>
                   {formatDistanceToNowStrict(artifact.createdAt, { addSuffix: true })}
