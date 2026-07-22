@@ -1,5 +1,6 @@
 import type { ResearchStep } from '@/lib/research/parser';
 import { normalizeSourceCollection } from '@/lib/research/source-normalization';
+import { decodeSearchTaskMarkerAttribute } from '@/lib/streaming/search-task-stream';
 import type { SearchData } from './types';
 
 export function processThinkingContent(content: string) {
@@ -60,8 +61,10 @@ export function extractSearchData(content: string) {
   }
   const loadingMatches = Array.from(content.matchAll(/<search-loading query="([\s\S]*?)" \/>/g));
   if (loadingMatches.length > 0) {
-    toolSteps = loadingMatches.map(match => match[1].replace(/&quot;/g, '"'));
-    searchLoadingQuery = loadingMatches[loadingMatches.length - 1][1].replace(/&quot;/g, '"');
+    toolSteps = loadingMatches.map(match => decodeSearchTaskMarkerAttribute(match[1]));
+    searchLoadingQuery = decodeSearchTaskMarkerAttribute(
+      loadingMatches[loadingMatches.length - 1][1],
+    );
     cleanContent = cleanContent.replace(/<search-loading query="[\s\S]*?" \/>/g, '');
   }
   return { searchLoadingQuery, searchData, toolSteps, cleanContent: cleanContent.trim() };

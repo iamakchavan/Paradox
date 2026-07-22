@@ -2,6 +2,7 @@
 
 import { AlertCircle, FileText } from 'lucide-react';
 import { formatDistanceToNowStrict } from 'date-fns';
+import { DotmSquare15 } from '@/components/ui/dotm-square-15';
 import { cn } from '@/lib/utils';
 import type { ArtifactRecord } from '@/lib/artifacts/types';
 
@@ -62,10 +63,18 @@ export function ArtifactList({ artifacts, activeArtifactId, isLoading = false, o
           >
             <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center text-foreground/50">
               {isStreaming ? (
-                <span className="relative flex h-4 w-4 items-center justify-center" aria-hidden="true">
-                  <span className="absolute h-3 w-3 animate-ping rounded-full bg-foreground/20 motion-reduce:animate-none" />
-                  <span className="relative h-1.5 w-1.5 rounded-full bg-foreground/65" />
-                </span>
+                <DotmSquare15
+                  size={18}
+                  dotSize={2}
+                  cellPadding={1}
+                  speed={1.2}
+                  opacityBase={0.12}
+                  opacityMid={0.48}
+                  opacityPeak={1}
+                  animated
+                  ariaLabel="Writing artifact document"
+                  className="text-zinc-600/90 dark:text-zinc-300/90"
+                />
               ) : isPartial ? (
                 <AlertCircle className="h-[17px] w-[17px]" />
               ) : (

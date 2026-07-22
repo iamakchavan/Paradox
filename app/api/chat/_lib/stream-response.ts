@@ -14,6 +14,7 @@ import {
   encodeChatStreamContent,
   encodeChatStreamArtifact,
 } from '@/lib/streaming/chat-stream-protocol';
+import { SearchTaskStreamTracker } from '@/lib/streaming/search-task-stream';
 import {
   normalizeExternalSourceUrl,
   normalizeSourceCollection,
@@ -97,6 +98,11 @@ export function createChatStreamResponse({
       let repetitionCount = 0;
       const accumulatedCitations = new Set<string>();
       const queuedArtifacts: QueuedArtifact[] = [];
+      const searchTaskStream = new SearchTaskStreamTracker();
+      const emitSearchTaskStart = (label: string, toolCallId?: string, fallbackKey?: string) => {
+        const marker = searchTaskStream.start({ label, toolCallId, fallbackKey });
+        if (marker) emit(marker);
+      };
 
       try {
         for await (const part of result.fullStream) {
@@ -194,9 +200,8 @@ export function createChatStreamResponse({
               const toolInput = (part as any).input || {};
               const query = typeof toolInput === 'string' ? toolInput : toolInput.query || '';
               if (query) {
-                const escapedQuery = query.replace(/"/g, '&quot;');
                 console.log(`[CHAT] Enqueuing search-loading for query: "${query}"`);
-                emit(`<search-loading query="${escapedQuery}" />`);
+                emitSearchTaskStart(query, (part as any).toolCallId);
               } else {
                 console.warn('[CHAT] Tool call query is empty!', JSON.stringify(toolInput));
               }
@@ -204,22 +209,20 @@ export function createChatStreamResponse({
               const toolInput = (part as any).input || {};
               const url = toolInput.url || '';
               if (url) {
-                const escapedUrl = url.replace(/"/g, '&quot;');
                 console.log(`[CHAT] Enqueuing search-loading for browsePage: "${url}"`);
-                emit(`<search-loading query="Reading ${escapedUrl}" />`);
+                emitSearchTaskStart(`Reading ${url}`, (part as any).toolCallId);
               }
             } else if (part.toolName === 'mapWebsite') {
               const toolInput = (part as any).input || {};
               const url = toolInput.url || '';
               if (url) {
-                const escapedUrl = url.replace(/"/g, '&quot;');
                 console.log(`[CHAT] Enqueuing search-loading for mapWebsite: "${url}"`);
-                emit(`<search-loading query="Mapping ${escapedUrl}" />`);
+                emitSearchTaskStart(`Mapping ${url}`, (part as any).toolCallId);
               }
             } else {
               const toolName = part.toolName;
               console.log(`[CHAT] Enqueuing search-loading for proxy tool: "${toolName}"`);
-              emit(`<search-loading query="Executing ${toolName}..." />`);
+              emitSearchTaskStart(`Executing ${toolName}...`, (part as any).toolCallId);
             }
           } else if (part.type === 'tool-result') {
             console.log('[CHAT] Tool result part object JSON:', JSON.stringify(part));
@@ -241,6 +244,12 @@ export function createChatStreamResponse({
               );
               if (normalizedResults.length > 0) {
                 const normalizedToolResult = { ...toolResult, results: normalizedResults };
+                emitSearchTaskStart(
+                  typeof toolResult.query === 'string' && toolResult.query.trim()
+                    ? toolResult.query
+                    : 'Search the web',
+                  (part as any).toolCallId,
+                );
                 emit(`<search-results>${JSON.stringify(normalizedToolResult)}</search-results>`);
                 gotSearchResults = true;
                 lastSearchResultData = normalizedToolResult;
@@ -249,6 +258,7 @@ export function createChatStreamResponse({
               const toolResult =
                 (part as any).output || (part as any).result || { url: '', content: '' };
               if (toolResult.url) {
+                emitSearchTaskStart(`Reading ${toolResult.url}`, (part as any).toolCallId);
                 const title = extractTitleFromMarkdown(
                   toolResult.content,
                   getFriendlyTitleFromUrl(toolResult.url),
@@ -271,6 +281,7 @@ export function createChatStreamResponse({
               const toolResult =
                 (part as any).output || (part as any).result || { url: '', links: [] };
               if (toolResult.url) {
+                emitSearchTaskStart(`Mapping ${toolResult.url}`, (part as any).toolCallId);
                 let hostname = 'Website';
                 try {
                   hostname = new URL(toolResult.url).hostname.replace('www.', '');
@@ -345,6 +356,7 @@ export function createChatStreamResponse({
               content: 'Grounded search source cited by Perplexity.',
             };
           });
+          emitSearchTaskStart('Perplexity Search', undefined, 'provider-native-search');
           emit(
             `<search-results>${JSON.stringify({
               query: 'Perplexity Search',
