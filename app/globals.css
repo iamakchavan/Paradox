@@ -27,24 +27,24 @@
   }
  
   .dark {
-    --background: 230 10% 8%;
+    --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-    --card: 230 10% 8%;
+    --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
-    --popover: 230 10% 8%;
+    --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 240 5.9% 10%;
-    --secondary: 230 8% 14%;
+    --secondary: 240 6% 10%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 230 8% 14%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 230 8% 14%;
+    --muted: 240 6% 10%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 6% 10%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 230 8% 14%;
-    --input: 230 8% 14%;
+    --border: 240 6% 15%;
+    --input: 240 6% 15%;
     --ring: 240 4.9% 83.9%;
   }
 
@@ -65,6 +65,30 @@
   * {
     @apply border-border;
   }
+  
+  /* Smooth global theme transitions for primary elements */
+  body, 
+  div, 
+  header, 
+  footer, 
+  nav, 
+  a, 
+  button, 
+  input, 
+  textarea, 
+  span, 
+  p, 
+  h1, 
+  h2, 
+  h3, 
+  h4, 
+  h5, 
+  h6 {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, box-shadow;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -100,6 +124,13 @@
 }
 
 /* Markdown Styles */
+.prose {
+  @apply text-zinc-700 dark:text-zinc-400;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
 .prose pre {
   @apply overflow-x-auto;
 }
@@ -110,133 +141,113 @@
 
 .prose code:not(pre code) {
   @apply bg-secondary/50 px-1.5 py-0.5 rounded text-sm;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-jetbrains-mono), monospace;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .prose strong {
-  @apply text-cyan-500 dark:text-cyan-400 font-semibold;
+  @apply text-zinc-800 dark:text-zinc-300 font-medium;
 }
 
-/* Table styles for Excel-like formatting */
-.table-container {
-  position: relative;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: #ffffff;
-  overflow: hidden;
+/* Headings and numbered list titles are styled cyan */
+.prose :is(h1, h2, h3, h4, h5, h6),
+.prose :is(h1, h2, h3, h4, h5, h6) strong,
+.prose ol > li strong:first-of-type {
+  @apply text-cyan-600 dark:text-cyan-400 font-semibold;
 }
 
-.dark .table-container {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: hsl(230, 10%, 12%);
-}
-
-.table-container table {
-  border-collapse: collapse;
-  width: 100%;
-  background: transparent;
-}
-
-.download-csv-button {
-  @apply inline-flex items-center gap-2 mt-4 px-4 py-2 text-xs font-medium rounded-full 
-    bg-white hover:bg-gray-50 text-foreground transition-all duration-200
-    border border-border/80 shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:shadow-md;
-}
-
-.dark .download-csv-button {
-  @apply bg-secondary/80 hover:bg-secondary border-border/40;
-}
-
-.download-csv-button:hover {
-  @apply bg-secondary/80;
-}
-
-.download-csv-button svg {
-  @apply w-4 h-4 text-foreground/70;
-}
-
-/* Table styles */
-.table-container .overflow-x-auto {
-  @apply rounded-none;
-  border: none;
-}
-
+/* Premium Table styles */
 .prose table {
-  @apply m-0 border-collapse w-full;
+  @apply m-0 w-full border-collapse;
   border-spacing: 0;
+  table-layout: auto;
 }
 
 .prose thead {
-  @apply bg-secondary/30 dark:bg-secondary/15 sticky top-0;
+  @apply sticky top-0 z-10;
 }
 
 .prose thead tr {
-  @apply border-b border-border/60;
-}
-
-.prose tr {
-  @apply border-b border-border/40 hover:bg-secondary/10 dark:hover:bg-white/[0.015] transition-colors last:border-b-0;
+  @apply border-b border-zinc-200/50 dark:border-zinc-800/40;
 }
 
 .prose th {
-  @apply px-4 py-2.5 text-left text-[11px] font-semibold tracking-wider uppercase text-muted-foreground/85;
-  white-space: nowrap;
-  vertical-align: middle;
+  @apply px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100/30 dark:bg-zinc-900/20 border-b border-zinc-200 dark:border-zinc-800;
+}
+
+.prose tr {
+  @apply border-b border-zinc-200/25 dark:border-zinc-800/20 hover:bg-zinc-50/15 dark:hover:bg-white/[0.003] transition-colors duration-150 last:border-b-0;
+}
+
+.prose tbody tr:nth-child(even) {
+  @apply bg-zinc-50/40 dark:bg-zinc-900/15;
 }
 
 .prose td {
-  @apply px-4 py-2 text-sm text-foreground/80;
-  vertical-align: middle;
+  @apply px-3 py-2.5 text-left text-sm text-zinc-700 dark:text-zinc-300 align-top leading-normal;
 }
 
 /* Ensure proper cell content wrapping */
 .prose td, .prose th {
   @apply break-words;
-  max-width: 300px; /* Prevent cells from becoming too wide */
+  max-width: 320px; /* Prevent cells from becoming too wide */
 }
-
-
 
 /* Add responsive styles */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .prose table {
-    @apply rounded-none border-none;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
   }
   
-  .prose td, .prose th {
-    @apply px-3 py-1.5;
-    max-width: 200px;
+  .prose th {
+    @apply px-3.5 py-3 text-[10px];
   }
-
-
   
-  /* Ensure header remains visible while scrolling */
-  .prose thead {
-    @apply sticky top-0 z-10;
-    background-color: hsl(var(--secondary));
+  .prose td {
+    @apply px-3.5 py-3;
+    max-width: 240px;
   }
 }
 
-.prose h1, .prose h2, .prose h3, .prose h4 {
-  @apply text-foreground font-semibold mt-6 mb-4;
-  font-family: 'Sentient', serif;
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  @apply mt-6 mb-4;
+  font-family: 'Inria Serif', serif !important;
 }
 
 .prose h1 {
-  @apply text-2xl font-bold;
+  @apply text-2xl font-normal; /* weight 400 */
 }
 
 .prose h2 {
-  @apply text-xl font-bold;
+  @apply text-xl font-normal; /* weight 400 */
 }
 
 .prose h3 {
-  @apply text-lg font-semibold;
+  @apply text-lg font-normal; /* weight 400 */
 }
 
 .prose h4 {
-  @apply font-semibold;
+  @apply font-normal; /* weight 400 */
+}
+
+/* Streaming cursor animation */
+.streaming-message .prose > p:last-child::after,
+.streaming-message .prose > li:last-child::after,
+.streaming-message .prose > ul:last-child > li:last-child::after,
+.streaming-message .prose > ol:last-child > li:last-child::after {
+  content: ' │';
+  display: inline-block;
+  vertical-align: baseline;
+  color: rgb(6, 182, 212);
+  font-weight: 200;
+  animation: breathe-cursor 1.4s ease-in-out infinite;
+}
+
+@keyframes breathe-cursor {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
 }
 
 .prose p {
@@ -376,29 +387,41 @@
 
 @keyframes thinking-shimmer {
   0% {
-    background-position: 200% center;
+    background-position: 100% 0;
   }
   100% {
-    background-position: -200% center;
+    background-position: -100% 0;
   }
 }
 
 .thinking-shine {
   background: linear-gradient(
-    110deg,
-    hsl(var(--muted-foreground)) 20%,
-    hsl(var(--muted-foreground)) 22%,
-    hsl(var(--muted-foreground)/0.3) 30%,
-    hsl(var(--muted-foreground)) 38%,
-    hsl(var(--muted-foreground)) 100%
+    90deg,
+    hsl(var(--muted-foreground)) 25%,
+    hsl(var(--muted-foreground)/0.25) 50%,
+    hsl(var(--muted-foreground)) 75%
   );
-  background-size: 200% auto;
+  background-size: 200% 100%;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: thinking-shimmer 4s linear infinite;
-  font-style: italic;
+  animation: thinking-shimmer 2s linear infinite;
+  font-style: normal;
   letter-spacing: 0.025em;
+}
+
+.deep-research-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted-foreground)) 25%,
+    hsl(var(--muted-foreground)/0.25) 50%,
+    hsl(var(--muted-foreground)) 75%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: thinking-shimmer 2s linear infinite;
 }
 
 /* Copy button animations */
@@ -576,6 +599,52 @@
   background: hsl(200, 20%, 50%);
 }
 
+/* Sidebar scrollbar — hidden by default, appears on hover */
+.sidebar-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+.sidebar-parent:hover .sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(45, 5%, 80%) transparent;
+  -ms-overflow-style: auto;
+}
+
+.sidebar-parent:hover .sidebar-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+
+.sidebar-parent:hover .sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-parent:hover .sidebar-scroll::-webkit-scrollbar-thumb {
+  background: hsl(45, 5%, 80%);
+  border-radius: 3px;
+}
+
+.sidebar-parent:hover .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(45, 5%, 70%);
+}
+
+.dark .sidebar-parent:hover .sidebar-scroll {
+  scrollbar-color: hsl(230, 5%, 25%) transparent;
+}
+
+.dark .sidebar-parent:hover .sidebar-scroll::-webkit-scrollbar-thumb {
+  background: hsl(230, 5%, 25%);
+}
+
+.dark .sidebar-parent:hover .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(230, 5%, 35%);
+}
+
 /* Table scrollbar styling */
 .table-container .overflow-x-auto::-webkit-scrollbar {
   height: 4px;
@@ -637,4 +706,181 @@
 .katex-error {
   color: inherit !important;
   background-color: transparent !important;
+}
+
+/* Custom thinking wrapper typography */
+.thinking-content {
+  font-size: 13px !important;
+  line-height: 1.6;
+}
+
+.thinking-content p, 
+.thinking-content li,
+.thinking-content ol,
+.thinking-content ul,
+.thinking-content span {
+  font-size: 13px !important;
+  font-family: inherit !important;
+  font-style: normal !important;
+}
+
+.thinking-content p {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.thinking-content li {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+/* Liquid Glass Dock Styling */
+.liquid-glass-dock {
+  background-color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(228, 228, 231, 0.4);
+  @apply backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300;
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.45);
+}
+
+.dark .liquid-glass-dock {
+  background-color: rgba(10, 10, 12, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 767px) {
+  .max-md\:liquid-glass-dock {
+    background-color: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(228, 228, 231, 0.4);
+    @apply backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300;
+    box-shadow: 
+      0 12px 30px rgba(0, 0, 0, 0.03),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.45);
+  }
+
+  .dark .max-md\:liquid-glass-dock {
+    background-color: rgba(10, 10, 12, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+      0 12px 30px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  }
+}
+
+@media (hover: hover) {
+  .liquid-glass-dock:hover {
+    @apply bg-white/70 border-zinc-300/60;
+    box-shadow: 
+      0 16px 40px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.85);
+  }
+
+  .dark .liquid-glass-dock:hover {
+    @apply bg-black/60 border-white/15;
+    box-shadow: 
+      0 16px 40px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* Chat scrollbar - ultra minimal thin line */
+.chat-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.15) transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.15);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.chat-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+}
+
+.chat-scrollbar::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Progressive Blur Scrim at the bottom of the chat */
+.progressive-blur {
+  background: linear-gradient(
+    to top,
+    hsl(var(--background)) 0%,
+    hsl(var(--background) / 0.96) 20%,
+    hsl(var(--background) / 0.85) 40%,
+    hsl(var(--background) / 0.3) 70%,
+    transparent 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  mask-image: linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
+}
+
+/* Viewport-based rendering containments for infinite chat scalability */
+.message-viewport-contain {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 120px;
+}
+
+html, body {
+  scroll-behavior: auto !important;
+  overflow-anchor: auto !important;
+}
+
+/* Dynamic viewport height utilities — accounts for mobile keyboard/address bar */
+.h-dvh {
+  height: 100vh; /* fallback for older browsers */
+  height: 100dvh;
+}
+
+.min-h-dvh {
+  min-height: 100vh; /* fallback */
+  min-height: 100dvh;
+}
+
+/* Mobile keyboard-aware fixed input positioning.
+   The --visual-viewport-offset-bottom custom property is set by JS
+   via the Visual Viewport API when the keyboard is open. */
+:root {
+  --visual-viewport-offset-bottom: 0px;
+}
+
+/* GPU acceleration layers for performance-heavy backdrop blurs */
+.liquid-glass-dock,
+.progressive-blur,
+.progressive-blur-top {
+  will-change: backdrop-filter, transform;
+  isolation: isolate;
+}
+
+/* Progressive Blur Scrim at the top of the chat (behind the nav bar pills) */
+.progressive-blur-top {
+  background: linear-gradient(
+    to bottom,
+    hsl(var(--background)) 0%,
+    hsl(var(--background) / 0.96) 20%,
+    hsl(var(--background) / 0.85) 40%,
+    hsl(var(--background) / 0.3) 70%,
+    transparent 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.4) 65%, transparent 100%);
 }

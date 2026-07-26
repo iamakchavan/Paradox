@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png" width="100" height="100" alt="Paradox Logo">
+  <img src="public/chaticons/logo_chat.png" width="100" height="100" alt="Paradox Logo">
 </p>
 
 <div align="center">
@@ -25,14 +25,6 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
   - Perplexity integration for real-time web search capabilities
   - DeepSeek R1 (powered by perplexity sonar APIs) for enhanced reasoning and problem-solving
   - Specialized developer mode for technical assistance
-
-### Voice Capabilities
-- **ElevenLabs Integration**
-  - Real-time voice input processing
-  - Natural language voice synthesis
-  - Custom voice profile support
-  - Dynamic voice agent configuration
-  - Real-time connection status monitoring
 
 ### UI/UX
 - **Modern Interface**
@@ -112,7 +104,7 @@ A minimalistic AI chat interface that combines the power of Google's Gemini and 
 - API Keys:
   - Google Gemini API key
   - Perplexity Sonar API key
-  - ElevenLabs API key (for voice features)
+
 
 ### Installation
 
@@ -131,7 +123,7 @@ npm install
 ```env
 NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
 NEXT_PUBLIC_PERPLEXITY_API_KEY=your_perplexity_api_key
-NEXT_PUBLIC_ELEVENLABS_API_KEY=your_elevenlabs_api_key
+
 ```
 
 4. Run the development server:
@@ -147,11 +139,7 @@ npm run dev
 2. Configure your API keys:
    - Google Gemini API key
    - Perplexity Sonar API key
-   - ElevenLabs API key
-3. Optional: Set up voice agent:
-   - Create a voice on ElevenLabs Voice Lab
-   - Add your Voice Agent ID in settings
-4. Choose your preferred theme (Light/Dark/System)
+3. Choose your preferred theme (Light/Dark/System)
 
 ## Development
 
@@ -243,26 +231,6 @@ For production deployment:
 - Verify your API keys are valid
 - Check if all dependencies are properly installed
 - Make sure you're using Node.js 18.x or later
-
-## Voice Agent Setup
-
-To use the voice agent feature:
-
-1. Create an account on [ElevenLabs](https://elevenlabs.io)
-2. Navigate to Voice Lab and create a custom voice
-3. Copy your API key and Voice Agent ID
-4. Add them in the Paradox settings dialog under the "ElevenLabs" tab
-5. Click "Paradox Live" in the top navigation to access the voice interface
-6. Use the Start/Stop buttons to control voice conversations
-7. Monitor connection status and voice activity through the visual interface
-
-The voice agent features:
-- Real-time voice input and response
-- Visual feedback for connection status
-- Speaking/listening state indicators
-- Automatic reconnection handling
-- Custom voice settings (stability and similarity boost)
-- Error handling and status messages
 
 ## Technical Architecture
 
@@ -370,12 +338,12 @@ npm run test:coverage
 |----------|-------------|-----------|
 | `NEXT_PUBLIC_GEMINI_API_KEY` | Google Gemini API key | Yes |
 | `NEXT_PUBLIC_PERPLEXITY_API_KEY` | Perplexity API key | Yes |
-| `NEXT_PUBLIC_ELEVENLABS_API_KEY` | ElevenLabs API key | No |
+
 
 ### API Endpoints
 - `/api/chat` - Main chat endpoint
 - `/api/search` - Web search functionality
-- `/api/voice` - Voice processing
+
 - `/api/files` - File upload and processing
 
 ## Contributing

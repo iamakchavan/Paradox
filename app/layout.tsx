@@ -1,8 +1,30 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { CustomToastProvider } from '@/components/ui/custom-toast';
+import { Space_Mono, JetBrains_Mono } from 'next/font/google';
+
+const spaceMono = Space_Mono({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-space-mono',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  weight: ['400', '500', '600'],
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
+});
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  interactiveWidget: 'resizes-content',
+};
 
 export const metadata: Metadata = {
   title: 'Paradox',
@@ -10,20 +32,20 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png',
+        url: '/chaticons/favicon-32.png',
         sizes: '32x32',
         type: 'image/png'
       }
     ],
     shortcut: [
       {
-        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png',
+        url: '/chaticons/favicon-32.png',
         type: 'image/png'
       }
     ],
     apple: [
       {
-        url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/extension_icon%20(4)-6Wye0wySEvOe9CE7mSoAVG5mEWUqc7.png',
+        url: '/chaticons/apple-icon-180.png',
         sizes: '180x180',
         type: 'image/png'
       }
@@ -39,41 +61,31 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Kelly+Slab&display=swap"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Instrument+Serif:wght@400;500&display=swap"
-        />
-        <link
-          rel="stylesheet"
-          href="https://api.fontshare.com/css?f[]=sentient@500,600,700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inria+Serif:wght@300;400;700&display=swap"
         />
         <link
           rel="stylesheet"
           href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700&display=swap"
         />
       </head>
-      <body className="font-sans antialiased">
+      <body className={`${spaceMono.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
         >
-          {children}
-          <Analytics />
-          <SpeedInsights />
+          <TooltipProvider>
+            <CustomToastProvider>
+              {children}
+              <Analytics />
+              <SpeedInsights />
+            </CustomToastProvider>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

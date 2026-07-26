@@ -2,6 +2,9 @@ import type { Config } from 'tailwindcss';
 
 const config: Config = {
   darkMode: ['class'],
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -16,6 +19,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Switzer', 'sans-serif'],
+        serif: ['Inria Serif', 'serif'],
+        mono: ['var(--font-space-mono)', 'monospace'],
       },
       borderRadius: {
         lg: 'var(--radius)',
