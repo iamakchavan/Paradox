@@ -2,11 +2,16 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Sidebar } from '@/components/chat/sidebar';
 import { ModelSelector } from '@/components/chat/ModelSelector';
+import { SettingsModal } from '@/components/chat/settings/SettingsModal';
 import { Settings, ChevronLeft, ChevronsLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ApiKeys } from '@/hooks/use-api-keys';
 import { useSidebarContext } from '@/components/chat/SidebarContext';
 import { useRouter, usePathname } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArtifactNavigatorTrigger } from '@/components/artifacts/ArtifactNavigatorTrigger';
+import { useChatArtifacts } from '@/hooks/artifacts/use-chat-artifacts';
+import { useRightWorkspace } from '@/components/workspace/RightWorkspaceContext';
 
 interface ChatHeaderProps {
   isSidebarCollapsed: boolean;
@@ -16,6 +21,7 @@ interface ChatHeaderProps {
   activeChatId: string | null;
   onSelectChat: (id: string) => void;
   onNewChat: () => void;
+  onActiveChatDeleted?: () => void;
   isLibraryPageActive: boolean;
   setIsLibraryPageActive: (active: boolean) => void;
   selectedModelId: string;
@@ -27,6 +33,9 @@ interface ChatHeaderProps {
   hideModelSelector?: boolean;
 }
 
+const leftHeaderIconButtonClass =
+  'inline-flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 transition-[background-color,color,transform] duration-200 ease-out hover:bg-zinc-200/50 hover:text-foreground active:scale-[0.93] active:duration-75 motion-reduce:transform-none dark:hover:bg-white/5 md:h-10 md:w-10';
+
 export function ChatHeader({
   isSidebarCollapsed,
   setIsSidebarCollapsed,
@@ -35,6 +44,7 @@ export function ChatHeader({
   activeChatId,
   onSelectChat,
   onNewChat,
+  onActiveChatDeleted = onNewChat,
   isLibraryPageActive,
   setIsLibraryPageActive,
   selectedModelId,
@@ -45,27 +55,37 @@ export function ChatHeader({
   hideModelSelector = false,
 }: ChatHeaderProps) {
   const { isSearchActive, setIsSearchActive, isSettingsActive, setIsSettingsActive } = useSidebarContext();
+  const { artifacts } = useChatArtifacts(activeChatId);
+  const { state: rightWorkspace, toggleArtifactLibrary } = useRightWorkspace();
   const router = useRouter();
   const pathname = usePathname();
+  const isEmptyNewChatPage = !activeChatId && (pathname === '/' || pathname === '/chat');
+  const shouldShowNewChatButton = !isEmptyNewChatPage;
+  const isArtifactLibraryActive = rightWorkspace.type === 'artifact-library'
+    && rightWorkspace.chatId === activeChatId;
 
   return (
     <>
       <div
         className={cn(
-          "fixed top-0 right-0 z-30 h-24 sm:h-28 pointer-events-none progressive-blur-top",
-          mounted && "transition-[left] duration-300",
+          "fixed top-0 right-0 md:right-[var(--sources-panel-width,0px)] z-30 h-24 sm:h-28 pointer-events-none progressive-blur-top",
+          mounted && "transition-[left,right] motion-layout-transition motion-reduce:transition-none",
           isSidebarCollapsed ? "left-0" : "left-0 md:left-[270px]"
         )}
       />
-      <header className="fixed top-[calc(1.25rem+env(safe-area-inset-top,0px))] left-0 right-0 z-40 transition-all duration-300 pointer-events-none px-4">
+      <header className="fixed top-[calc(0.75rem+env(safe-area-inset-top,0px))] md:top-[calc(1rem+env(safe-area-inset-top,0px))] left-0 right-0 md:right-[var(--sources-panel-width,0px)] z-40 transition-[left,right] motion-layout-transition motion-reduce:transition-none pointer-events-none px-4">
       <div className="w-full flex items-center justify-between gap-4 relative">
         {/* Left Pill: Sidebar trigger + New Chat */}
-        <div className="pointer-events-auto flex items-center gap-1.5 p-1 rounded-full liquid-glass-dock h-11 md:h-12 shrink-0">
+        <motion.div
+          layout
+          transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7 }}
+          className="pointer-events-auto flex items-center gap-1.5 p-1 rounded-full liquid-glass-dock h-11 md:h-12 shrink-0 overflow-hidden"
+        >
           {isSettingsActive ? (
             <Button
               variant="ghost"
               size="icon"
-              className="hidden md:inline-flex h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground"
+              className={cn(leftHeaderIconButtonClass, 'hidden md:inline-flex')}
               onClick={() => setIsSettingsActive(false)}
               title="Back to chat"
             >
@@ -75,41 +95,48 @@ export function ChatHeader({
             <Button
               variant="ghost"
               size="icon"
-              className="hidden md:inline-flex h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground"
+              className={cn(leftHeaderIconButtonClass, 'hidden md:inline-flex')}
               onClick={() => {
                 setIsSidebarCollapsed(false);
                 localStorage.setItem('sidebar-collapsed', 'false');
               }}
               title="Open sidebar"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" style={{ color: 'currentColor' }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 overflow-visible" aria-hidden="true">
                 <rect y="4.5" width="16" height="2" rx="1" fill="currentColor" />
                 <rect y="9.5" width="11" height="2" rx="1" fill="currentColor" />
               </svg>
             </Button>
           )}
 
-          {isSettingsActive ? (
+          {isSettingsActive && (
             <Button
               variant="ghost"
               size="icon"
-              className="inline-flex md:hidden h-9 w-9 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground"
+              className={cn(leftHeaderIconButtonClass, 'md:hidden')}
               onClick={() => setIsSettingsActive(false)}
               title="Back to chat"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-          ) : (
-            <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+          )}
+
+          <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
+            {!isSettingsActive && (
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="inline-flex md:hidden h-9 w-9 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out items-center justify-center text-foreground/80 hover:text-foreground">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" style={{ color: 'currentColor' }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(leftHeaderIconButtonClass, 'md:hidden')}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0 overflow-visible" aria-hidden="true">
                     <rect y="4.5" width="16" height="2" rx="1" fill="currentColor" />
                     <rect y="9.5" width="11" height="2" rx="1" fill="currentColor" />
                   </svg>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-[270px] border-r-0 bg-background/90 backdrop-blur-lg [&>button]:hidden">
+            )}
+              <SheetContent side="left" className="w-[305px] max-w-[85vw] border-r-0 bg-zinc-50 p-0 backdrop-blur-none dark:bg-[hsl(var(--surface-sidebar))] [&>button]:hidden">
                 <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
                 <SheetDescription className="sr-only">
                   Allows user to switch chats and select options
@@ -124,31 +151,34 @@ export function ChatHeader({
                     onNewChat();
                     setIsMobileSidebarOpen(false);
                   }}
+                  onActiveChatDeleted={() => {
+                    onActiveChatDeleted();
+                    setIsMobileSidebarOpen(false);
+                  }}
                   onCollapse={() => setIsMobileSidebarOpen(false)}
                   isSearchActive={isSearchActive}
                   onSearchClick={() => {
-                    setIsSearchActive(!isSearchActive);
                     setIsMobileSidebarOpen(false);
+                    if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
+                      router.push('/chat');
+                    }
+                    setIsSearchActive(!isSearchActive);
+                    setIsSettingsActive(false);
                   }}
                   isLibraryActive={isLibraryPageActive}
                   onLibraryClick={() => {
-                    setIsLibraryPageActive(!isLibraryPageActive);
                     setIsSearchActive(false);
+                    setIsSettingsActive(false);
                     setIsMobileSidebarOpen(false);
+                    router.push('/library');
                   }}
                   isSettingsActive={isSettingsActive}
                   onSettingsClick={() => {
-                    const nextVal = !isSettingsActive;
                     setIsSearchActive(false);
-                    setIsMobileSidebarOpen(false);
-                    if (nextVal) {
-                      // Delay opening settings so the sidebar drawer slide-out completes smoothly first
-                      setTimeout(() => {
-                        setIsSettingsActive(true);
-                      }, 250);
-                    } else {
-                      setIsSettingsActive(false);
+                    if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
+                      router.push('/chat');
                     }
+                    setIsSettingsActive(true);
                   }}
                   isIntegrationsActive={pathname === '/apps'}
                   onIntegrationsClick={() => {
@@ -159,47 +189,94 @@ export function ChatHeader({
                   }}
                   className="w-full h-full border-r-0 bg-transparent backdrop-blur-none"
                 />
+                <SettingsModal
+                  isOpen={isSettingsActive}
+                  onClose={() => setIsSettingsActive(false)}
+                />
               </SheetContent>
-            </Sheet>
-          )}
-          <Button
-            onClick={onNewChat}
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-zinc-200/50 dark:hover:bg-white/5 hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out text-foreground/80 hover:text-foreground flex items-center justify-center"
-            title="New chat"
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5"><path d="M11.4875 0.512563C10.804 -0.170854 9.696 -0.170854 9.01258 0.512563L4.75098 4.77417C4.49563 5.02951 4.29308 5.33265 4.15488 5.66628L3.30712 7.71282C3.19103 7.99307 3.25519 8.31566 3.46968 8.53017C3.68417 8.74467 4.00676 8.80885 4.28702 8.69277L6.33382 7.84501C6.66748 7.70681 6.97066 7.50423 7.22604 7.24886L11.4875 2.98744C12.1709 2.30402 12.1709 1.19598 11.4875 0.512563Z" fill="currentColor"></path><path d="M2.75 1.5C2.05964 1.5 1.5 2.05964 1.5 2.75V9.25C1.5 9.94036 2.05964 10.5 2.75 10.5H9.25C9.94036 10.5 10.5 9.94036 10.5 9.25V7C10.5 6.58579 10.8358 6.25 11.25 6.25C11.6642 6.25 12 6.58579 12 7V9.25C12 10.7688 10.7688 12 9.25 12H2.75C1.23122 12 0 10.7688 0 9.25V2.75C0 1.23122 1.23122 4.84288e-08 2.75 4.84288e-08H5C5.41421 4.84288e-08 5.75 0.335786 5.75 0.75C5.75 1.16421 5.41421 1.5 5 1.5H2.75Z" fill="currentColor"></path></svg>
-          </Button>
-        </div>
+          </Sheet>
+          <AnimatePresence initial={false}>
+            {shouldShowNewChatButton && (
+              <motion.div
+                key="new-chat-button"
+                layout
+                initial={{ width: 0, opacity: 0, scale: 0.96 }}
+                animate={{ width: 'auto', opacity: 1, scale: 1 }}
+                exit={{ width: 0, opacity: 0, scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 430, damping: 32, mass: 0.65 }}
+                className="overflow-hidden"
+              >
+                <Button
+                  onClick={onNewChat}
+                  variant="ghost"
+                  size="icon"
+                  className={leftHeaderIconButtonClass}
+                  title="New chat"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-3.5 w-3.5 shrink-0 overflow-visible"
+                    aria-hidden="true"
+                  >
+                    <path d="M11.4875 0.512563C10.804 -0.170854 9.696 -0.170854 9.01258 0.512563L4.75098 4.77417C4.49563 5.02951 4.29308 5.33265 4.15488 5.66628L3.30712 7.71282C3.19103 7.99307 3.25519 8.31566 3.46968 8.53017C3.68417 8.74467 4.00676 8.80885 4.28702 8.69277L6.33382 7.84501C6.66748 7.70681 6.97066 7.50423 7.22604 7.24886L11.4875 2.98744C12.1709 2.30402 12.1709 1.19598 11.4875 0.512563Z" fill="currentColor" />
+                    <path d="M2.75 1.5C2.05964 1.5 1.5 2.05964 1.5 2.75V9.25C1.5 9.94036 2.05964 10.5 2.75 10.5H9.25C9.94036 10.5 10.5 9.94036 10.5 9.25V7C10.5 6.58579 10.8358 6.25 11.25 6.25C11.6642 6.25 12 6.58579 12 7V9.25C12 10.7688 10.7688 12 9.25 12H2.75C1.23122 12 0 10.7688 0 9.25V2.75C0 1.23122 1.23122 4.84288e-08 2.75 4.84288e-08H5C5.41421 4.84288e-08 5.75 0.335786 5.75 0.75C5.75 1.16421 5.41421 1.5 5 1.5H2.75Z" fill="currentColor" />
+                  </svg>
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
-        {/* Center Pill: Model Selector — hidden on non-chat pages */}
+        {/* Model selector and mobile artifact navigator */}
         {!hideModelSelector && !isSearchActive && !isSettingsActive && !isLibraryPageActive && (
-          <div className="absolute right-0 left-auto translate-x-0 md:left-1/2 md:-translate-x-1/2 md:right-auto pointer-events-auto flex items-center justify-center rounded-full liquid-glass-dock p-1 h-11 md:h-12">
-            <ModelSelector
-              selectedModelId={selectedModelId}
-              onSelectModel={setSelectedModelId}
-              isLoading={isLoading}
-              geminiApiKey={apiKeys.geminiApiKey}
-              mistralApiKey={apiKeys.mistralApiKey}
-              perplexityApiKey={apiKeys.perplexityApiKey}
-              zenmuxApiKey={apiKeys.zenmuxApiKey}
-              nvidiaApiKey={apiKeys.nvidiaApiKey}
-              inceptionApiKey={apiKeys.inceptionApiKey}
-              minimal={true}
-              align="top"
-            />
+          <div className="absolute right-0 left-auto translate-x-0 md:left-1/2 md:-translate-x-1/2 md:right-auto pointer-events-auto flex items-center justify-center gap-2">
+            {activeChatId && artifacts.length > 0 && (
+              <div className="flex h-11 w-11 items-center justify-center rounded-full p-1 liquid-glass-dock md:hidden">
+                <ArtifactNavigatorTrigger
+                  count={artifacts.length}
+                  isActive={isArtifactLibraryActive}
+                  onClick={() => toggleArtifactLibrary(activeChatId)}
+                  compact
+                />
+              </div>
+            )}
+            <div className="flex h-11 items-center justify-center rounded-full p-1 liquid-glass-dock md:h-12">
+              <ModelSelector
+                selectedModelId={selectedModelId}
+                onSelectModel={setSelectedModelId}
+                isLoading={isLoading}
+                geminiApiKey={apiKeys.geminiApiKey}
+                mistralApiKey={apiKeys.mistralApiKey}
+                perplexityApiKey={apiKeys.perplexityApiKey}
+                zenmuxApiKey={apiKeys.zenmuxApiKey}
+                nvidiaApiKey={apiKeys.nvidiaApiKey}
+                inceptionApiKey={apiKeys.inceptionApiKey}
+                minimal={true}
+                align="top"
+              />
+            </div>
           </div>
         )}
 
         {/* Right Pill: Settings Dialog Trigger */}
         {!isSearchActive && !isLibraryPageActive && (
           <div className="hidden md:flex pointer-events-auto flex items-center gap-1.5 p-1 rounded-full liquid-glass-dock h-11 md:h-12">
+            {!isSettingsActive && activeChatId && (
+              <ArtifactNavigatorTrigger
+                count={artifacts.length}
+                isActive={isArtifactLibraryActive}
+                onClick={() => toggleArtifactLibrary(activeChatId)}
+              />
+            )}
             <Button
               variant="ghost"
               size="icon"
               className={cn(
-                "h-9 w-9 md:h-10 md:w-10 rounded-full flex items-center justify-center hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out",
+                "h-9 w-9 md:h-10 md:w-10 rounded-full flex items-center justify-center hover:scale-105 active:scale-[0.93] active:duration-75 transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out motion-reduce:transform-none",
                 isSettingsActive
                   ? "bg-zinc-200/60 dark:bg-white/10 text-foreground"
                   : "hover:bg-zinc-200/50 dark:hover:bg-white/5 text-foreground/80 hover:text-foreground"

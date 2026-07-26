@@ -1,11 +1,25 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Sidebar } from '@/components/chat/sidebar';
 import { useRouter, useParams, usePathname } from 'next/navigation';
 import { SidebarContext } from '@/components/chat/SidebarContext';
 import { cn } from '@/lib/utils';
-import { LayoutGroup } from 'framer-motion';
+import { LayoutGroup, AnimatePresence } from 'framer-motion';
+import { CommandPalette } from '@/components/chat/CommandPalette';
+import { SettingsModal } from '@/components/chat/settings/SettingsModal';
+import type { AnswerSource } from '@/components/chat/SourceList';
+import { DesktopRightWorkspace } from '@/components/workspace/DesktopRightWorkspace';
+import { MobileArtifactWorkspace } from '@/components/workspace/MobileArtifactWorkspace';
+import { MobileArtifactLibrary } from '@/components/artifacts/MobileArtifactLibrary';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { ChatModesProvider } from '@/components/chat/ChatModesContext';
+import {
+  getRightWorkspaceWidth,
+  RightWorkspaceActionsProvider,
+  RightWorkspaceProvider,
+  type RightWorkspaceState,
+} from '@/components/workspace/RightWorkspaceContext';
 
 export default function MainLayout({
   children,
@@ -15,12 +29,15 @@ export default function MainLayout({
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
+  const isMobile = useIsMobile();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isSettingsActive, setIsSettingsActive] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [rightWorkspace, setRightWorkspace] = useState<RightWorkspaceState>({ type: 'closed' });
 
   useEffect(() => {
     const saved = localStorage.getItem('sidebar-collapsed');
@@ -87,6 +104,25 @@ export default function MainLayout({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Keyboard shortcut Ctrl+K or Cmd+K to toggle search command palette (desktop only)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (window.innerWidth < 768) return;
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+
+        // A held shortcut emits repeated keydown events. Treat one physical
+        // press as one toggle so the dialog is not rapidly mounted/unmounted.
+        if (e.repeat || e.isComposing) return;
+
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const activeChatId = useMemo(() => {
     if (!params?.chatId) return null;
     return Array.isArray(params.chatId) ? params.chatId[0] : params.chatId;
@@ -97,6 +133,90 @@ export default function MainLayout({
     setIsSettingsActive(false);
     router.push('/chat');
   };
+
+  const closeWorkspace = useCallback(() => {
+    setRightWorkspace({ type: 'closed' });
+  }, []);
+
+  const openArtifactLibrary = useCallback((chatId: string) => {
+    setRightWorkspace({ type: 'artifact-library', chatId });
+  }, []);
+
+  const toggleArtifactLibrary = useCallback((chatId: string) => {
+    setRightWorkspace(current => (
+      current.type === 'artifact-library' && current.chatId === chatId
+        ? { type: 'closed' }
+        : { type: 'artifact-library', chatId }
+    ));
+  }, []);
+
+  const openArtifact = useCallback((
+    artifactId: string,
+    options?: { returnLibraryChatId?: string },
+  ) => {
+    setRightWorkspace({
+      type: 'artifact',
+      artifactId,
+      returnLibraryChatId: options?.returnLibraryChatId,
+    });
+  }, []);
+
+  const openSources = useCallback((
+    sources: AnswerSource[],
+    options?: {
+      returnArtifactId?: string;
+      returnArtifactLibraryChatId?: string;
+    },
+  ) => {
+    setRightWorkspace({
+      type: 'sources',
+      sources,
+      returnArtifactId: options?.returnArtifactId,
+      returnArtifactLibraryChatId: options?.returnArtifactLibraryChatId,
+    });
+  }, []);
+
+  const toggleSources = useCallback((sources: AnswerSource[]) => {
+    setRightWorkspace(current => {
+      const isSameAnswer = current.type === 'sources'
+        && current.sources.length === sources.length
+        && current.sources.every((source, index) => source.url === sources[index]?.url);
+      return isSameAnswer ? { type: 'closed' } : { type: 'sources', sources };
+    });
+  }, []);
+
+  const closeSources = useCallback(() => {
+    setRightWorkspace(current => {
+      if (current.type === 'sources' && current.returnArtifactId) {
+        return {
+          type: 'artifact',
+          artifactId: current.returnArtifactId,
+          returnLibraryChatId: current.returnArtifactLibraryChatId,
+        };
+      }
+      return { type: 'closed' };
+    });
+  }, []);
+
+  useEffect(() => {
+    setRightWorkspace({ type: 'closed' });
+  }, [pathname]);
+
+  const handleOpenSettingsFromCommandPalette = useCallback(() => {
+    if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
+      router.push('/chat');
+    }
+    setIsSearchActive(false);
+    setIsMobileSidebarOpen(false);
+    setIsSettingsActive(true);
+  }, [pathname, router]);
+
+  const handleNavigateFromCommandPalette = useCallback((href: string) => {
+    setIsSearchActive(false);
+    setIsSettingsActive(false);
+    setIsMobileSidebarOpen(false);
+    router.push(href);
+  }, [router]);
 
   const sidebarContextValue = useMemo(() => ({
     isSidebarCollapsed,
@@ -115,9 +235,49 @@ export default function MainLayout({
   ]);
 
   const isLibraryActive = pathname === '/library';
+  const rightWorkspaceContextValue = useMemo(() => ({
+    state: rightWorkspace,
+    openArtifactLibrary,
+    toggleArtifactLibrary,
+    openArtifact,
+    openSources,
+    toggleSources,
+    closeWorkspace,
+    closeSources,
+  }), [
+    rightWorkspace,
+    openArtifactLibrary,
+    toggleArtifactLibrary,
+    openArtifact,
+    openSources,
+    toggleSources,
+    closeWorkspace,
+    closeSources,
+  ]);
+  const rightWorkspaceActionsValue = useMemo(() => ({
+    openArtifactLibrary,
+    toggleArtifactLibrary,
+    openArtifact,
+    openSources,
+    toggleSources,
+    closeWorkspace,
+    closeSources,
+  }), [
+    openArtifactLibrary,
+    toggleArtifactLibrary,
+    openArtifact,
+    openSources,
+    toggleSources,
+    closeWorkspace,
+    closeSources,
+  ]);
+  const rightWorkspaceWidth = isMobile ? '0px' : getRightWorkspaceWidth(rightWorkspace);
 
   return (
+    <ChatModesProvider>
     <SidebarContext.Provider value={sidebarContextValue}>
+      <RightWorkspaceProvider value={rightWorkspaceContextValue}>
+      <RightWorkspaceActionsProvider value={rightWorkspaceActionsValue}>
       <div className="flex h-dvh w-screen overflow-hidden bg-background">
         <Sidebar
           activeChatId={activeChatId}
@@ -127,6 +287,11 @@ export default function MainLayout({
             router.push(`/chat/${id}`);
           }}
           onNewChat={handleNewChat}
+          onActiveChatDeleted={() => {
+            setIsSearchActive(false);
+            setIsSettingsActive(false);
+            router.replace('/chat');
+          }}
           onCollapse={() => {
             setIsSidebarCollapsed(true);
             localStorage.setItem('sidebar-collapsed', 'true');
@@ -162,16 +327,20 @@ export default function MainLayout({
           }}
           className={cn(
             "fixed top-0 bottom-0 left-0 z-50 h-dvh hidden md:flex",
-            mounted && "transition-[transform,box-shadow] duration-300 ease-in-out",
+            mounted && "transition-[transform,box-shadow] motion-layout-transition motion-reduce:transition-none",
             isSidebarCollapsed ? "-translate-x-full shadow-none" : "translate-x-0 shadow-2xl shadow-black/5 dark:shadow-black/20"
           )}
         />
         <div
           className={cn(
-            "flex-1 flex flex-col h-full relative overflow-hidden",
-            mounted && "transition-[padding-left] duration-300 ease-in-out",
+            "min-w-0 flex-1 flex flex-col h-full relative overflow-hidden",
+            mounted && "transition-[padding-left] motion-layout-transition motion-reduce:transition-none",
             isSidebarCollapsed ? "md:pl-0" : "md:pl-[270px]"
           )}
+          style={{
+            "--sources-panel-width": rightWorkspaceWidth,
+          } as React.CSSProperties}
+          data-chat-viewport
         >
           <main className="flex flex-col h-full bg-background relative overflow-hidden">
             <LayoutGroup id="chat-layout-group">
@@ -179,7 +348,25 @@ export default function MainLayout({
             </LayoutGroup>
           </main>
         </div>
+        <DesktopRightWorkspace />
       </div>
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onOpenSettings={handleOpenSettingsFromCommandPalette}
+        onNavigate={handleNavigateFromCommandPalette}
+      />
+      {!(isMobileSidebarOpen && isSettingsActive) && (
+        <SettingsModal
+          isOpen={isSettingsActive}
+          onClose={() => setIsSettingsActive(false)}
+        />
+      )}
+      <MobileArtifactWorkspace />
+      <MobileArtifactLibrary activeChatId={activeChatId} />
+      </RightWorkspaceActionsProvider>
+      </RightWorkspaceProvider>
     </SidebarContext.Provider>
+    </ChatModesProvider>
   );
 }

@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { executeScrapePage, executeMapPage } from '../research/client';
+import { normalizeSourceCollection } from '../research/source-normalization';
 
 export interface SearchResult {
   title: string;
@@ -37,8 +38,7 @@ const deduplicateResults = (results: SearchResult[]): SearchResult[] => {
   const seenUrls = new Set<string>();
   const seenDomains = new Set<string>();
 
-  return results.filter((item) => {
-    if (!item.url) return false;
+  return normalizeSourceCollection(results).filter((item) => {
     const domain = extractDomain(item.url);
     const isNewUrl = !seenUrls.has(item.url);
     const isNewDomain = !seenDomains.has(domain);
@@ -350,4 +350,3 @@ export const createMapWebsiteTool = (keys: SearchKeys) => {
     }
   } as any);
 };
-

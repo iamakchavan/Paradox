@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Edit3, Check, X } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
+import { usePreparedEntrance } from '@/hooks/use-prepared-entrance';
+import { MOTION_EASE_OUT, motionTransitions } from '@/lib/motion';
 
 interface RenameConfirmModalProps {
   isOpen: boolean;
@@ -18,12 +21,10 @@ const isMobileDevice = typeof window !== 'undefined' && (
 );
 
 const spring = isMobileDevice
-  ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.28 }
+  ? { type: 'tween', ease: MOTION_EASE_OUT, duration: 0.28 }
   : { type: 'spring', stiffness: 500, damping: 40, mass: 0.8 };
 
-const springMed = isMobileDevice
-  ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.32 }
-  : { type: 'spring', stiffness: 380, damping: 36, mass: 0.9 };
+const desktopSheetSpring = { type: 'spring' as const, stiffness: 380, damping: 36, mass: 0.9 };
 
 export function RenameConfirmModal({
   isOpen,
@@ -33,6 +34,18 @@ export function RenameConfirmModal({
 }: RenameConfirmModalProps) {
   const isMobile = useIsMobile();
   const [title, setTitle] = useState(currentTitle);
+  const entranceReady = usePreparedEntrance(isOpen && isMobile);
+
+  const { runAfterHistoryDismiss } = useMobileBackDismiss({
+    isOpen,
+    isMobile,
+    stateKey: 'paradoxRenameModal',
+    entryPrefix: 'rename-modal',
+    onDismiss: onClose,
+  });
+  const dismissModal = useCallback(() => {
+    runAfterHistoryDismiss(onClose);
+  }, [onClose, runAfterHistoryDismiss]);
 
   useEffect(() => {
     if (isOpen) {
@@ -43,14 +56,17 @@ export function RenameConfirmModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim()) {
-      onConfirm(title.trim());
+      runAfterHistoryDismiss(() => onConfirm(title.trim()));
     }
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <DialogPrimitive.Root open={isOpen} onOpenChange={onClose}>
+        <DialogPrimitive.Root
+          open={isOpen}
+          onOpenChange={open => { if (!open) dismissModal(); }}
+        >
           <DialogPrimitive.Portal forceMount>
 
             {/* Backdrop Overlay */}
@@ -59,7 +75,7 @@ export function RenameConfirmModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
+                transition={motionTransitions.overlay}
                 style={{
                   position: 'fixed',
                   inset: 0,
@@ -77,13 +93,16 @@ export function RenameConfirmModal({
                 dragElastic={{ top: 0, bottom: 0.85 }}
                 onDragEnd={(_, info) => {
                   if (info.offset.y > 100 || info.velocity.y > 300) {
-                    onClose();
+                    dismissModal();
                   }
                 }}
                 initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={springMed}
+                animate={{ y: isMobile && !entranceReady ? '100%' : 0 }}
+                exit={{
+                  y: '100%',
+                  transition: isMobile ? motionTransitions.mobileSheetExit : desktopSheetSpring,
+                }}
+                transition={isMobile ? motionTransitions.mobileSheetEnter : desktopSheetSpring}
                 style={{
                   position: 'fixed',
                   bottom: 0,
@@ -102,6 +121,9 @@ export function RenameConfirmModal({
                   overflowY: 'auto',
                   border: isMobile ? 'none' : '1px solid hsl(var(--border) / 0.4)',
                   borderBottom: 'none',
+                  backfaceVisibility: 'hidden',
+                  contain: 'layout',
+                  willChange: 'transform',
                 }}
               >
                 {/* Drag handle for mobile gesture recognition */}
@@ -183,7 +205,7 @@ export function RenameConfirmModal({
                       onChange={e => setTitle(e.target.value)}
                       placeholder="Enter chat title..."
                       autoFocus
-                      className="w-full h-12 px-4 rounded-xl border border-foreground/[0.08] focus:border-foreground/30 bg-foreground/[0.02] dark:bg-foreground/[0.01] text-foreground placeholder:text-foreground/30 focus:outline-none transition-all duration-150 text-[14px]"
+                      className="w-full h-12 px-4 rounded-xl border border-foreground/[0.08] focus:border-foreground/30 bg-foreground/[0.02] dark:bg-foreground/[0.01] text-foreground placeholder:text-foreground/30 focus:outline-none transition-[border-color,box-shadow] duration-[var(--motion-duration-fast)] ease-[var(--motion-ease-out)] text-[14px]"
                     />
                   </motion.div>
 
@@ -227,7 +249,7 @@ export function RenameConfirmModal({
                     
                     <motion.button
                       type="button"
-                      onClick={onClose}
+                      onClick={dismissModal}
                       whileTap={{ scale: 0.97 }}
                       transition={spring}
                       style={{

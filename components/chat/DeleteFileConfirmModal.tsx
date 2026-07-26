@@ -1,7 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Trash2, AlertTriangle, X } from 'lucide-react';
+import { useCallback } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMobileBackDismiss } from '@/hooks/use-mobile-back-dismiss';
+import { usePreparedEntrance } from '@/hooks/use-prepared-entrance';
+import { MOTION_EASE_OUT, motionTransitions } from '@/lib/motion';
 
 interface DeleteFileConfirmModalProps {
   isOpen: boolean;
@@ -17,12 +21,10 @@ const isMobileDevice = typeof window !== 'undefined' && (
 );
 
 const spring = isMobileDevice
-  ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.28 }
+  ? { type: 'tween', ease: MOTION_EASE_OUT, duration: 0.28 }
   : { type: 'spring', stiffness: 500, damping: 40, mass: 0.8 };
 
-const springMed = isMobileDevice
-  ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.32 }
-  : { type: 'spring', stiffness: 380, damping: 36, mass: 0.9 };
+const desktopSheetSpring = { type: 'spring' as const, stiffness: 380, damping: 36, mass: 0.9 };
 
 export function DeleteFileConfirmModal({
   isOpen,
@@ -31,11 +33,25 @@ export function DeleteFileConfirmModal({
   entryTitle,
 }: DeleteFileConfirmModalProps) {
   const isMobile = useIsMobile();
+  const entranceReady = usePreparedEntrance(isOpen && isMobile);
+  const { runAfterHistoryDismiss } = useMobileBackDismiss({
+    isOpen,
+    isMobile,
+    stateKey: 'paradoxDeleteFileModal',
+    entryPrefix: 'delete-file-modal',
+    onDismiss: onClose,
+  });
+  const dismissModal = useCallback(() => {
+    runAfterHistoryDismiss(onClose);
+  }, [onClose, runAfterHistoryDismiss]);
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <DialogPrimitive.Root open={isOpen} onOpenChange={onClose}>
+        <DialogPrimitive.Root
+          open={isOpen}
+          onOpenChange={open => { if (!open) dismissModal(); }}
+        >
           <DialogPrimitive.Portal forceMount>
 
             {/* Backdrop Overlay */}
@@ -44,7 +60,7 @@ export function DeleteFileConfirmModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
+                transition={motionTransitions.overlay}
                 style={{
                   position: 'fixed',
                   inset: 0,
@@ -62,13 +78,16 @@ export function DeleteFileConfirmModal({
                 dragElastic={{ top: 0, bottom: 0.85 }}
                 onDragEnd={(_, info) => {
                   if (info.offset.y > 100 || info.velocity.y > 300) {
-                    onClose();
+                    dismissModal();
                   }
                 }}
                 initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={springMed}
+                animate={{ y: isMobile && !entranceReady ? '100%' : 0 }}
+                exit={{
+                  y: '100%',
+                  transition: isMobile ? motionTransitions.mobileSheetExit : desktopSheetSpring,
+                }}
+                transition={isMobile ? motionTransitions.mobileSheetEnter : desktopSheetSpring}
                 style={{
                   position: 'fixed',
                   bottom: 0,
@@ -87,6 +106,9 @@ export function DeleteFileConfirmModal({
                   overflowY: 'auto',
                   border: isMobile ? 'none' : '1px solid hsl(var(--border) / 0.4)',
                   borderBottom: 'none',
+                  backfaceVisibility: 'hidden',
+                  contain: 'layout',
+                  willChange: 'transform',
                 }}
               >
                 {/* Drag handle for mobile gesture recognition */}
@@ -184,7 +206,7 @@ export function DeleteFileConfirmModal({
                     style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 8 : 10 }}
                   >
                     <motion.button
-                      onClick={onConfirm}
+                      onClick={() => runAfterHistoryDismiss(onConfirm)}
                       whileTap={{ scale: 0.975 }}
                       transition={spring}
                       style={{
@@ -215,7 +237,7 @@ export function DeleteFileConfirmModal({
                     </motion.button>
                     
                     <motion.button
-                      onClick={onClose}
+                      onClick={dismissModal}
                       whileTap={{ scale: 0.97 }}
                       transition={spring}
                       style={{

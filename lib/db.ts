@@ -1,4 +1,5 @@
 import Dexie, { type Table } from 'dexie';
+import type { ArtifactRecord, ArtifactVersionRecord } from './artifacts/types';
 
 export interface ChatSession {
   id: string; // uuid or unique string
@@ -73,6 +74,8 @@ export class ParadoxDatabase extends Dexie {
   library!: Table<LibraryFile>;
   libraryPayloads!: Table<LibraryFilePayload>;
   mcpIntegrations!: Table<MCPIntegration>;
+  artifacts!: Table<ArtifactRecord, string>;
+  artifactVersions!: Table<ArtifactVersionRecord, string>;
 
   constructor() {
     super('ParadoxDatabase');
@@ -141,6 +144,16 @@ export class ParadoxDatabase extends Dexie {
       library: '++id, chatId, type, createdAt',
       libraryPayloads: 'fileId',
       mcpIntegrations: 'id, name, url, isEnabled'
+    });
+    this.version(8).stores({
+      chats: 'id, title, createdAt, updatedAt, modelMode, branchedFromChatId',
+      messages: '++id, chatId, role, createdAt',
+      favicons: 'domain, createdAt',
+      library: '++id, chatId, type, createdAt',
+      libraryPayloads: 'fileId',
+      mcpIntegrations: 'id, name, url, isEnabled',
+      artifacts: 'id, chatId, messageId, kind, status, updatedAt',
+      artifactVersions: 'id, artifactId, [artifactId+version], createdAt'
     });
   }
 }

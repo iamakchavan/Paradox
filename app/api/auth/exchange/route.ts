@@ -8,6 +8,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Code and provider are required.' }, { status: 400 });
     }
 
+    const ALLOWED_PROVIDERS = ['github', 'notion', 'google', 'cal'];
+    if (!ALLOWED_PROVIDERS.includes(provider)) {
+      return NextResponse.json({ error: 'Unsupported provider' }, { status: 400 });
+    }
+
     const clientId = process.env[`${provider.toUpperCase()}_CLIENT_ID`];
     const clientSecret = process.env[`${provider.toUpperCase()}_CLIENT_SECRET`];
     const { origin } = new URL(req.url);

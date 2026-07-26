@@ -19,8 +19,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['Switzer', 'sans-serif'],
-        serif: ['Inria Serif', 'serif'],
-        mono: ['var(--font-space-mono)', 'monospace'],
+        serif: ['Switzer', 'sans-serif'],
+        mono: ['var(--font-jetbrains-mono)', 'monospace'],
       },
       borderRadius: {
         lg: 'var(--radius)',

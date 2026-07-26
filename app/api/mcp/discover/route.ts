@@ -1,6 +1,66 @@
 import { NextResponse } from 'next/server';
 import { createMCPClient } from '@ai-sdk/mcp';
 
+function normalizeScopes(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const scopes = value.filter((scope): scope is string => typeof scope === 'string' && scope.length > 0);
+  return scopes.length > 0 ? Array.from(new Set(scopes)) : undefined;
+}
+
+function combineSupportedScopes(
+  resourceScopes: string[] | undefined,
+  authorizationServerScopes: string[] | undefined
+): string[] | undefined {
+  if (!resourceScopes) return authorizationServerScopes;
+  if (!authorizationServerScopes) return resourceScopes;
+  const authorizationSet = new Set(authorizationServerScopes);
+  return resourceScopes.filter(scope => authorizationSet.has(scope));
+}
+
+function isSafeUrl(urlStr: string): boolean {
+  // In development mode, allow local/private endpoints for developer convenience
+  if (process.env.NODE_ENV === 'development' || process.env.ALLOW_LOCAL_MCP === 'true') {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(urlStr);
+    
+    if (parsed.protocol !== 'https:') {
+      return false;
+    }
+    
+    const host = parsed.hostname.toLowerCase();
+    
+    if (
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '::1' ||
+      host.endsWith('.local') ||
+      host === 'metadata.google.internal' ||
+      host === 'metadata'
+    ) {
+      return false;
+    }
+    
+    const ipPattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+    const match = host.match(ipPattern);
+    if (match) {
+      const [, octet1, octet2] = match.map(Number);
+      if (octet1 === 10) return false;
+      if (octet1 === 192 && octet2 === 168) return false;
+      if (octet1 === 172 && octet2 >= 16 && octet2 <= 31) return false;
+      if (octet1 === 169 && octet2 === 254) return false;
+      if (octet1 === 127) return false;
+      if (octet1 === 0 || octet1 >= 224) return false;
+    }
+    
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -112,7 +172,8 @@ export async function POST(req: Request) {
               return NextResponse.json({
                 authorization_endpoint: data.authorization_endpoint,
                 token_endpoint: data.token_endpoint,
-                registration_endpoint: data.registration_endpoint
+                registration_endpoint: data.registration_endpoint,
+                scopes_supported: normalizeScopes(data.scopes_supported)
               });
             }
 
@@ -133,7 +194,11 @@ export async function POST(req: Request) {
                       return NextResponse.json({
                         authorization_endpoint: asData.authorization_endpoint,
                         token_endpoint: asData.token_endpoint,
-                        registration_endpoint: asData.registration_endpoint
+                        registration_endpoint: asData.registration_endpoint,
+                        scopes_supported: combineSupportedScopes(
+                          normalizeScopes(data.scopes_supported),
+                          normalizeScopes(asData.scopes_supported)
+                        )
                       });
                     }
                   }
@@ -168,7 +233,8 @@ export async function POST(req: Request) {
               return NextResponse.json({
                 authorization_endpoint: data.authorization_endpoint,
                 token_endpoint: data.token_endpoint,
-                registration_endpoint: data.registration_endpoint
+                registration_endpoint: data.registration_endpoint,
+                scopes_supported: normalizeScopes(data.scopes_supported)
               });
             }
           }
@@ -186,17 +252,26 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'registrationUrl and redirectUri are required' }, { status: 400 });
       }
 
+      const requestedScope = typeof scope === 'string' && scope.trim().length > 0
+        ? scope.trim()
+        : undefined;
+
+      const registrationBody: Record<string, unknown> = {
+        client_name: 'Paradox Local',
+        redirect_uris: [redirectUri],
+        grant_types: ['authorization_code'],
+        response_types: ['code'],
+        token_endpoint_auth_method: 'none',
+      };
+      // Omit scope when unset so hosted MCP servers apply their default registered set.
+      if (requestedScope) {
+        registrationBody.scope = requestedScope;
+      }
+
       const res = await fetch(registrationUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          client_name: 'Paradox Local',
-          redirect_uris: [redirectUri],
-          grant_types: ['authorization_code'],
-          response_types: ['code'],
-          token_endpoint_auth_method: 'none',
-          scope: scope || undefined
-        }),
+        body: JSON.stringify(registrationBody),
         signal: AbortSignal.timeout(5000)
       });
 
@@ -205,9 +280,17 @@ export async function POST(req: Request) {
       }
 
       const data = await res.json();
-      return NextResponse.json({ 
+      // Pass through registration scope fields as-is; client normalizes them.
+      // Prefer server-granted scope over anything we requested.
+      const grantedScope =
+        data.scope
+        ?? (Array.isArray(data.scopes) ? data.scopes.join(' ') : data.scopes)
+        ?? data.scope_granted;
+      return NextResponse.json({
         client_id: data.client_id,
-        client_secret: data.client_secret
+        client_secret: data.client_secret,
+        scope: grantedScope,
+        scopes: data.scopes,
       });
     }
 
@@ -216,6 +299,10 @@ export async function POST(req: Request) {
       const { tokenEndpoint, bodyParams } = body;
       if (!tokenEndpoint) {
         return NextResponse.json({ error: 'tokenEndpoint is required' }, { status: 400 });
+      }
+
+      if (!isSafeUrl(tokenEndpoint)) {
+        return NextResponse.json({ error: 'Unsafe token endpoint URL' }, { status: 400 });
       }
 
       const res = await fetch(tokenEndpoint, {
