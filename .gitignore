@@ -231,5 +231,8 @@ dist
 # Internal diagnostics & specs
 .diagnostics/
 
+# Wormhole execution pack
+/wormhole/
+
 
 
