@@ -3,7 +3,8 @@ export const runtime = 'edge';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createMistral } from '@ai-sdk/mistral';
 import { createOpenAI } from '@ai-sdk/openai';
-import { streamText, wrapLanguageModel, extractReasoningMiddleware } from 'ai';
+import { streamText, wrapLanguageModel, extractReasoningMiddleware, stepCountIs } from 'ai';
+import { createMCPClient } from '@ai-sdk/mcp';
 import { MODELS_REGISTRY } from '@/lib/models';
 import { createWebSearchTool, createBrowsePageTool, createMapWebsiteTool } from '@/lib/tools/web-search';
 
@@ -39,10 +40,83 @@ function getFriendlyTitleFromUrl(urlStr: string): string {
   }
 }
 
+function shouldLoadServerTools(server: any, messages: any[]): boolean {
+  // Check if any message contains a tool call or result for this server
+  const hasPastInteraction = messages.some(m => {
+    if (m.toolCalls && Array.isArray(m.toolCalls)) {
+      return m.toolCalls.some((tc: any) => 
+        tc.function?.name?.toLowerCase().startsWith(server.id.toLowerCase() + '_')
+      );
+    }
+    if (m.role === 'tool') {
+      const toolName = m.toolName || (Array.isArray(m.content) && m.content[0]?.toolName);
+      if (toolName && toolName.toLowerCase().startsWith(server.id.toLowerCase() + '_')) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+  if (hasPastInteraction) return true;
+
+  // Scan only the last user message for keyword triggers
+  const lastUserMessage = [...messages].reverse().find(m => m.role === 'user');
+  const promptText = (typeof lastUserMessage?.content === 'string' ? lastUserMessage.content : '').toLowerCase();
+
+  const serverId = server.id.toLowerCase();
+  const serverName = server.name.toLowerCase();
+
+  // Provider-specific keyword triggers
+  if (serverId === 'cal' || serverName.includes('cal')) {
+    return promptText.includes('cal') || promptText.includes('calendar') || promptText.includes('meeting') || promptText.includes('schedule') || promptText.includes('booking') || promptText.includes('event');
+  }
+  if (serverId === 'notion' || serverName.includes('notion')) {
+    return promptText.includes('notion') || promptText.includes('page') || promptText.includes('database') || promptText.includes('workspace');
+  }
+  if (serverId === 'github' || serverName.includes('github')) {
+    return promptText.includes('github') || promptText.includes('git') || promptText.includes('repo') || promptText.includes('pr') || promptText.includes('pull') || promptText.includes('issue') || promptText.includes('commit');
+  }
+
+  // Generic custom servers: match ID or Name keywords
+  return promptText.includes(serverId) || promptText.includes(serverName);
+}
+
+function normalizeMessages(messages: any[]): any[] {
+  if (!messages || messages.length === 0) return [];
+  
+  const normalized: any[] = [];
+  for (const msg of messages) {
+    if (normalized.length === 0) {
+      if (msg.role !== 'user') {
+        // AI SDKs require the first message to be from the user
+        continue;
+      }
+      normalized.push({ ...msg });
+      continue;
+    }
+    
+    const last = normalized[normalized.length - 1];
+    if (last.role === msg.role) {
+      // Merge consecutive messages of the same role
+      if (typeof last.content === 'string' && typeof msg.content === 'string') {
+        last.content = (last.content + '\n\n' + msg.content).trim();
+      } else {
+        const lastParts = Array.isArray(last.content) ? last.content : [{ type: 'text', text: last.content || '' }];
+        const newParts = Array.isArray(msg.content) ? msg.content : [{ type: 'text', text: msg.content || '' }];
+        last.content = [...lastParts, ...newParts];
+      }
+    } else {
+      normalized.push({ ...msg });
+    }
+  }
+  
+  return normalized;
+}
+
 export async function POST(req: Request) {
   try {
-    const { messages, model, systemPrompt } = await req.json();
-    console.log(`[CHAT] Request: model=${model}, messages=${messages?.length}, search=${req.headers.get('x-search-enabled')}`);
+    const { messages, model, systemPrompt, mcpServers } = await req.json();
+    console.log(`[CHAT] Request: model=${model}, messages=${messages?.length}, search=${req.headers.get('x-search-enabled')}, mcpServers=${mcpServers?.length || 0}`);
 
     // Retrieve API keys from client-side forwarded headers
     const geminiKey = req.headers.get('x-api-key-gemini');
@@ -130,8 +204,16 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: err.message }), { status: 400 });
     }
 
-    // Format local messages (including base64 images and PDFs) into Vercel AI SDK content parts
-    const formattedMessages = messages.map((msg: any) => {
+    const normalizedMessages = normalizeMessages(messages || []);
+
+    const formattedMessages = normalizedMessages.map((msg: any) => {
+      if (msg.role === 'tool') {
+        return {
+          role: 'tool' as const,
+          content: msg.content,
+        } as any;
+      }
+
       const hasImages = msg.images && msg.images.length > 0;
       const hasPDFs = msg.pdfs && msg.pdfs.length > 0;
 
@@ -159,21 +241,126 @@ export async function POST(req: Request) {
         }
 
         return {
-          role: msg.role === 'user' ? 'user' : 'assistant',
+          role: msg.role === 'user' ? 'user' : (msg.role === 'assistant' ? 'assistant' : msg.role),
           content: parts,
-        };
+          toolCalls: msg.toolCalls,
+        } as any;
       }
 
       return {
-        role: msg.role === 'user' ? 'user' : 'assistant',
+        role: msg.role === 'user' ? 'user' : (msg.role === 'assistant' ? 'assistant' : msg.role),
         content,
-      };
+        toolCalls: msg.toolCalls,
+      } as any;
     });
+
+    console.log('[CHAT formattedMessages]', JSON.stringify(formattedMessages.map((m: any) => ({
+      role: m.role,
+      contentType: typeof m.content,
+      snippet: typeof m.content === 'string' ? m.content.substring(0, 80) : 'parts'
+    })), null, 2));
 
     // Determine if the model can use web search tools
     const hasSearchKeys = !!tavilyKey || !!exaKey || !!firecrawlKey || !!process.env.TAVILY_API_KEY || !!process.env.EXA_API_KEY || !!process.env.FIRECRAWL_API_KEY;
     const canUseTools = modelConfig.provider !== 'perplexity' && hasSearchKeys && searchEnabled;
     console.log(`[CHAT] canUseTools=${canUseTools}, hasSearchKeys=${hasSearchKeys}, searchEnabled=${searchEnabled}, provider=${modelConfig.provider}`);
+
+    const searchKeysObj = {
+      tavilyKey: tavilyKey || process.env.TAVILY_API_KEY,
+      exaKey: exaKey || process.env.EXA_API_KEY,
+      firecrawlKey: firecrawlKey || process.env.FIRECRAWL_API_KEY,
+    };
+
+    const searchToolInstance = canUseTools ? createWebSearchTool(searchKeysObj) : null;
+    const browseToolInstance = canUseTools ? createBrowsePageTool(searchKeysObj) : null;
+    const mapToolInstance = canUseTools ? createMapWebsiteTool(searchKeysObj) : null;
+
+    const tools: Record<string, any> = {};
+
+    if (canUseTools && searchToolInstance) {
+      tools.webSearch = searchToolInstance;
+      tools.browsePage = browseToolInstance!;
+      tools.mapWebsite = mapToolInstance!;
+    }
+
+    const successfullyBoundServers: string[] = [];
+
+    if (mcpServers && mcpServers.length > 0) {
+      for (const server of mcpServers) {
+        if (!server.isEnabled) continue;
+
+        if (server.connectionMode === 'direct') {
+          // CLIENT-SIDE DIRECT TOOLS: Omit 'execute' method.
+          // Server only provides schemas. LLM tool-calls are streamed to the client.
+          for (const tool of server.cachedTools) {
+            tools[tool.name] = {
+              description: tool.description,
+              parameters: {
+                type: 'object',
+                properties: tool.inputSchema?.properties || {},
+                required: tool.inputSchema?.required || [],
+                additionalProperties: tool.inputSchema?.additionalProperties
+              }
+            };
+          }
+          successfullyBoundServers.push(server.name);
+        } else {
+          // SERVER-SIDE PROXY TOOLS: Contains 'execute' method.
+          // Executed immediately on Next.js server.
+          try {
+            const transportType = server.url.includes('/sse') ? 'sse' : 'http';
+            const mcpClient = await createMCPClient({
+              transport: {
+                type: transportType as 'sse' | 'http',
+                url: server.url,
+                headers: server.accessToken ? { 'Authorization': `Bearer ${server.accessToken}` } : undefined
+              }
+            });
+
+            const serverTools = await mcpClient.tools();
+            for (const [name, config] of Object.entries(serverTools)) {
+              // Ensure we register under the correct underscore-separated namespaced key matching client expectations
+              const resolvedKey = name.replace(/:/g, '_');
+              tools[resolvedKey] = {
+                ...config,
+                execute: async (args: any) => {
+                  try {
+                    const rawResult = await Promise.race([
+                      (config as any).execute(args),
+                      new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error(`Timeout: ${server.name} did not respond.`)), 6000)
+                      )
+                    ]);
+
+                    // Clean and unwrap the MCP tool result structure
+                    if (rawResult && typeof rawResult === 'object' && Array.isArray((rawResult as any).content)) {
+                      const textContent = (rawResult as any).content.find((c: any) => c.type === 'text');
+                      if (textContent && typeof textContent.text === 'string') {
+                        try {
+                          return JSON.parse(textContent.text);
+                        } catch {
+                          return { result: textContent.text };
+                        }
+                      }
+                    }
+
+                    if (typeof rawResult !== 'object' || rawResult === null) {
+                      return { result: String(rawResult) };
+                    }
+                    return rawResult;
+                  } catch (err: any) {
+                    return { error: err.message };
+                  }
+                }
+              };
+            }
+            successfullyBoundServers.push(server.name);
+          } catch (err) {
+            console.error(`[MCP Bind Error] ${server.name}:`, err);
+          }
+        }
+      }
+    }
 
     let finalSystemPrompt = systemPrompt || '';
     const dateInstruction = `Today's date is ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit', weekday: 'short' })}. Use this date to inform temporal reasoning and to construct accurate, current search queries (e.g., when asked about "this year", "recent events", or "latest releases").`;
@@ -204,56 +391,25 @@ IMPORTANT RULES:
       finalSystemPrompt = (finalSystemPrompt + '\n' + searchInstruction).trim();
     }
 
-    const searchKeysObj = {
-      tavilyKey: tavilyKey || process.env.TAVILY_API_KEY,
-      exaKey: exaKey || process.env.EXA_API_KEY,
-      firecrawlKey: firecrawlKey || process.env.FIRECRAWL_API_KEY,
-    };
+    if (successfullyBoundServers.length > 0) {
+      const namesList = successfullyBoundServers.join(', ');
+      const mcpInstruction = `
+You currently have the following active MCP App Integrations connected and loaded for this request: ${namesList}.
+- You MUST be proactive: if the user asks a question about their schedule, bookings, repositories, pages, or tasks, ALWAYS call the corresponding tools first to fetch information.
+- DO NOT lazily refuse or ask the user for specific IDs or UIDs (like event type IDs, repository names, page/database IDs, or booking UIDs) if list/search tools are available.
+- Always call listing or searching tools (e.g., listing upcoming bookings, searching files, listing pages) first to discover the relevant items and IDs yourself, and then filter them to answer the user's question.
+- If you encounter an error, explain it clearly to the user rather than giving up.
+`;
+      finalSystemPrompt = (finalSystemPrompt + '\n' + mcpInstruction).trim();
+    }
 
-    const searchToolInstance = canUseTools ? createWebSearchTool(searchKeysObj) : null;
-    const browseToolInstance = canUseTools ? createBrowsePageTool(searchKeysObj) : null;
-    const mapToolInstance = canUseTools ? createMapWebsiteTool(searchKeysObj) : null;
-
-    const toolsConfig = canUseTools && searchToolInstance ? {
-      tools: {
-        webSearch: searchToolInstance,
-        browsePage: browseToolInstance!,
-        mapWebsite: mapToolInstance!,
-      },
+    const toolsConfig = Object.keys(tools).length > 0 ? {
+      tools,
       toolChoice: 'auto' as const,
       maxSteps: 5,
+      stopWhen: stepCountIs(5),
       onStepFinish: ({ text, toolCalls, toolResults, finishReason }: any) => {
         console.log(`[CHAT Step Finish] reason=${finishReason}, textLength=${text?.length || 0}, toolCalls=${toolCalls?.length || 0}, toolResults=${toolResults?.length || 0}`);
-      },
-      prepareStep: async ({ steps }: { steps: any[] }) => {
-        if (steps.length === 0) {
-          return { toolChoice: 'auto' as const };
-        }
-        if (steps.length >= 5) {
-          return { toolChoice: 'none' as const, activeTools: [] };
-        }
-
-        // Prevent exact duplicate tool calls in previous steps to block infinite loops
-        const lastStep = steps[steps.length - 1];
-        if (lastStep && lastStep.toolCalls) {
-          const isDuplicate = steps.slice(0, -1).some(prevStep => 
-            prevStep.toolCalls?.some((prevTc: any) => 
-              lastStep.toolCalls.some((currTc: any) => 
-                prevTc.toolName === currTc.toolName && 
-                JSON.stringify(prevTc.args) === JSON.stringify(currTc.args)
-              )
-            )
-          );
-          if (isDuplicate) {
-            console.log('[CHAT prepareStep] Duplicate tool call detected. Aborting tools to prevent loops.');
-            return {
-              toolChoice: 'none' as const,
-              activeTools: [],
-            };
-          }
-        }
-
-        return { toolChoice: 'auto' as const };
       },
     } : {};
 
@@ -271,7 +427,7 @@ IMPORTANT RULES:
     }
 
     if (modelConfig.provider === 'zenmux' || modelConfig.provider === 'nvidia') {
-      const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron');
+      const isReasoningModel = model.includes('glm-5.2') || model.includes('pro') || model.includes('reasoning') || model.includes('gpt-oss') || model.includes('nemotron') || model.includes('step-') || model.includes('stepfun');
       
       let extraBody: Record<string, any> = {};
       if (model === 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning') {
@@ -321,7 +477,7 @@ IMPORTANT RULES:
         };
 
         // Force immediate header flush — prevents proxy/middleware buffering
-        safeEnqueue(encoder.encode(' '.repeat(2048)));
+        safeEnqueue(encoder.encode(' '.repeat(4096)));
 
         // Heartbeat: keeps the mobile/desktop connection alive during tool calls
         // (web search + browsePage can take 5–15s each, enough for browsers/proxies
@@ -397,7 +553,17 @@ IMPORTANT RULES:
                 hasThinkingStarted = false;
                 isReasoningDeltaActive = false;
               }
-              if (part.toolName === 'webSearch') {
+              
+              const isDirectTool = mcpServers?.some((s: any) => 
+                s.connectionMode === 'direct' && 
+                s.cachedTools?.some((t: any) => t.namespacedName === part.toolName)
+              );
+
+              if (isDirectTool) {
+                const escapedArgs = JSON.stringify((part as any).input || {}).replace(/"/g, '&quot;');
+                console.log(`[CHAT] Enqueuing direct mcp tool call: name="${part.toolName}"`);
+                safeEnqueue(encoder.encode(`<mcp-tool-call id="${(part as any).toolCallId}" name="${part.toolName}" args="${escapedArgs}" />`));
+              } else if (part.toolName === 'webSearch') {
                 const toolInput = (part as any).input || {};
                 const query = typeof toolInput === 'string' ? toolInput : toolInput.query || '';
                 if (query) {
@@ -423,6 +589,11 @@ IMPORTANT RULES:
                   console.log(`[CHAT] Enqueuing search-loading for mapWebsite: "${url}"`);
                   safeEnqueue(encoder.encode(`<search-loading query="Mapping ${escapedUrl}" />`));
                 }
+              } else {
+                // Any other server-side proxy tool call (Notion, Cal.com, etc.)
+                const toolName = part.toolName;
+                console.log(`[CHAT] Enqueuing search-loading for proxy tool: "${toolName}"`);
+                safeEnqueue(encoder.encode(`<search-loading query="Executing ${toolName}..." />`));
               }
 
             } else if (part.type === 'tool-result') {

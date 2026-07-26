@@ -27,6 +27,7 @@ export default function MainLayout({
     if (saved !== null) {
       setIsSidebarCollapsed(saved === 'true');
     }
+
     const frame = requestAnimationFrame(() => {
       setMounted(true);
     });
@@ -45,14 +46,30 @@ export default function MainLayout({
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  // Dismiss search & settings view when navigating to a library or another page
+  // Dismiss search & settings view when navigating, or restore settings state on chat load
   useEffect(() => {
-    if (pathname !== '/chat' && !pathname.startsWith('/chat/')) {
-      // Navigated away from chat entirely (e.g. /library) — close search and settings
+    const isValidChatPath = pathname === '/chat' || pathname.startsWith('/chat/') || pathname === '/' || pathname === '/apps';
+    
+    if (isValidChatPath) {
+      const restore = localStorage.getItem('mcp_oauth_restore_state');
+      if (restore) {
+        localStorage.removeItem('mcp_oauth_restore_state');
+        try {
+          const parsed = JSON.parse(restore);
+          if (parsed.provider) {
+            sessionStorage.setItem('settings-restore-provider', parsed.provider);
+          }
+        } catch (e) {
+          console.error('[OAuth Restore View Error]:', e);
+        }
+        router.push('/apps');
+      }
+    } else {
+      // Navigated away from chat entirely (e.g. /library or /auth/callback) — close search and settings
       setIsSearchActive(false);
       setIsSettingsActive(false);
     }
-  }, [pathname]);
+  }, [pathname, router]);
 
   // Keyboard shortcut Ctrl+B or Cmd+B to toggle sidebar
   useEffect(() => {
@@ -136,6 +153,12 @@ export default function MainLayout({
             }
             setIsSettingsActive(!isSettingsActive);
             setIsSearchActive(false);
+          }}
+          isIntegrationsActive={pathname === '/apps'}
+          onIntegrationsClick={() => {
+            setIsSearchActive(false);
+            setIsSettingsActive(false);
+            router.push('/apps');
           }}
           className={cn(
             "fixed top-0 bottom-0 left-0 z-50 h-dvh hidden md:flex",

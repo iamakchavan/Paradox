@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.83",
+    "@ai-sdk/mcp": "^1.0.55",
     "@ai-sdk/mistral": "^3.0.40",
     "@ai-sdk/openai": "^3.0.72",
     "@google/generative-ai": "^0.21.0",
     "@hookform/resolvers": "^3.9.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-aspect-ratio": "^1.1.0",

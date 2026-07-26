@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, memo, createContext, useContext, Children, isValidElement } from 'react';
-import { ChevronDown, FileText, Globe, Search, ShieldAlert, Loader2, ChevronLeft, ChevronRight, ExternalLink, ArrowUpRight } from 'lucide-react';
+import { ChevronDown, FileText, Globe, Search, ShieldAlert, Loader2, ChevronLeft, ChevronRight, ExternalLink, ArrowUpRight, Check, Cpu, Network, Terminal, Puzzle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -14,8 +14,10 @@ import { db } from '@/lib/db';
 import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from '@/components/ui/drawer';
 import { useCustomToast } from '@/components/ui/custom-toast';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { parseResearchStream, ResearchStep } from '@/lib/research/parser';
 import { ResearchTimeline } from './ResearchTimeline';
+import { getIntegrationFromToolName } from '@/utils/mcp-helpers';
 import {
   Tooltip,
   TooltipTrigger,
@@ -1006,11 +1008,228 @@ const WebSearchWidget = memo(({ searchData }: { searchData: { query: string; res
 });
 WebSearchWidget.displayName = 'WebSearchWidget';
 
+interface ParadoxTaskTimelineProps {
+  steps: string[];
+  isStreaming: boolean;
+}
+
+const ParadoxTaskTimeline = memo(({ steps, isStreaming }: ParadoxTaskTimelineProps) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
+  // Auto-expand the task timeline when it starts streaming tool calls
+  useEffect(() => {
+    if (isStreaming) {
+      setIsCollapsed(false);
+    }
+  }, [isStreaming]);
+
+  const integrations = useLiveQuery(() => db.mcpIntegrations.toArray()) || [];
+
+  const toolToIntegrationMap = useMemo(() => {
+    const map = new Map<string, any>();
+    for (const integration of integrations) {
+      if (integration.cachedTools && Array.isArray(integration.cachedTools)) {
+        for (const tool of integration.cachedTools) {
+          const cleanName = tool.name.replace(/:/g, '_');
+          map.set(cleanName.toLowerCase().replace(/[^a-z0-9]/g, ''), integration);
+          
+          const prefix = `${integration.id.toLowerCase()}_`;
+          if (cleanName.startsWith(prefix)) {
+            const originalName = cleanName.substring(prefix.length);
+            map.set(originalName.toLowerCase().replace(/[^a-z0-9]/g, ''), integration);
+          }
+        }
+      }
+    }
+    return map;
+  }, [integrations]);
+
+  if (!steps || steps.length === 0) return null;
+
+  const lastStepIndex = steps.length - 1;
+
+  const groupedSteps = useMemo(() => {
+    interface GroupedStep {
+      type: 'integration' | 'web' | 'read' | 'map' | 'other';
+      integrationId?: string;
+      name?: string;
+      logo?: any;
+      label: string;
+      subActions: string[];
+      isItemLoading: boolean;
+      isStepCompleted: boolean;
+    }
+
+    const grouped: GroupedStep[] = [];
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+      const isItemLoading = isStreaming && i === lastStepIndex;
+      const isStepCompleted = !isStreaming || i < lastStepIndex;
+
+      const integration = getIntegrationFromToolName(step, toolToIntegrationMap);
+
+      if (integration) {
+        const lastGrouped = grouped[grouped.length - 1];
+        if (lastGrouped && lastGrouped.type === 'integration' && lastGrouped.integrationId === integration.id) {
+          if (!lastGrouped.subActions.includes(integration.action)) {
+            lastGrouped.subActions.push(integration.action);
+          }
+          if (isItemLoading) lastGrouped.isItemLoading = true;
+          if (!isStepCompleted) lastGrouped.isStepCompleted = false;
+        } else {
+          grouped.push({
+            type: 'integration',
+            integrationId: integration.id,
+            name: integration.name,
+            logo: integration.logo,
+            label: `Using ${integration.name}`,
+            subActions: [integration.action],
+            isItemLoading,
+            isStepCompleted
+          });
+        }
+      } else {
+        let stepLabel = step;
+        let type: GroupedStep['type'] = 'other';
+
+        if (step.startsWith('Reading ')) {
+          stepLabel = `Reading page: ${step.replace('Reading ', '')}`;
+          type = 'read';
+        } else if (step.startsWith('Mapping ')) {
+          stepLabel = `Mapping site: ${step.replace('Mapping ', '')}`;
+          type = 'map';
+        } else if (step === 'Searching web...') {
+          stepLabel = 'Searching the web';
+          type = 'web';
+        }
+
+        grouped.push({
+          type,
+          label: stepLabel,
+          subActions: [],
+          isItemLoading,
+          isStepCompleted
+        });
+      }
+    }
+    return grouped;
+  }, [steps, isStreaming, lastStepIndex, toolToIntegrationMap]);
+
+  return (
+    <div className="w-full mb-6 mt-1.5 select-none">
+      {/* Inline Accordion Header */}
+      <button
+        type="button"
+        onClick={() => setIsCollapsed(prev => !prev)}
+        className="flex items-center gap-2 text-left cursor-pointer focus:outline-hidden group"
+      >
+        {isStreaming ? (
+          <div className="relative w-4 h-4 flex items-center justify-center shrink-0">
+            <motion.div
+              animate={{ scale: [0.8, 1.2, 0.8] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              className="absolute w-1.5 h-1.5 rounded-full bg-zinc-500 dark:bg-zinc-400"
+            />
+            <svg className="w-4 h-4 text-zinc-400/60 dark:text-zinc-500/60 animate-spin" viewBox="0 0 16 16">
+              <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3" />
+            </svg>
+          </div>
+        ) : (
+          <div className="w-4 h-4 rounded-full bg-emerald-500/10 border border-emerald-500/35 flex items-center justify-center shrink-0">
+            <Check className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" strokeWidth={3} />
+          </div>
+        )}
+        
+        <span className={cn(
+          "text-xs font-medium tracking-tight transition-all duration-300 flex items-center gap-1.5",
+          isStreaming 
+            ? "thinking-shine font-semibold" 
+            : "text-zinc-500 dark:text-zinc-400 hover:text-foreground"
+        )}>
+          {isStreaming ? 'Running Paradox task...' : 'Paradox task complete'}
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-normal">
+            ({steps.length} {steps.length === 1 ? 'action' : 'actions'})
+          </span>
+        </span>
+        <ChevronDown className={cn("w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 transition-transform duration-250", !isCollapsed && "rotate-180")} />
+      </button>
+
+      {/* Inline Collapsible Steps List */}
+      <AnimatePresence initial={false}>
+        {!isCollapsed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="pt-3 pl-3 space-y-3.5 border-l border-zinc-200 dark:border-zinc-800 ml-[7px] mt-1.5 pb-1">
+              {groupedSteps.map((group, idx) => {
+                let iconNode: React.ReactNode = null;
+
+                if (group.type === 'integration') {
+                  const AppIcon = group.logo;
+                  iconNode = (
+                    <div className="w-4 h-4 shrink-0 flex items-center justify-center text-foreground">
+                      <AppIcon className="w-3.5 h-3.5" />
+                    </div>
+                  );
+                } else {
+                  let LucideIcon = Terminal;
+                  if (group.type === 'read') {
+                    LucideIcon = Globe;
+                  } else if (group.type === 'map') {
+                    LucideIcon = Network;
+                  } else if (group.type === 'web') {
+                    LucideIcon = Search;
+                  }
+                  iconNode = <LucideIcon className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />;
+                }
+
+                return (
+                  <div key={idx} className="flex items-start gap-2.5 relative group">
+                    <div className="pt-0.5 select-none">
+                      {iconNode}
+                    </div>
+
+                    <div className="flex-1 min-w-0 flex flex-col pt-0.5">
+                      <span className={cn(
+                        "text-[11px] font-medium leading-tight truncate",
+                        group.isItemLoading 
+                          ? "thinking-shine font-semibold" 
+                          : "text-zinc-600 dark:text-zinc-400"
+                      )}>
+                        {group.label}
+                      </span>
+                      {group.subActions.length > 0 && (
+                        <div className="flex flex-col gap-0.5 mt-0.5 pl-0.5">
+                          {group.subActions.map((subAction, sIdx) => (
+                            <span key={sIdx} className="text-[9.5px] text-zinc-400 dark:text-zinc-500 font-mono font-medium leading-none">
+                              {subAction}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+});
+ParadoxTaskTimeline.displayName = 'ParadoxTaskTimeline';
+
 // Helper to extract search tags from content stream
 const extractSearchData = (content: string) => {
   let searchLoadingQuery: string | null = null;
   let searchData: { query: string; results: Array<{ title: string; url: string; content: string }> } | null = null;
   let cleanContent = content;
+  let toolSteps: string[] = [];
 
   // Extract search results
   const resultsMatch = content.match(/<search-results>([\s\S]*?)<\/search-results>/);
@@ -1023,14 +1242,16 @@ const extractSearchData = (content: string) => {
     }
   }
 
-  // Extract search loading query
-  const loadingMatch = content.match(/<search-loading query="([\s\S]*?)" \/>/);
-  if (loadingMatch) {
-    searchLoadingQuery = loadingMatch[1].replace(/&quot;/g, '"');
+  // Extract search loading query (last match in content to reflect active status)
+  const loadingMatches = Array.from(content.matchAll(/<search-loading query="([\s\S]*?)" \/>/g));
+  if (loadingMatches.length > 0) {
+    toolSteps = loadingMatches.map(m => m[1].replace(/&quot;/g, '"'));
+    const lastMatch = loadingMatches[loadingMatches.length - 1];
+    searchLoadingQuery = lastMatch[1].replace(/&quot;/g, '"');
     cleanContent = cleanContent.replace(/<search-loading query="[\s\S]*?" \/>/g, '');
   }
 
-  return { searchLoadingQuery, searchData, cleanContent: cleanContent.trim() };
+  return { searchLoadingQuery, searchData, toolSteps, cleanContent: cleanContent.trim() };
 };
 
 interface SearchData {
@@ -1093,6 +1314,8 @@ const MessageComponent = ({
     (modelMode.startsWith('gemini') && modelMode.toLowerCase().includes('pro')) || 
     modelMode.toLowerCase().includes('reasoning') ||
     modelMode.toLowerCase().includes('gpt-oss') ||
+    modelMode.toLowerCase().includes('step-') ||
+    modelMode.toLowerCase().includes('stepfun') ||
     (modelMode.toLowerCase().includes('nemotron') && (modelMode.includes('super') || modelMode.includes('ultra')))
   ));
 
@@ -1209,7 +1432,7 @@ const MessageComponent = ({
   const prevSearchDataRef = useRef<SearchData | null>(null);
 
   // Group parsing and reference stabilization in a single useMemo keyed by rawMainContent
-  const { steps, searchLoadingQuery, searchData, mainContent, researchTime } = useMemo(() => {
+  const { steps, searchLoadingQuery, searchData, toolSteps, mainContent, researchTime } = useMemo(() => {
     let mainContent = rawMainContent;
     let researchTime = 0;
 
@@ -1219,20 +1442,24 @@ const MessageComponent = ({
       mainContent = mainContent.replace(/<researchTime>[\d\.]+<\/researchTime>/g, '');
     }
 
-    const isDeepResearch = mainContent.includes('<research-step');
+    const isDeepResearch = message.content.includes('<research-step');
     let parsedSteps: ResearchStep[] = [];
     let searchLoadingQuery: string | null = null;
     let parsedSearchData: SearchData | null = null;
+    let parsedToolSteps: string[] = [];
 
     if (isDeepResearch) {
-      const parsed = parseResearchStream(mainContent);
+      const parsed = parseResearchStream(message.content);
       parsedSteps = parsed.steps;
-      mainContent = parsed.cleanContent;
+      const cleanData = parseResearchStream(mainContent);
+      mainContent = cleanData.cleanContent;
     } else {
-      const parsed = extractSearchData(mainContent);
+      const parsed = extractSearchData(message.content);
       searchLoadingQuery = parsed.searchLoadingQuery;
       parsedSearchData = parsed.searchData;
-      mainContent = parsed.cleanContent;
+      parsedToolSteps = parsed.toolSteps;
+      const cleanData = extractSearchData(mainContent);
+      mainContent = cleanData.cleanContent;
     }
 
     // Stabilize steps array and items referentially
@@ -1258,10 +1485,11 @@ const MessageComponent = ({
       steps: finalSteps,
       searchLoadingQuery,
       searchData: finalSearchData,
+      toolSteps: parsedToolSteps,
       mainContent,
       researchTime
     };
-  }, [rawMainContent]);
+  }, [rawMainContent, message.content]);
   
   // Aggregate all search results across standard search and deep research
   const allSearchResults = useMemo(() => {
@@ -1370,7 +1598,11 @@ const MessageComponent = ({
           <ResearchTimeline steps={steps} isLoading={isStreaming} researchTime={researchTime} />
         )}
 
-        {searchLoadingQuery && !searchData && isStreaming && (() => {
+        {toolSteps && toolSteps.length > 0 && (
+          <ParadoxTaskTimeline steps={toolSteps} isStreaming={isStreaming} />
+        )}
+
+        {searchLoadingQuery && !searchData && isStreaming && (!toolSteps || toolSteps.length === 0) && (() => {
           let mainStatus = 'Searching web...';
           let subStatus = searchLoadingQuery;
 
@@ -1380,6 +1612,9 @@ const MessageComponent = ({
           } else if (searchLoadingQuery.startsWith('Mapping ')) {
             mainStatus = 'Exploring website...';
             subStatus = searchLoadingQuery.replace('Mapping ', '');
+          } else if (searchLoadingQuery.startsWith('Executing ')) {
+            mainStatus = 'Calling app tool...';
+            subStatus = searchLoadingQuery.replace('Executing ', '');
           }
 
           return (

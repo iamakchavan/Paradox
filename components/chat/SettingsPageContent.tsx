@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import {
   Key, Eye, EyeOff,
-  Sun, Moon, ExternalLink, Database, Cpu, ChevronDown
+  Sun, Moon, ExternalLink, Database, Cpu, ChevronDown, Grid
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -11,11 +11,13 @@ import { Input } from '@/components/ui/input';
 import { useCustomToast } from '@/components/ui/custom-toast';
 import { ApiKeys } from '@/hooks/use-api-keys';
 import { motion, AnimatePresence } from 'framer-motion';
+import { IntegrationsTab } from './integrations/IntegrationsTab';
 
 interface SettingsPageContentProps {
   apiKeys: ApiKeys;
   updateKey: (keyName: keyof ApiKeys, value: string | null) => void;
   onClose: () => void;
+  defaultTab?: TabType;
 }
 
 type TabType = 'ai-providers' | 'search-scraping' | 'appearance';
@@ -43,10 +45,19 @@ const SEARCH_FIELDS: KeyField[] = [
   { key: 'firecrawlApiKey', storageKey: 'firecrawl-api-key', label: 'Firecrawl API Key (Search/Scrape)', placeholder: 'Enter Firecrawl API key', href: 'https://www.firecrawl.dev/' },
 ];
 
-export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPageContentProps) {
+export function SettingsPageContent({ apiKeys, updateKey, onClose, defaultTab }: SettingsPageContentProps) {
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { showToast } = useCustomToast();
-  const [activeTab, setActiveTab] = useState<TabType>('appearance');
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('settings-default-tab');
+      if (stored === 'ai-providers' || stored === 'search-scraping' || stored === 'appearance') {
+        sessionStorage.removeItem('settings-default-tab');
+        return stored;
+      }
+    }
+    return defaultTab || 'appearance';
+  });
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [localDark, setLocalDark] = useState(resolvedTheme === 'dark');
 
@@ -234,47 +245,42 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
   );
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 flex flex-col h-full select-none">
+    <div className="w-full max-w-[1200px] mx-auto px-6 sm:px-10 pt-20 sm:pt-24 flex flex-col h-full select-none">
       {/* Title Header */}
-      <div className="flex-shrink-0 mb-6 border-b border-zinc-200/50 dark:border-zinc-800/50 pb-4 flex items-center justify-between">
-        <div className="flex items-center">
-          <div>
-            <h1 className="text-lg sm:text-2xl font-semibold tracking-tight text-foreground">Settings</h1>
-            <p className="text-xs text-muted-foreground/80 mt-1 hidden md:block">Configure your API credentials, search credentials, and theme preferences.</p>
-          </div>
+      <div className="flex-shrink-0 mb-6 border-b border-border pb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg sm:text-2xl font-semibold tracking-tight text-foreground">Settings</h1>
+          <p className="text-xs text-muted-foreground mt-1 hidden md:block">Configure your API credentials, search credentials, and theme preferences.</p>
         </div>
 
-        {/* Mobile-only Save Button */}
-        <button
-          type="button"
+        {/* Header Save Button */}
+        <Button
+          size="sm"
           onClick={handleSave}
-          className="md:hidden px-4 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full text-xs font-semibold shadow-sm transition-all active:scale-[0.97]"
+          className="md:hidden h-8 px-3 rounded-lg text-xs font-medium cursor-pointer"
         >
           Save
-        </button>
+        </Button>
       </div>
 
-      {/* Main double pane container */}
-      <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 pb-6 overflow-hidden">
-
-        {/* Desktop Sidebar Navigation / Mobile Apple Segmented Control */}
-        <div className="flex-shrink-0 md:w-56 flex flex-row md:flex-col p-[3px] md:p-0 bg-zinc-200/60 dark:bg-zinc-900 md:bg-transparent md:dark:bg-transparent rounded-xl md:rounded-none md:border-r border-zinc-200/40 dark:border-zinc-800/40 md:pr-4 md:gap-1.5 gap-0">
+      {/* Main settings container */}
+      <div className="flex-1 flex flex-col min-h-0 pb-6 overflow-hidden">
+        {/* Horizontal Tab Switcher on top */}
+        <div className="flex-shrink-0 flex items-center p-1 bg-zinc-100/80 dark:bg-zinc-900/60 border border-border rounded-xl w-fit mb-6">
           {navItems.map((item) => {
-            const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={cn(
-                  "flex items-center justify-center md:justify-start gap-2 px-3 py-1.5 md:px-3.5 md:py-2.5 rounded-lg md:rounded-xl text-center md:text-left transition-all duration-200 flex-1 md:flex-none text-xs md:text-sm font-medium",
+                  "px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all select-none cursor-pointer",
                   isActive
-                    ? "bg-white dark:bg-zinc-800 md:bg-zinc-100 md:dark:bg-zinc-900 shadow-[0_1px_3px_rgba(0,0,0,0.12)] md:shadow-none border border-transparent md:border-zinc-200/50 md:dark:border-zinc-800/50 text-foreground font-semibold"
-                    : "text-zinc-550 dark:text-zinc-400 hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 md:hover:bg-black/[0.04] md:dark:hover:bg-white/[0.04]"
+                    ? "bg-white dark:bg-zinc-800 text-foreground shadow-xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Icon className={cn("w-4 h-4 flex-shrink-0 hidden md:block", isActive ? "text-cyan-600 dark:text-cyan-400" : "text-muted-foreground/75")} />
-                <span>{item.label}</span>
+                {item.label}
               </button>
             );
           })}
@@ -346,18 +352,17 @@ export function SettingsPageContent({ apiKeys, updateKey, onClose }: SettingsPag
             </div>
           </div>
 
-          {/* Action footer inside content pane - hidden on mobile (Save/Back are top-aligned), clean footer on desktop */}
-          <div className="hidden md:flex items-center gap-3 relative bottom-auto left-auto translate-x-0 rounded-none border-0 shadow-none bg-transparent backdrop-blur-none p-0 justify-end pt-4 border-t border-zinc-200/40 dark:border-zinc-800/40">
+          <div className="hidden md:flex items-center gap-3 relative bottom-auto left-auto translate-x-0 rounded-none border-0 shadow-none bg-transparent backdrop-blur-none p-0 justify-end pt-4 border-t border-zinc-200/40 dark:border-zinc-800/40 shrink-0">
             <Button
               variant="outline"
               onClick={onClose}
-              className="h-9 px-4 rounded-full text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800/80 transition-all active:scale-[0.97]"
+              className="h-9 px-4 rounded-lg text-xs font-medium hover:bg-zinc-100 dark:hover:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800/80 transition-all active:scale-[0.97]"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
-              className="h-9 px-5 rounded-full text-xs font-semibold bg-cyan-600 hover:bg-cyan-700 text-white dark:bg-cyan-800/90 dark:hover:bg-cyan-700/90 shadow-sm transition-all active:scale-[0.97]"
+              className="h-9 px-5 rounded-lg text-xs font-medium bg-cyan-600 hover:bg-cyan-700 text-white dark:bg-cyan-800/90 dark:hover:bg-cyan-700/90 shadow-sm transition-all active:scale-[0.97]"
             >
               Save Changes
             </Button>
