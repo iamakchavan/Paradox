@@ -1,2 +1,3 @@
+# Exclude primitive UI components and utility hooks from generator sync
 components/ui/*
 hooks/use-toast.ts
