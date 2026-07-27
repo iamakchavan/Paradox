@@ -17,35 +17,41 @@ export function useIntegrationActions() {
   const { showToast } = useCustomToast();
   const [isSyncing, setIsSyncing] = useState<Record<string, boolean>>({});
 
-  const triggerOAuthFlow = async (provider: string, remoteUrl: string, customScopeOverride?: string) => {
+  const triggerOAuthFlow = async (
+    provider: string,
+    remoteUrl: string,
+    customScopeOverride?: string,
+    existingPopup?: Window | null
+  ) => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // 0. Synchronously open blank popup on desktop user gesture before async network calls
-    let preOpenedPopup: Window | null = null;
-    if (!isMobile && typeof window !== 'undefined') {
+    // 0. Synchronously open blank popup on desktop user gesture before async network calls (if not pre-opened)
+    let preOpenedPopup: Window | null = existingPopup ?? null;
+    if (!isMobile && typeof window !== 'undefined' && !preOpenedPopup) {
       try {
         preOpenedPopup = window.open('about:blank', 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
-        if (preOpenedPopup && !preOpenedPopup.closed) {
-          try {
-            preOpenedPopup.document.write(`
-              <!DOCTYPE html>
-              <html>
-                <head><title>Connecting to ${provider}...</title></head>
-                <body style="font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#09090b;color:#f4f4f5;">
-                  <div style="text-align:center;">
-                    <div style="display:inline-block;width:24px;height:24px;border:2px solid #3f3f46;border-top-color:#f4f4f5;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-                    <p style="margin-top:14px;font-size:13px;color:#a1a1aa;font-weight:500;">Connecting to ${provider}...</p>
-                  </div>
-                  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-                </body>
-              </html>
-            `);
-          } catch {
-            // ignore doc write restrictions
-          }
-        }
       } catch {
         preOpenedPopup = null;
+      }
+    }
+
+    if (preOpenedPopup && !preOpenedPopup.closed) {
+      try {
+        preOpenedPopup.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head><title>Connecting to ${provider}...</title></head>
+            <body style="font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#09090b;color:#f4f4f5;">
+              <div style="text-align:center;">
+                <div style="display:inline-block;width:24px;height:24px;border:2px solid #3f3f46;border-top-color:#f4f4f5;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+                <p style="margin-top:14px;font-size:13px;color:#a1a1aa;font-weight:500;">Connecting to ${provider}...</p>
+              </div>
+              <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+            </body>
+          </html>
+        `);
+      } catch {
+        // ignore doc write restrictions
       }
     }
 
@@ -228,6 +234,18 @@ export function useIntegrationActions() {
 
   // OAuth triggering flow
   const handleConnectOAuth = async (provider: string, remoteUrl: string) => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // Open popup synchronously on initial user click BEFORE any async network calls
+    let syncPopup: Window | null = null;
+    if (!isMobile && typeof window !== 'undefined') {
+      try {
+        syncPopup = window.open('about:blank', 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+      } catch {
+        syncPopup = null;
+      }
+    }
+
     try {
       showToast({
         title: 'Connecting Account',
@@ -251,6 +269,10 @@ export function useIntegrationActions() {
       const name = tmpl?.name || provider.charAt(0).toUpperCase() + provider.slice(1);
 
       if (!supportsOAuth) {
+        if (syncPopup && !syncPopup.closed) {
+          syncPopup.close();
+        }
+
         // Register as No Auth / Public
         await db.mcpIntegrations.put({
           id: provider,
@@ -293,9 +315,12 @@ export function useIntegrationActions() {
         createdAt: Date.now()
       });
 
-      // Fresh OAuth negotiation each connect — do not reuse prior scope overrides.
-      await triggerOAuthFlow(provider, remoteUrl);
+      // Fresh OAuth negotiation each connect — pass pre-opened popup reference
+      await triggerOAuthFlow(provider, remoteUrl, undefined, syncPopup);
     } catch (e: any) {
+      if (syncPopup && !syncPopup.closed) {
+        syncPopup.close();
+      }
       showToast({
         title: 'Connection Failed',
         message: e.message || 'Could not register integration.',
