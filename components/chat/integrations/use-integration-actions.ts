@@ -18,6 +18,37 @@ export function useIntegrationActions() {
   const [isSyncing, setIsSyncing] = useState<Record<string, boolean>>({});
 
   const triggerOAuthFlow = async (provider: string, remoteUrl: string, customScopeOverride?: string) => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // 0. Synchronously open blank popup on desktop user gesture before async network calls
+    let preOpenedPopup: Window | null = null;
+    if (!isMobile && typeof window !== 'undefined') {
+      try {
+        preOpenedPopup = window.open('about:blank', 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+        if (preOpenedPopup && !preOpenedPopup.closed) {
+          try {
+            preOpenedPopup.document.write(`
+              <!DOCTYPE html>
+              <html>
+                <head><title>Connecting to ${provider}...</title></head>
+                <body style="font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#09090b;color:#f4f4f5;">
+                  <div style="text-align:center;">
+                    <div style="display:inline-block;width:24px;height:24px;border:2px solid #3f3f46;border-top-color:#f4f4f5;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+                    <p style="margin-top:14px;font-size:13px;color:#a1a1aa;font-weight:500;">Connecting to ${provider}...</p>
+                  </div>
+                  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+                </body>
+              </html>
+            `);
+          } catch {
+            // ignore doc write restrictions
+          }
+        }
+      } catch {
+        preOpenedPopup = null;
+      }
+    }
+
     try {
       showToast({
         title: 'Authorizing App',
@@ -32,7 +63,6 @@ export function useIntegrationActions() {
         throw new Error('Could not discover OAuth metadata endpoints on this remote MCP server.');
       }
 
-      const isMobile = window.innerWidth < 768;
       const { origin } = window.location;
       const redirectUri = `${origin}/auth/callback`;
 
@@ -152,11 +182,9 @@ export function useIntegrationActions() {
         // ignore invalid remoteUrl
       }
 
-      if (isMobile) {
-        localStorage.setItem('mcp_oauth_restore_state', JSON.stringify({ provider }));
-        window.location.href = authorizeUrl;
-      } else {
-        const popup = window.open(authorizeUrl, 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+      if (!isMobile && preOpenedPopup && !preOpenedPopup.closed) {
+        preOpenedPopup.location.href = authorizeUrl;
+        preOpenedPopup.focus?.();
         
         const handleMessage = async (event: MessageEvent) => {
           if (
@@ -177,8 +205,17 @@ export function useIntegrationActions() {
         };
         
         window.addEventListener('message', handleMessage);
+      } else {
+        if (preOpenedPopup && !preOpenedPopup.closed) {
+          preOpenedPopup.close();
+        }
+        localStorage.setItem('mcp_oauth_restore_state', JSON.stringify({ provider }));
+        window.location.href = authorizeUrl;
       }
     } catch (err: any) {
+      if (preOpenedPopup && !preOpenedPopup.closed) {
+        preOpenedPopup.close();
+      }
       console.error(err);
       showToast({
         title: 'Authorization Failed',
@@ -330,7 +367,23 @@ export function useIntegrationActions() {
             type: 'info',
             mode: 'capsule'
           });
-          const popup = window.open(data.authorizationUrl, 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+
+          let popup: Window | null = null;
+          const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+          if (!isMobile) {
+            try {
+              popup = window.open(data.authorizationUrl, 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+            } catch {
+              popup = null;
+            }
+          }
+
+          if (!popup || popup.closed) {
+            localStorage.setItem('mcp_oauth_restore_state', JSON.stringify({ provider: integrationId }));
+            window.location.href = data.authorizationUrl;
+            setIsSyncing(prev => ({ ...prev, [integrationId]: false }));
+            return;
+          }
           
           const handleMessage = (event: MessageEvent) => {
             if (
