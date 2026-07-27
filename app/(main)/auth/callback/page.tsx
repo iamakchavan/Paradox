@@ -168,9 +168,9 @@ function AuthCallbackContent() {
             : 'Integration connected successfully!'
         );
 
-        if (isMobile) {
+        if (isMobile || !window.opener) {
           setTimeout(() => {
-            router.push('/');
+            router.push('/apps');
           }, 800);
         } else {
           window.opener?.postMessage(
@@ -179,6 +179,11 @@ function AuthCallbackContent() {
           );
           setTimeout(() => {
             window.close();
+            setTimeout(() => {
+              if (typeof window !== 'undefined' && !window.closed) {
+                router.push('/apps');
+              }
+            }, 500);
           }, 800);
         }
       };
