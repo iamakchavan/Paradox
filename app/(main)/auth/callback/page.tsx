@@ -84,10 +84,11 @@ function AuthCallbackContent() {
       }
       const { provider, isMobile, chatId, csrf, stateId, remoteUrl } = parsedState;
 
-      // 1. Retrieve CSRF token from shared sessionStorage using static key
-      const savedCsrf = sessionStorage.getItem('oauth_pending_csrf');
+      // 1. Retrieve CSRF token from shared storage
+      const savedCsrf = localStorage.getItem('oauth_pending_csrf') || sessionStorage.getItem('oauth_pending_csrf');
 
       // 2. Immediate cleanup to prevent token replay attacks
+      localStorage.removeItem('oauth_pending_csrf');
       sessionStorage.removeItem('oauth_pending_csrf');
 
       if (!savedCsrf || savedCsrf !== csrf) {
@@ -189,13 +190,18 @@ function AuthCallbackContent() {
       };
 
       // 4. Swap code using PKCE if remote OAuth endpoint is set
-      const codeVerifier = sessionStorage.getItem('oauth_pending_verifier');
-      const clientId = sessionStorage.getItem('oauth_pending_client');
-      const clientSecret = sessionStorage.getItem('oauth_pending_secret');
-      const authorizedScope = sessionStorage.getItem('oauth_pending_scope');
-      const tokenEndpoint = sessionStorage.getItem('oauth_pending_token_endpoint');
+      const codeVerifier = localStorage.getItem('oauth_pending_verifier') || sessionStorage.getItem('oauth_pending_verifier');
+      const clientId = localStorage.getItem('oauth_pending_client') || sessionStorage.getItem('oauth_pending_client');
+      const clientSecret = localStorage.getItem('oauth_pending_secret') || sessionStorage.getItem('oauth_pending_secret');
+      const authorizedScope = localStorage.getItem('oauth_pending_scope') || sessionStorage.getItem('oauth_pending_scope');
+      const tokenEndpoint = localStorage.getItem('oauth_pending_token_endpoint') || sessionStorage.getItem('oauth_pending_token_endpoint');
 
-      // Cleanup verifier state
+      // Cleanup verifier state from both storage mechanisms
+      localStorage.removeItem('oauth_pending_verifier');
+      localStorage.removeItem('oauth_pending_client');
+      localStorage.removeItem('oauth_pending_secret');
+      localStorage.removeItem('oauth_pending_scope');
+      localStorage.removeItem('oauth_pending_token_endpoint');
       sessionStorage.removeItem('oauth_pending_verifier');
       sessionStorage.removeItem('oauth_pending_client');
       sessionStorage.removeItem('oauth_pending_secret');

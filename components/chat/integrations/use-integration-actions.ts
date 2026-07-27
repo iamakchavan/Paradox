@@ -117,6 +117,19 @@ export function useIntegrationActions() {
       const codeVerifier = generateCodeVerifier();
       const codeChallenge = await generateCodeChallenge(codeVerifier);
       
+      localStorage.setItem('oauth_pending_csrf', csrf);
+      localStorage.setItem('oauth_pending_verifier', codeVerifier);
+      localStorage.setItem('oauth_pending_client', clientId);
+      localStorage.removeItem('oauth_pending_secret');
+      localStorage.removeItem('oauth_pending_scope');
+      if (clientSecret) {
+        localStorage.setItem('oauth_pending_secret', clientSecret);
+      }
+      if (authorizationScope) {
+        localStorage.setItem('oauth_pending_scope', authorizationScope);
+      }
+      localStorage.setItem('oauth_pending_token_endpoint', metadata.token_endpoint);
+
       sessionStorage.setItem('oauth_pending_csrf', csrf);
       sessionStorage.setItem('oauth_pending_verifier', codeVerifier);
       sessionStorage.setItem('oauth_pending_client', clientId);
