@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { CustomToastProvider } from '@/components/ui/custom-toast';
 import { MotionPreferencesProvider } from '@/components/motion-preferences-provider';
 import { AnswerFontProvider } from '@/components/answer-font-provider';
+import { StorageDurabilityBootstrap } from '@/components/storage-durability-bootstrap';
 import { JetBrains_Mono, Source_Serif_4 } from 'next/font/google';
 
 const jetbrainsMono = JetBrains_Mono({
@@ -81,6 +82,7 @@ export default function RootLayout({
             <MotionPreferencesProvider>
               <AnswerFontProvider>
                 <CustomToastProvider>
+                  <StorageDurabilityBootstrap />
                   {children}
                   <Analytics />
                   <SpeedInsights />
