@@ -173,7 +173,13 @@ export function useChatInputController(props: ChatInputProps) {
     if (!props.researchEnabled) setIsResearchCapsuleHovered(false);
   }, [props.researchEnabled]);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isSendDisabled = useMemo(() => {
+    if (!mounted) return false;
     const activeModel = MODELS_REGISTRY.find(model => model.id === props.selectedModelId) || MODELS_REGISTRY[0];
     const key = activeModel.provider === 'google'
       ? props.geminiApiKey
@@ -187,13 +193,15 @@ export function useChatInputController(props: ChatInputProps) {
               ? props.inceptionApiKey
               : props.zenmuxApiKey;
     return !key || !(localMessage.trim() || props.selectedImages.length > 0 || props.selectedPDFs.length > 0);
-  }, [localMessage, props.geminiApiKey, props.inceptionApiKey, props.mistralApiKey, props.nvidiaApiKey, props.perplexityApiKey, props.selectedImages, props.selectedModelId, props.selectedPDFs, props.zenmuxApiKey]);
-  const isInputDisabled = !props.geminiApiKey
+  }, [mounted, localMessage, props.geminiApiKey, props.inceptionApiKey, props.mistralApiKey, props.nvidiaApiKey, props.perplexityApiKey, props.selectedImages, props.selectedModelId, props.selectedPDFs, props.zenmuxApiKey]);
+  const isInputDisabled = mounted && (
+    !props.geminiApiKey
     && !props.mistralApiKey
     && !props.perplexityApiKey
     && !props.zenmuxApiKey
     && !props.nvidiaApiKey
-    && !props.inceptionApiKey;
+    && !props.inceptionApiKey
+  );
 
   const updateMessage = useCallback((value: string, nextCaretPosition: number) => {
     setLocalMessage(value);

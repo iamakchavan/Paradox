@@ -26,33 +26,13 @@ export function useIntegrationActions() {
   ) => {
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-    // 0. Synchronously open blank popup on desktop user gesture before async network calls (if not pre-opened)
+    // 0. Synchronously open same-origin placeholder popup on desktop user gesture before async network calls
     let preOpenedPopup: Window | null = existingPopup ?? null;
     if (!isMobile && typeof window !== 'undefined' && !preOpenedPopup) {
       try {
-        preOpenedPopup = window.open('', 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+        preOpenedPopup = window.open('/auth/loading', 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
       } catch {
         preOpenedPopup = null;
-      }
-    }
-
-    if (preOpenedPopup && !preOpenedPopup.closed) {
-      try {
-        preOpenedPopup.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head><title>Connecting to ${provider}...</title></head>
-            <body style="font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#09090b;color:#f4f4f5;">
-              <div style="text-align:center;">
-                <div style="display:inline-block;width:24px;height:24px;border:2px solid #3f3f46;border-top-color:#f4f4f5;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-                <p style="margin-top:14px;font-size:13px;color:#a1a1aa;font-weight:500;">Connecting to ${provider}...</p>
-              </div>
-              <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-            </body>
-          </html>
-        `);
-      } catch {
-        // ignore doc write restrictions
       }
     }
 
@@ -137,6 +117,19 @@ export function useIntegrationActions() {
       const codeVerifier = generateCodeVerifier();
       const codeChallenge = await generateCodeChallenge(codeVerifier);
       
+      localStorage.setItem('oauth_pending_csrf', csrf);
+      localStorage.setItem('oauth_pending_verifier', codeVerifier);
+      localStorage.setItem('oauth_pending_client', clientId);
+      localStorage.removeItem('oauth_pending_secret');
+      localStorage.removeItem('oauth_pending_scope');
+      if (clientSecret) {
+        localStorage.setItem('oauth_pending_secret', clientSecret);
+      }
+      if (authorizationScope) {
+        localStorage.setItem('oauth_pending_scope', authorizationScope);
+      }
+      localStorage.setItem('oauth_pending_token_endpoint', metadata.token_endpoint);
+
       sessionStorage.setItem('oauth_pending_csrf', csrf);
       sessionStorage.setItem('oauth_pending_verifier', codeVerifier);
       sessionStorage.setItem('oauth_pending_client', clientId);
@@ -195,7 +188,7 @@ export function useIntegrationActions() {
         return;
       }
 
-      // Desktop Flow: Strictly use Popup Window
+      // Desktop Flow: Update pre-opened popup, or open direct popup
       let targetPopup = preOpenedPopup && !preOpenedPopup.closed ? preOpenedPopup : null;
       if (!targetPopup) {
         try {
@@ -228,12 +221,12 @@ export function useIntegrationActions() {
         
         window.addEventListener('message', handleMessage);
       } else {
-        showToast({
-          title: 'Pop-up Blocked',
-          message: 'Please allow pop-ups for this site to complete authentication.',
-          type: 'error',
-          mode: 'capsule'
-        });
+        // Fallback for strict browser restrictions (e.g. Safari / Brave Shields): tab navigation
+        if (preOpenedPopup && !preOpenedPopup.closed) {
+          preOpenedPopup.close();
+        }
+        localStorage.setItem('mcp_oauth_restore_state', JSON.stringify({ provider }));
+        window.location.href = authorizeUrl;
       }
     } catch (err: any) {
       if (preOpenedPopup && !preOpenedPopup.closed) {
@@ -257,7 +250,7 @@ export function useIntegrationActions() {
     let syncPopup: Window | null = null;
     if (!isMobile && typeof window !== 'undefined') {
       try {
-        syncPopup = window.open('', 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+        syncPopup = window.open('/auth/loading', 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
       } catch {
         syncPopup = null;
       }
