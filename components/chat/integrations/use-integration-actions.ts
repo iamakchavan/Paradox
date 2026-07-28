@@ -17,7 +17,25 @@ export function useIntegrationActions() {
   const { showToast } = useCustomToast();
   const [isSyncing, setIsSyncing] = useState<Record<string, boolean>>({});
 
-  const triggerOAuthFlow = async (provider: string, remoteUrl: string, customScopeOverride?: string) => {
+  const triggerOAuthFlow = async (
+    provider: string,
+    remoteUrl: string,
+    customScopeOverride?: string,
+    existingPopup?: Window | null,
+    preDiscoveredMetadata?: any
+  ) => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // 0. Synchronously open same-origin placeholder popup on desktop user gesture before async network calls
+    let preOpenedPopup: Window | null = existingPopup ?? null;
+    if (!isMobile && typeof window !== 'undefined' && !preOpenedPopup) {
+      try {
+        preOpenedPopup = window.open('/auth/loading', 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+      } catch {
+        preOpenedPopup = null;
+      }
+    }
+
     try {
       showToast({
         title: 'Authorizing App',
@@ -26,13 +44,12 @@ export function useIntegrationActions() {
         mode: 'capsule'
       });
 
-      // 1. Discover OAuth Metadata from the remote MCP server
-      const metadata = await discoverOAuthMetadata(remoteUrl);
+      // 1. Discover OAuth Metadata from the remote MCP server (reuse pre-discovered if provided)
+      const metadata = preDiscoveredMetadata || (await discoverOAuthMetadata(remoteUrl));
       if (!metadata) {
         throw new Error('Could not discover OAuth metadata endpoints on this remote MCP server.');
       }
 
-      const isMobile = window.innerWidth < 768;
       const { origin } = window.location;
       const redirectUri = `${origin}/auth/callback`;
 
@@ -100,6 +117,19 @@ export function useIntegrationActions() {
       const codeVerifier = generateCodeVerifier();
       const codeChallenge = await generateCodeChallenge(codeVerifier);
       
+      localStorage.setItem('oauth_pending_csrf', csrf);
+      localStorage.setItem('oauth_pending_verifier', codeVerifier);
+      localStorage.setItem('oauth_pending_client', clientId);
+      localStorage.removeItem('oauth_pending_secret');
+      localStorage.removeItem('oauth_pending_scope');
+      if (clientSecret) {
+        localStorage.setItem('oauth_pending_secret', clientSecret);
+      }
+      if (authorizationScope) {
+        localStorage.setItem('oauth_pending_scope', authorizationScope);
+      }
+      localStorage.setItem('oauth_pending_token_endpoint', metadata.token_endpoint);
+
       sessionStorage.setItem('oauth_pending_csrf', csrf);
       sessionStorage.setItem('oauth_pending_verifier', codeVerifier);
       sessionStorage.setItem('oauth_pending_client', clientId);
@@ -155,9 +185,23 @@ export function useIntegrationActions() {
       if (isMobile) {
         localStorage.setItem('mcp_oauth_restore_state', JSON.stringify({ provider }));
         window.location.href = authorizeUrl;
+        return;
+      }
+
+      // Desktop Flow: Update pre-opened popup, or open direct popup
+      let targetPopup = preOpenedPopup && !preOpenedPopup.closed ? preOpenedPopup : null;
+      if (!targetPopup) {
+        try {
+          targetPopup = window.open(authorizeUrl, 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+        } catch {
+          targetPopup = null;
+        }
       } else {
-        const popup = window.open(authorizeUrl, 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
-        
+        targetPopup.location.href = authorizeUrl;
+        targetPopup.focus?.();
+      }
+
+      if (targetPopup && !targetPopup.closed) {
         const handleMessage = async (event: MessageEvent) => {
           if (
             event.origin === window.location.origin && 
@@ -171,14 +215,23 @@ export function useIntegrationActions() {
               type: 'success',
               mode: 'capsule'
             });
-            // Always re-discover tools after OAuth so Cal/etc. show up in Skills.
             await syncTools(provider);
           }
         };
         
         window.addEventListener('message', handleMessage);
+      } else {
+        // Fallback for strict browser restrictions (e.g. Safari / Brave Shields): tab navigation
+        if (preOpenedPopup && !preOpenedPopup.closed) {
+          preOpenedPopup.close();
+        }
+        localStorage.setItem('mcp_oauth_restore_state', JSON.stringify({ provider }));
+        window.location.href = authorizeUrl;
       }
     } catch (err: any) {
+      if (preOpenedPopup && !preOpenedPopup.closed) {
+        preOpenedPopup.close();
+      }
       console.error(err);
       showToast({
         title: 'Authorization Failed',
@@ -191,6 +244,18 @@ export function useIntegrationActions() {
 
   // OAuth triggering flow
   const handleConnectOAuth = async (provider: string, remoteUrl: string) => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // Open popup synchronously on initial user click BEFORE any async network calls
+    let syncPopup: Window | null = null;
+    if (!isMobile && typeof window !== 'undefined') {
+      try {
+        syncPopup = window.open('/auth/loading', 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+      } catch {
+        syncPopup = null;
+      }
+    }
+
     try {
       showToast({
         title: 'Connecting Account',
@@ -201,8 +266,9 @@ export function useIntegrationActions() {
 
       // 1. Probe remote server OAuth capability
       let supportsOAuth = false;
+      let metadata: any = null;
       try {
-        const metadata = await discoverOAuthMetadata(remoteUrl);
+        metadata = await discoverOAuthMetadata(remoteUrl);
         if (metadata && metadata.authorization_endpoint && metadata.token_endpoint) {
           supportsOAuth = true;
         }
@@ -214,6 +280,10 @@ export function useIntegrationActions() {
       const name = tmpl?.name || provider.charAt(0).toUpperCase() + provider.slice(1);
 
       if (!supportsOAuth) {
+        if (syncPopup && !syncPopup.closed) {
+          syncPopup.close();
+        }
+
         // Register as No Auth / Public
         await db.mcpIntegrations.put({
           id: provider,
@@ -256,9 +326,12 @@ export function useIntegrationActions() {
         createdAt: Date.now()
       });
 
-      // Fresh OAuth negotiation each connect — do not reuse prior scope overrides.
-      await triggerOAuthFlow(provider, remoteUrl);
+      // Fresh OAuth negotiation each connect — pass pre-opened popup reference and pre-discovered metadata
+      await triggerOAuthFlow(provider, remoteUrl, undefined, syncPopup, metadata);
     } catch (e: any) {
+      if (syncPopup && !syncPopup.closed) {
+        syncPopup.close();
+      }
       showToast({
         title: 'Connection Failed',
         message: e.message || 'Could not register integration.',
@@ -330,7 +403,23 @@ export function useIntegrationActions() {
             type: 'info',
             mode: 'capsule'
           });
-          const popup = window.open(data.authorizationUrl, 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+
+          let popup: Window | null = null;
+          const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+          if (!isMobile) {
+            try {
+              popup = window.open(data.authorizationUrl, 'oauth-popup', 'width=600,height=750,status=no,resizable=yes');
+            } catch {
+              popup = null;
+            }
+          }
+
+          if (!popup || popup.closed) {
+            localStorage.setItem('mcp_oauth_restore_state', JSON.stringify({ provider: integrationId }));
+            window.location.href = data.authorizationUrl;
+            setIsSyncing(prev => ({ ...prev, [integrationId]: false }));
+            return;
+          }
           
           const handleMessage = (event: MessageEvent) => {
             if (
