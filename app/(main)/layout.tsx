@@ -49,15 +49,20 @@ export default function MainLayout({
       setMounted(true);
     });
 
-    // Register service worker for installable web app (PWA) support
-    if ('serviceWorker' in navigator) {
+    // Register service worker for PWA support in production mode only.
+    // In development mode, unregister SWs to prevent Turbopack HMR chunk loading loops.
+    if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
         .then((reg) => {
           console.log('Service Worker registered:', reg.scope);
-          // Force update service worker to verify client-side streaming bypass immediately
-          reg.update().catch(() => {});
         })
         .catch((err) => console.error('Service Worker registration failed:', err));
+    } else if (process.env.NODE_ENV === 'development' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
+      }).catch(() => {});
     }
 
     return () => cancelAnimationFrame(frame);
@@ -79,7 +84,9 @@ export default function MainLayout({
         } catch (e) {
           console.error('[OAuth Restore View Error]:', e);
         }
-        router.push('/apps');
+        if (pathname !== '/apps') {
+          router.push('/apps');
+        }
       }
     } else {
       // Navigated away from chat entirely (e.g. /library or /auth/callback) — close search and settings
